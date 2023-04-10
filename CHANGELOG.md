@@ -43,20 +43,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - https://github.com/unity-sds/unity-sps-prototype/issues/171
     
 ## Docker Containers
-    - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/hysds-ui-remote:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/hysds-mozart:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/hysds-grq2:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/hysds-verdi:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/hysds-factotum:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/ades-wpst-api:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/sps-api-fork:unity-v1.0.0
-    - ghcr.io/unity-sds/unity-sps-prototype/sps-hysds-pge-base:unity-v1.0.0
-    - docker.elastic.co/logstash/logstash:7.10.2
-    - rabbitmq:3.11.13-management
-    - redis:7.0.10
-    - docker:23.0.3-dind
-    - busybox:1.36.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-ui-remote:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-mozart:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-grq2:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-verdi:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-factotum:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/ades-wpst-api:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/sps-api-fork:unity-v1.0.0
+- ghcr.io/unity-sds/unity-sps-prototype/sps-hysds-pge-base:unity-v1.0.0
+- docker.elastic.co/logstash/logstash:7.10.2
+- rabbitmq:3.11.13-management
+- redis:7.0.10
+- docker:23.0.3-dind
+- busybox:1.36.0
 
 ## Documentation
 - Tutorial on using the WPS-T API to register an application package and to execute a job
