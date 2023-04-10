@@ -31,4 +31,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - https://github.com/unity-sds/unity-sps-prototype/issues/159
     - [unity-sps #167]: The WPS-T method to register a process may time out while building the PGE Docker image 
       - https://github.com/unity-sds/unity-sps-prototype/issues/167
+- EPIC #162: `u-sps-api`
+    - [unity-sps #163]: New SPS API with stub pre-warm method
+      - https://github.com/unity-sds/unity-sps-prototype/issues/163
+    - [unity-sps #167]: Refactor the HySDS workers as a Kubernetes DaemonSet
+      - https://github.com/unity-sds/unity-sps-prototype/issues/170
+    - [unity-sps #167]: Scale the number of worker nodes in the Kubernetes cluster
+      - https://github.com/unity-sds/unity-sps-prototype/issues/171
+    
+## Docker Containers
+    - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/hysds-ui-remote:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/hysds-mozart:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/hysds-grq2:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/hysds-verdi:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/hysds-factotum:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/ades-wpst-api:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/sps-api-fork:unity-v1.0.0
+    - ghcr.io/unity-sds/unity-sps-prototype/sps-hysds-pge-base:unity-v1.0.0
+    - docker.elastic.co/logstash/logstash:7.10.2
+    - rabbitmq:3.11.13-management
+    - redis:7.0.10
+    - docker:23.0.3-dind
+    - busybox:1.36.0
+
+## Documentation
+    - Tutorial on using the WPS-T API to register an application package and to execute a job
+      - https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-execution-of-the-l1b-cwl-workflow-via-the-wps-t-api
+    - SPS API with examples
+      - https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/unity-sps-api
+    - Tutorial on pre-warming a U-SPS cluster
+      - https://unity-sds.gitbook.io/docs/~/changes/TMwRbPjXYqq9MCfmRi31/developer-docs/science-processing/docs/developers-guide/manual-verification-testing-the-sps-prewarm-api
+
+## Deployments
+   - MCP Test:
+     - Processing Endpoint (WPS-T API): http://a0442fd7f829f49059fd68d1236aa263-650360946.us-west-2.elb.amazonaws.com:5001
+     - Scaling Endpoint (SPS API): http://a11879110708f47dbb74bbb8c9aea8d0-1219590089.us-west-2.elb.amazonaws.com:5002
+   - MCP Dev:
+     - Processing Endpoint (WPS-T API): http://a720fb4de892844bf884f037c17bb583-1070798053.us-west-2.elb.amazonaws.com:5001
+     - Scaling Endpoint (SPS API): http://a7096fc6842e84da688b45586d194498-2116025617.us-west-2.elb.amazonaws.com:5002
+ 
+  
 ------------
