@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 --------
-# [Unity Release 23.1] - 2023-04-07
+# [Unity Release 23.1] - 2023-04-11
 
 ## Repositories:
 - unity-sps : https://github.com/unity-sds/unity-sps/releases/tag/23.1
@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - https://github.com/unity-sds/unity-sps-prototype/issues/159
     - [unity-sps #167]: The WPS-T method to register a process may time out while building the PGE Docker image 
       - https://github.com/unity-sds/unity-sps-prototype/issues/167
+- EPIC #142: `processing-instance-types`
+    - [unity-sps #142]: As a project manager, i want to set default compute types for processing nodes at deploy time, so that i can predict costs for the system (Static)
+      - https://github.com/unity-sds/unity-sps-prototype/issues/154
 - EPIC #162: `u-sps-api`
     - [unity-sps #163]: New SPS API with stub pre-warm method
       - https://github.com/unity-sds/unity-sps-prototype/issues/163
@@ -56,20 +59,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - busybox:1.36.0
 
 ## Documentation
-    - Tutorial on using the WPS-T API to register an application package and to execute a job
-      - https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-execution-of-the-l1b-cwl-workflow-via-the-wps-t-api
-    - SPS API with examples
-      - https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/unity-sps-api
-    - Tutorial on pre-warming a U-SPS cluster
-      - https://unity-sds.gitbook.io/docs/~/changes/TMwRbPjXYqq9MCfmRi31/developer-docs/science-processing/docs/developers-guide/manual-verification-testing-the-sps-prewarm-api
+- Tutorial on using the WPS-T API to register an application package and to execute a job
+  - https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-execution-of-the-l1b-cwl-workflow-via-the-wps-t-api
+- SPS API with examples
+  - https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/unity-sps-api
+- Tutorial on pre-warming a U-SPS cluster
+  - https://unity-sds.gitbook.io/docs/~/changes/TMwRbPjXYqq9MCfmRi31/developer-docs/science-processing/docs/developers-guide/manual-verification-testing-the-sps-prewarm-api
 
 ## Deployments
-   - MCP Test:
-     - Processing Endpoint (WPS-T API): http://a0442fd7f829f49059fd68d1236aa263-650360946.us-west-2.elb.amazonaws.com:5001
-     - Scaling Endpoint (SPS API): http://a11879110708f47dbb74bbb8c9aea8d0-1219590089.us-west-2.elb.amazonaws.com:5002
-   - MCP Dev:
-     - Processing Endpoint (WPS-T API): http://a720fb4de892844bf884f037c17bb583-1070798053.us-west-2.elb.amazonaws.com:5001
-     - Scaling Endpoint (SPS API): http://a7096fc6842e84da688b45586d194498-2116025617.us-west-2.elb.amazonaws.com:5002
- 
+- MCP Test:
+  - Processing Endpoint (WPS-T API): http://a0442fd7f829f49059fd68d1236aa263-650360946.us-west-2.elb.amazonaws.com:5001
+  - Scaling Endpoint (SPS API): http://a11879110708f47dbb74bbb8c9aea8d0-1219590089.us-west-2.elb.amazonaws.com:5002
+- MCP Dev:
+  - Processing Endpoint (WPS-T API): http://a720fb4de892844bf884f037c17bb583-1070798053.us-west-2.elb.amazonaws.com:5001
+  - Scaling Endpoint (SPS API): http://a7096fc6842e84da688b45586d194498-2116025617.us-west-2.elb.amazonaws.com:5002
   
 ------------
