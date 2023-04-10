@@ -21,4 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - EPIC #130: `ancillary data`
     - [unity-sps #148] Mount EFS partitions on U-SPS cluster
       - https://github.com/unity-sds/unity-sps-prototype/issues/148
+- EPIC #146: `automatic testing`
+    - [unity-sps #153] Smoke test to deploy a simple process and execute a job request
+      - https://github.com/unity-sds/unity-sps-prototype/issues/153
+- EPIC #132: `no magic`
+    - [unity-sps #154]: Pass explicit input parameters to a WPS-T job request
+      - https://github.com/unity-sds/unity-sps-prototype/issues/154
+    - [unity-sps #159]: Return the input parameters as part of the WPS-T DescribeProcess method
+      - https://github.com/unity-sds/unity-sps-prototype/issues/159
+    - [unity-sps #167]: The WPS-T method to register a process may time out while building the PGE Docker image 
+      - https://github.com/unity-sds/unity-sps-prototype/issues/167
 ------------
