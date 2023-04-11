@@ -12,7 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - unity-sps : https://github.com/unity-sds/unity-sps/releases/tag/1.0.0
 - unity-sps-prototype: https://github.com/unity-sds/unity-sps-prototype/releases/tag/1.0.0
 - unity-sps-api: https://github.com/unity-sds/unity-sps-api/releases/tag/1.0.0
-- unity-sps-register_job: https://github.com/unity-sds/unity-sps-register_job/releases/tag/1.0.0
+- unity-sps-register_job: 
+  - MCP-Dev: https://github.com/unity-sds/unity-sps-register_job/releases/tag/1.0.0-MCP_Dev
+  - MCP-Test: https://github.com/unity-sds/unity-sps-register_job/releases/tag/1.0.0-MCP_Test
 - unity-sps-workflows: https://github.com/unity-sds/unity-sps-workflows/releases/tag/1.0.0
 - ades_wpst: https://github.com/unity-sds/ades_wpst/releases/tag/1.0.0
 
