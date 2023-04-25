@@ -70,10 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Deployments
 - MCP Test:
-  - Processing Endpoint (WPS-T API): http://a0442fd7f829f49059fd68d1236aa263-650360946.us-west-2.elb.amazonaws.com:5001
-  - Scaling Endpoint (SPS API): http://a11879110708f47dbb74bbb8c9aea8d0-1219590089.us-west-2.elb.amazonaws.com:5002
-- MCP Dev:
   - Processing Endpoint (WPS-T API): http://a720fb4de892844bf884f037c17bb583-1070798053.us-west-2.elb.amazonaws.com:5001
   - Scaling Endpoint (SPS API): http://a7096fc6842e84da688b45586d194498-2116025617.us-west-2.elb.amazonaws.com:5002
+- MCP Dev:
+  - Processing Endpoint (WPS-T API): http://aa17aedf4454a4cc596a67a1efb73411-1350404365.us-west-2.elb.amazonaws.com:5001
+  - Scaling Endpoint (SPS API): http://a440158f49fab4278bdcf2bcb145082b-625745.us-west-2.elb.amazonaws.com:5002
   
 ------------
