@@ -21,9 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - EPIC #185: `jobs-database`
     - [unity-sps #185] [Epic]: Implement Jobs Database
-        - [https://github.com/unity-sds/unity-sps-prototype/issues/185] (https://github.com/unity-sds/unity-sps-prototype/issues/185)
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/185](https://github.com/unity-sds/unity-sps-prototype/issues/185)
     - [unity-sps #186] [New Feature]: Send SNS message for job creation task
         - [https://github.com/unity-sds/unity-sps-prototype/issues/186](https://github.com/unity-sds/unity-sps-prototype/issues/186)
+    - [unity-sps #187] [New Feature]: Send SNS message for job completion task
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/187](https://github.com/unity-sds/unity-sps-prototype/issues/187)
+    - [unity-sps #188] [New Feature]: Consume SNS message for job creation task and job completion tasks
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/188](https://github.com/unity-sds/unity-sps-prototype/issues/188)
+    - [unity-sps #189] [New Feature]: Deploy jobs database
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/189](https://github.com/unity-sds/unity-sps-prototype/issues/189)
+    - [unity-sps #193) [New Feature]: Create SNS topic, SQS queue and Lambda function for Jobs Database as part of U-SPS deployment
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/193](https://github.com/unity-sds/unity-sps-prototype/issues/193)
+    - [unity-sps $194] [Bug]: Prevent duplicate documents in jobs database
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/194](https://github.com/unity-sds/unity-sps-prototype/issues/194)   
      
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.1.0
