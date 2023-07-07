@@ -17,6 +17,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - unity-sps-workflows: https://github.com/unity-sds/unity-sps-workflows/releases/tag/1.1.0
 - ades_wpst: https://github.com/unity-sds/ades_wpst/releases/tag/1.1.0
 
+## Epics:
+- EPIC #130: `ancillary data`
+    - [unity-sps #148] Mount EFS partitions on U-SPS cluster
+      - https://github.com/unity-sds/unity-sps-prototype/issues/148
+     
+## Docker Containers
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-ui-remote:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-mozart:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-grq2:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-verdi:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-factotum:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/ades-wpst-api:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/sps-api-fork:unity-v1.1.0
+- ghcr.io/unity-sds/unity-sps-prototype/sps-hysds-pge-base:unity-v1.1.0
+- docker.elastic.co/logstash/logstash:7.10.2
+- rabbitmq:3.11.13-management
+- redis:7.0.10
+- docker:23.0.3-dind
+- busybox:1.36.0
+
+## Documentation
+- Tutorial on using the WPS-T API to register an application package and to execute a job
+  - https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-execution-of-the-l1b-cwl-workflow-via-the-wps-t-api
+- SPS API with examples
+  - https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/unity-sps-api
+- Tutorial on pre-warming a U-SPS cluster
+  - https://unity-sds.gitbook.io/docs/~/changes/TMwRbPjXYqq9MCfmRi31/developer-docs/science-processing/docs/developers-guide/manual-verification-testing-the-sps-prewarm-api
+
+## Deployments
+- MCP Test:
+  - Processing Endpoint (WPS-T API): **http://a720fb4de892844bf884f037c17bb583-1070798053.us-west-2.elb.amazonaws.com:5001**
+  - Scaling Endpoint (SPS API): **http://a7096fc6842e84da688b45586d194498-2116025617.us-west-2.elb.amazonaws.com:5002**
+- MCP Dev:
+  - Processing Endpoint (WPS-T API): **http://aa17aedf4454a4cc596a67a1efb73411-1350404365.us-west-2.elb.amazonaws.com:5001**
+  - Scaling Endpoint (SPS API): **http://a440158f49fab4278bdcf2bcb145082b-625745.us-west-2.elb.amazonaws.com:5002**
+    
 --------
 # [Unity Release 23.1] - 2023-04-11
 
@@ -29,7 +66,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - MCP-Test: https://github.com/unity-sds/unity-sps-register_job/releases/tag/1.0.0-MCP_Test
 - unity-sps-workflows: https://github.com/unity-sds/unity-sps-workflows/releases/tag/1.0.0
 - ades_wpst: https://github.com/unity-sds/ades_wpst/releases/tag/1.0.0
-
 
 ## Epics:
 - EPIC #130: `ancillary data`
