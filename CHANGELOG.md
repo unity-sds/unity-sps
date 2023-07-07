@@ -19,21 +19,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Epics:
 
-- EPIC #185: `jobs-database`
-    - [unity-sps #185] [Epic]: Implement Jobs Database
+- EPIC #7: `jobs-database`
+    - [unity-sps-prototype #185] [Epic]: Implement Jobs Database
         - [https://github.com/unity-sds/unity-sps-prototype/issues/185](https://github.com/unity-sds/unity-sps-prototype/issues/185)
-    - [unity-sps #186] [New Feature]: Send SNS message for job creation task
+    - [unity-sps-prototype #186] [New Feature]: Send SNS message for job creation task
         - [https://github.com/unity-sds/unity-sps-prototype/issues/186](https://github.com/unity-sds/unity-sps-prototype/issues/186)
-    - [unity-sps #187] [New Feature]: Send SNS message for job completion task
+    - [unity-sps-prototype #187] [New Feature]: Send SNS message for job completion task
         - [https://github.com/unity-sds/unity-sps-prototype/issues/187](https://github.com/unity-sds/unity-sps-prototype/issues/187)
-    - [unity-sps #188] [New Feature]: Consume SNS message for job creation task and job completion tasks
+    - [unity-sps-prototype #188] [New Feature]: Consume SNS message for job creation task and job completion tasks
         - [https://github.com/unity-sds/unity-sps-prototype/issues/188](https://github.com/unity-sds/unity-sps-prototype/issues/188)
-    - [unity-sps #189] [New Feature]: Deploy jobs database
+    - [unity-sps-prototype #189] [New Feature]: Deploy jobs database
         - [https://github.com/unity-sds/unity-sps-prototype/issues/189](https://github.com/unity-sds/unity-sps-prototype/issues/189)
-    - [unity-sps #193) [New Feature]: Create SNS topic, SQS queue and Lambda function for Jobs Database as part of U-SPS deployment
+    - [unity-sps-prototype #193) [New Feature]: Create SNS topic, SQS queue and Lambda function for Jobs Database as part of U-SPS deployment
         - [https://github.com/unity-sds/unity-sps-prototype/issues/193](https://github.com/unity-sds/unity-sps-prototype/issues/193)
-    - [unity-sps $194] [Bug]: Prevent duplicate documents in jobs database
+    - [unity-sps-prototype $194] [Bug]: Prevent duplicate documents in jobs database
         - [https://github.com/unity-sds/unity-sps-prototype/issues/194](https://github.com/unity-sds/unity-sps-prototype/issues/194)   
+- EPIC #10: `chirp-workflow-execution`
+    - [unity-sps-workflows #8] [Dependency]: Stub implementation for CHIRP workflow
+      - [https://github.com/unity-sds/unity-sps-workflows/issues/8](https://github.com/unity-sds/unity-sps-workflows/issues/8)
+    - [unity-sps-workflows #12] [Dependency]: Docker container for CMR search
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/12](https://github.com/unity-sds/unity-sps-workflows/issues/12)
+    - [unity-sps-workflows #14] [Risk]: Processing large data volumes with CWL and Docker
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/14](https://github.com/unity-sds/unity-sps-workflows/issues/14)
+    -  [unity-sps-prototype #192] [New Feature]: Add an optional PVC to an SPS deployment
+       -  [https://github.com/unity-sds/unity-sps-prototype/issues/192](https://github.com/unity-sds/unity-sps-prototype/issues/192)
      
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.1.0
@@ -82,27 +91,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Epics:
 - EPIC #130: `ancillary data`
-    - [unity-sps #148] Mount EFS partitions on U-SPS cluster
+    - [unity-sps-prototype #148] Mount EFS partitions on U-SPS cluster
       - https://github.com/unity-sds/unity-sps-prototype/issues/148
 - EPIC #146: `automatic testing`
-    - [unity-sps #153] Smoke test to deploy a simple process and execute a job request
+    - [unity-sps-prototype #153] Smoke test to deploy a simple process and execute a job request
       - https://github.com/unity-sds/unity-sps-prototype/issues/153
 - EPIC #132: `no magic`
     - [unity-sps #154]: Pass explicit input parameters to a WPS-T job request
       - https://github.com/unity-sds/unity-sps-prototype/issues/154
-    - [unity-sps #159]: Return the input parameters as part of the WPS-T DescribeProcess method
+    - [unity-sps-prototype #159]: Return the input parameters as part of the WPS-T DescribeProcess method
       - https://github.com/unity-sds/unity-sps-prototype/issues/159
-    - [unity-sps #167]: The WPS-T method to register a process may time out while building the PGE Docker image 
+    - [unity-sps-prototype #167]: The WPS-T method to register a process may time out while building the PGE Docker image 
       - https://github.com/unity-sds/unity-sps-prototype/issues/167
 - EPIC #142: `processing-instance-types`
-    - [unity-sps #142]: As a project manager, i want to set default compute types for processing nodes at deploy time, so that i can predict costs for the system (Static)
+    - [unity-sps-prototype #142]: As a project manager, i want to set default compute types for processing nodes at deploy time, so that i can predict costs for the system (Static)
       - https://github.com/unity-sds/unity-sps-prototype/issues/154
 - EPIC #162: `u-sps-api`
-    - [unity-sps #163]: New SPS API with stub pre-warm method
+    - [unity-sps-prototype #163]: New SPS API with stub pre-warm method
       - https://github.com/unity-sds/unity-sps-prototype/issues/163
-    - [unity-sps #167]: Refactor the HySDS workers as a Kubernetes DaemonSet
+    - [unity-sps-prototype #167]: Refactor the HySDS workers as a Kubernetes DaemonSet
       - https://github.com/unity-sds/unity-sps-prototype/issues/170
-    - [unity-sps #167]: Scale the number of worker nodes in the Kubernetes cluster
+    - [unity-sps-prototype #167]: Scale the number of worker nodes in the Kubernetes cluster
       - https://github.com/unity-sds/unity-sps-prototype/issues/171
     
 ## Docker Containers
