@@ -43,15 +43,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         - [https://github.com/unity-sds/unity-sps-workflows/issues/14](https://github.com/unity-sds/unity-sps-workflows/issues/14)
     -  [unity-sps-prototype #192] [New Feature]: Add an optional PVC to an SPS deployment
        -  [https://github.com/unity-sds/unity-sps-prototype/issues/192](https://github.com/unity-sds/unity-sps-prototype/issues/192)
-   -  EPIC #1: `min/max scaling`
-       - [unity-sps-prototype #141] As a project Manager, i want to set maximum and minimum limits on scaling for processing at venue creation time (static)
-           - [https://github.com/unity-sds/unity-sps-prototype/issues/141](https://github.com/unity-sds/unity-sps-prototype/issues/141)
-   - EPIC #4: `no magic`
-       - [unity-sps-prototype #132] As a user, i want to be explicit about inputs into my process execution (no magic)!
-           - [https://github.com/unity-sds/unity-sps-prototype/issues/132](https://github.com/unity-sds/unity-sps-prototype/issues/132)
-   - EPIC #2: `workflow-management`
-       - [unity-sps-prototype #158] [New Feature]: Stop a WPS-T process
-           - [https://github.com/unity-sds/unity-sps-prototype/issues/158](https://github.com/unity-sds/unity-sps-prototype/issues/158)  
+-  EPIC #1: `min/max scaling`
+   - [unity-sps-prototype #141] As a project Manager, i want to set maximum and minimum limits on scaling for processing at venue creation time (static)
+     - [https://github.com/unity-sds/unity-sps-prototype/issues/141](https://github.com/unity-sds/unity-sps-prototype/issues/141)
+  - EPIC #4: `no magic`
+    - [unity-sps-prototype #132] As a user, i want to be explicit about inputs into my process execution (no magic)!
+      - [https://github.com/unity-sds/unity-sps-prototype/issues/132](https://github.com/unity-sds/unity-sps-prototype/issues/132)
+- EPIC #2: `workflow-management`
+  - [unity-sps-prototype #158] [New Feature]: Stop a WPS-T process
+    - [https://github.com/unity-sds/unity-sps-prototype/issues/158](https://github.com/unity-sds/unity-sps-prototype/issues/158)  
      
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.1.0
