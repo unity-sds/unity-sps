@@ -18,9 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ades_wpst: https://github.com/unity-sds/ades_wpst/releases/tag/1.1.0
 
 ## Epics:
-- EPIC #130: `ancillary data`
-    - [unity-sps #148] Mount EFS partitions on U-SPS cluster
-      - https://github.com/unity-sds/unity-sps-prototype/issues/148
+
+- EPIC #185: `jobs-database`
+    - [unity-sps #185] [Epic]: Implement Jobs Database
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/185] (https://github.com/unity-sds/unity-sps-prototype/issues/185)
+    - [unity-sps #186] [New Feature]: Send SNS message for job creation task
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/186](https://github.com/unity-sds/unity-sps-prototype/issues/186)
      
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.1.0
