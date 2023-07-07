@@ -49,9 +49,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - EPIC #4: `no magic`
     - [unity-sps-prototype #132] As a user, i want to be explicit about inputs into my process execution (no magic)!
       - [https://github.com/unity-sds/unity-sps-prototype/issues/132](https://github.com/unity-sds/unity-sps-prototype/issues/132)
-- EPIC #2: `workflow-management`
-  - [unity-sps-prototype #158] [New Feature]: Stop a WPS-T process
-    - [https://github.com/unity-sds/unity-sps-prototype/issues/158](https://github.com/unity-sds/unity-sps-prototype/issues/158)  
      
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.1.0
