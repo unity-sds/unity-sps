@@ -46,7 +46,7 @@
 
 ## Quick Start
 
-This guide provides a quick way to get started with our project. Please see our [docs]([INSERT LINK TO DOCS SITE / WIKI HERE]) for a more comprehensive overview.
+This guide provides a quick way to get started with our project. Please see our [docs](https://unity-sds.gitbook.io/docs/developer-docs/science-processing) for a more comprehensive overview.
 
 ### Requirements
 
