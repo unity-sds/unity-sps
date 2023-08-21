@@ -61,7 +61,7 @@ This guide provides a quick way to get started with our project. Please see our 
 
 ### Setup Instructions
 
-1. [INSERT STEP-BY-STEP SETUP INSTRUCTIONS HERE, WITH OPTIONAL SCREENSHOTS]
+1. [U-SPS Setup](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/cluster-provisioning-with-terraform) 
    
 <!-- ☝️ Replace with a numbered list of how to set up your software prior to running ☝️ -->
 
@@ -73,7 +73,9 @@ This guide provides a quick way to get started with our project. Please see our 
 
 ### Usage Examples
 
-* [INSERT LIST OF COMMON USAGE EXAMPLES HERE, WITH OPTIONAL SCREENSHOTS]
+* [Tutorial: Executing the L1B workflow](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-execution-of-the-l1b-cwl-workflow-via-the-wps-t-api)
+* [Tutorial: Using Job Labels](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/job-labels)
+* [Tutorial: Testing the SPS Prewarm API](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/manual-verification-testing-the-sps-prewarm-api)
 
 <!-- ☝️ Replace with a list of your usage examples, including screenshots if possible, and link to external documentation for details ☝️ -->
 
