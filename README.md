@@ -21,13 +21,11 @@
 [INSERT SCREENSHOT OF YOUR SOFTWARE, IF APPLICABLE]
 <!-- ☝️ Screenshot of your software (if applicable) via ![](https://uri-to-your-screenshot) ☝️ -->
 
-[INSERT MORE DETAILED DESCRIPTION OF YOUR REPOSITORY HERE]
-<!-- ☝️ Replace with a more detailed description of your repository, including why it was made and whom its intended for.  ☝️ -->
-
-[INSERT LIST OF IMPORTANT PROJECT / REPO LINKS HERE]
-<!-- example links>
-[Website](INSERT WEBSITE LINK HERE) | [Docs/Wiki](INSERT DOCS/WIKI SITE LINK HERE) | [Discussion Board](INSERT DISCUSSION BOARD LINK HERE) | [Issue Tracker](INSERT ISSUE TRACKER LINK HERE)
--->
+This repository contains high level information (such as documentation, change log, etc.) about the U-SPS software stack. The actual U-SPS code is contained within the following set of GitHub repositories:
+* [U-SPS Prototype](https://github.com/unity-sds/unity-sps-prototype): Terraform scripts to deploy the U-SPS cluster (either the HySDS or Airflow implementations)
+* [U-SPS Workflows](https://github.com/unity-sds/unity-sps-workflows): Examples of CWL workflows that can be executed on a U-SPS cluster
+* [U-SPS API](https://github.com/unity-sds/unity-sps-api): The API used to manage a U-SPS cluster
+* [U-SPS Register Job](https://github.com/unity-sds/unity-sps-register_job): Implementation of the WPS-T API with respect to the supported U-SPS backe-ends
 
 ## Features
 
@@ -35,8 +33,9 @@
    * Deploying and undeploying a science algorithm via the "/processes" endpoint
    * Executing and monitoring a job execution via the "/jobs" endpoint
    * Retrieving a job output via the "/results" endpoint
-*  The U-SPS includes an API to manage the computing resources of the cluster (such as scaling up and down the number of computing nodes)
-*  Internally, the U-SPS is composed of a system of interacting applications packaged as Docker containers and deployed into a Kubernetes cluster via a set of Terraform scripts.
+* Scientific data processing workflows are encoded via the CWL ("Common Worflow Language") standard
+* The U-SPS includes an API to manage the computing resources of the cluster (such as scaling up and down the number of computing nodes)
+* Internally, the U-SPS is composed of a system of interacting applications packaged as Docker containers and deployed into a Kubernetes cluster via a set of Terraform scripts.
 *  The U-SPS supports multiple possible implementations. The two currently available are based on HySDS (Hybrid Science Data System) and Apache Airflow
 <!-- ☝️ Replace with a bullet-point list of your features ☝️ -->
 
