@@ -31,8 +31,13 @@
 
 ## Features
 
-* [INSERT LIST OF FEATURES IMPORTANT TO YOUR USERS HERE]
-  
+*  The U-SPS enables deployment and execution of arbitrary scientific data processing algorithms through the standard OGC WPS-T API ("Open Geospatial Consortium Web Processing Service - Transactional Abstract Programming Interface")
+   * Deploying and undeploying a science algorithm via the "/processes" endpoint
+   * Executing and monitoring a job execution via the "/jobs" endpoint
+   * Retrieving a job output via the "/results" endpoint
+*  The U-SPS includes an API to manage the computing resources of the cluster (such as scaling up and down the number of computing nodes)
+*  Internally, the U-SPS is composed of a system of interacting applications packaged as Docker containers and deployed into a Kubernetes cluster via a set of Terraform scripts.
+*  The U-SPS supports multiple possible implementations. The two currently available are based on HySDS (Hybrid Science Data System) and Apache Airflow
 <!-- ☝️ Replace with a bullet-point list of your features ☝️ -->
 
 ## Contents
