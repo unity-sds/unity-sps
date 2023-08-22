@@ -95,4 +95,8 @@ See our: [LICENSE](LICENSE)
 
 ## Support
 
-Key points of contact are: [@LucaCinquini](https://github.com/LucaCinquini)
+Key points of contact are: 
+* [@Luca Cinquini](https://github.com/LucaCinquini)
+* [@Namrata Malarout](https://github.com/NamrataM)
+* [@Drew Meyers](https://github.com/drewm-jpl)
+* [@Ryan Hunter](https://github.com/ryanhunter-jpl)
