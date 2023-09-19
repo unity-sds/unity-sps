@@ -19,11 +19,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Epics
 
-- EPIC #7: `jobs-database`
-    - [unity-sps-prototype #185] [Epic]: Implement Jobs Database
-        - [https://github.com/unity-sds/unity-sps-prototype/issues/185](https://github.com/unity-sds/unity-sps-prototype/issues/185)
-    - [unity-sps-prototype #186] [New Feature]: Send SNS message for job creation task
-        - [https://github.com/unity-sds/unity-sps-prototype/issues/186](https://github.com/unity-sds/unity-sps-prototype/issues/186)
+- EPIC #9: `workflow metadata`
+    - [unity-sps-prototype #210] [New Feature]: Store arbitrary labels in the Jobs Database
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/210](https://github.com/unity-sds/unity-sps-prototype/issues/210)
+    - [unity-sps-prototype #211] [New Feature]: Query the Jobs Metadata by arbitrary labels
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/211](https://github.com/unity-sds/unity-sps-prototype/issues/211)
 
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.2.0
