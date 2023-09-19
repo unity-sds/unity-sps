@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --------
 
+# [Unity Release 23.4] - 2023-09-29
+
+## Repositories:
+- unity-sps : https://github.com/unity-sds/unity-sps/releases/tag/1.2.0
+- unity-sps-prototype: https://github.com/unity-sds/unity-sps-prototype/releases/tag/1.2.0
+- unity-sps-api: https://github.com/unity-sds/unity-sps-api/releases/tag/1.2.0
+- unity-sps-register_job: https://github.com/unity-sds/unity-sps-register_job/releases/tag/1.2.0
+- unity-sps-workflows: https://github.com/unity-sds/unity-sps-workflows/releases/tag/1.2.0
+- ades_wpst: https://github.com/unity-sds/ades_wpst/releases/tag/1.2.0
+
+## Epics
+
+
+## Docker Containers
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-ui-remote:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-mozart:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-grq2:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-verdi:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/hysds-factotum:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/ades-wpst-api:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/sps-api:unity-v1.2.0
+- ghcr.io/unity-sds/unity-sps-prototype/sps-hysds-pge-base:unity-v1.2.0
+- docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+- docker.elastic.co/logstash/logstash:7.10.2
+- rabbitmq:3.11.13-management
+- redis:7.0.10
+- docker:23.0.3-dind
+- busybox:1.36.0
+  
+--------
+
 # [Unity Release 23.2] - 2023-07-14
 
 ## Repositories:
