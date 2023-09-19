@@ -36,6 +36,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - redis:7.0.10
 - docker:23.0.3-dind
 - busybox:1.36.0
+
+## Documentation
+- Tutorial on using the WPS-T API to register an application package and to execute a job
+  - https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-execution-of-the-l1b-cwl-workflow-via-the-wps-t-api
+- SPS API with examples
+  - https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/unity-sps-api
+- Tutorial on pre-warming a U-SPS cluster
+  - https://unity-sds.gitbook.io/docs/~/changes/TMwRbPjXYqq9MCfmRi31/developer-docs/science-processing/docs/developers-guide/manual-verification-testing-the-sps-prewarm-api
+- Description of the Jobs Database: architecture and usage
+  - https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/the-jobs-database#how-jobs-are-updated-in-the-database
+
+## Deployments
   
 --------
 
