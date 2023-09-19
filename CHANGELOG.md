@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --------
 
-# [Unity Release 23.4] - 2023-09-29
+# [Unity Release 23.3] - 2023-09-29
 
 ## Repositories:
 - unity-sps : https://github.com/unity-sds/unity-sps/releases/tag/1.2.0
