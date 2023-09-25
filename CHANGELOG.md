@@ -44,7 +44,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - [unity-sps-prototype #195] [Dependency]: Docker container for stage-in step
         - [https://github.com/unity-sds/unity-sps-prototype/issues/195](https://github.com/unity-sds/unity-sps-prototype/issues/195)
     - [unity-sps-prototype #227] [New Feature]: Use stage EFS as data temporary location for CHIRP execution
-        - [https://github.com/unity-sds/unity-sps-prototype/issues/227](https://github.com/unity-sds/unity-sps-prototype/issues/227)     
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/227](https://github.com/unity-sds/unity-sps-prototype/issues/227)
+- EPIC #4: `no magic`
+    - [unity-sps-prototype #132] As a user, i want to be explicit about inputs into my process execution (no magic)!
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/132](https://github.com/unity-sds/unity-sps-prototype/issues/132)
+    - [unity-sps-prototype #157] [New Feature]: Pass environment variables to a Docker container execution
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/157](https://github.com/unity-sds/unity-sps-prototype/issues/157)
+- EPIC #10: `sps-improvements-23.3`
+    - [unity-sps-prototype #221] [Dependency]: Tagging U-SPS resources
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/221](https://github.com/unity-sds/unity-sps-prototype/issues/221)
+    - [unity-sps-prototype #222] [Dependency]: Add SPS API URL to the SSM store
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/222](https://github.com/unity-sds/unity-sps-prototype/issues/222)     
 
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.2.0
