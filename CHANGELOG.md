@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         - [https://github.com/unity-sds/unity-sps-prototype/issues/210](https://github.com/unity-sds/unity-sps-prototype/issues/210)
     - [unity-sps-prototype #211] [New Feature]: Query the Jobs Metadata by arbitrary labels
         - [https://github.com/unity-sds/unity-sps-prototype/issues/211](https://github.com/unity-sds/unity-sps-prototype/issues/211)
+    - [unity-sps-prototype #217] [Risk]: Evaluate scalability of WPS-T API for querying the Jobs Database
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/217](https://github.com/unity-sds/unity-sps-prototype/issues/217) 
 
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.2.0
