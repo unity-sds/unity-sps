@@ -54,7 +54,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - [unity-sps-prototype #221] [Dependency]: Tagging U-SPS resources
         - [https://github.com/unity-sds/unity-sps-prototype/issues/221](https://github.com/unity-sds/unity-sps-prototype/issues/221)
     - [unity-sps-prototype #222] [Dependency]: Add SPS API URL to the SSM store
-        - [https://github.com/unity-sds/unity-sps-prototype/issues/222](https://github.com/unity-sds/unity-sps-prototype/issues/222)     
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/222](https://github.com/unity-sds/unity-sps-prototype/issues/222)
+    - [unity-sps-prototype #230] [Bug]: One SPS deployment can accidentally execute another SPS deployments deployed process containers
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/230](https://github.com/unity-sds/unity-sps-prototype/issues/230)  
 
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.2.0
