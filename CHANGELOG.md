@@ -33,6 +33,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
         - [https://github.com/unity-sds/unity-sps-workflows/issues/10](https://github.com/unity-sds/unity-sps-workflows/issues/10)
     - [unity-sps-workflows #11] [Dependency]: Full implementation of CHIRP workflow
         - [https://github.com/unity-sds/unity-sps-workflows/issues/11](https://github.com/unity-sds/unity-sps-workflows/issues/11)
+    - [unity-sps-workflows #12] [Dependency]: Docker container for CMR search
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/12](https://github.com/unity-sds/unity-sps-workflows/issues/12)
+    - [unity-sps-workflows #13] [Dependency]: Docker container for Cataloging
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/13](https://github.com/unity-sds/unity-sps-workflows/issues/13)
+    - [unity-sps-workflows #14] [Risk]: Processing large data volumes with CWL and Docker
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/14](https://github.com/unity-sds/unity-sps-workflows/issues/14)
+    - [unity-sps-prototype #192 ] [New Feature]: Add an optional PVC to an SPS deployment
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/192](https://github.com/unity-sds/unity-sps-prototype/issues/192)
+    - [unity-sps-prototype #195] [Dependency]: Docker container for stage-in step
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/195](https://github.com/unity-sds/unity-sps-prototype/issues/195)
+    - [unity-sps-prototype #227] [New Feature]: Use stage EFS as data temporary location for CHIRP execution
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/227](https://github.com/unity-sds/unity-sps-prototype/issues/227)     
 
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.2.0
