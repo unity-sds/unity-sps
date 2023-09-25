@@ -25,7 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - [unity-sps-prototype #211] [New Feature]: Query the Jobs Metadata by arbitrary labels
         - [https://github.com/unity-sds/unity-sps-prototype/issues/211](https://github.com/unity-sds/unity-sps-prototype/issues/211)
     - [unity-sps-prototype #217] [Risk]: Evaluate scalability of WPS-T API for querying the Jobs Database
-        - [https://github.com/unity-sds/unity-sps-prototype/issues/217](https://github.com/unity-sds/unity-sps-prototype/issues/217) 
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/217](https://github.com/unity-sds/unity-sps-prototype/issues/217)
+- EPIC #12: `chirp-workflow-execution`
+    - [unity-sps-workflows #8] [Dependency]: Stub implementation for CHIRP workflow
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/8](https://github.com/unity-sds/unity-sps-workflows/issues/8)
+    - [unity-sps-workflows #10] [Dependency]: Docker container for execution of CHIRP rebinning PGE
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/10](https://github.com/unity-sds/unity-sps-workflows/issues/10)
+    - [unity-sps-workflows #11] [Dependency]: Full implementation of CHIRP workflow
+        - [https://github.com/unity-sds/unity-sps-workflows/issues/11](https://github.com/unity-sds/unity-sps-workflows/issues/11)
 
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.2.0
