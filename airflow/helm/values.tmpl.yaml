@@ -1,0 +1,122 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+---
+# Source of default values: https://github.com/apache/airflow/blob/main/chart/values.yaml
+
+# Airflow create user job settings
+createUserJob:
+  # In case you need to disable the helm hooks that create the jobs after install.
+  # Disable this if you are using ArgoCD for example
+  useHelmHooks: false
+  applyCustomEnv: false
+
+# Airflow database migration job settings
+migrateDatabaseJob:
+  # In case you need to disable the helm hooks that create the jobs after install.
+  # Disable this if you are using ArgoCD for example
+  useHelmHooks: false
+  applyCustomEnv: false
+  # To run database migrations with Argo CD automatically, you will need to add the
+  # following. This will run database migrations every time there is a Sync event
+  # in Argo CD. While it is not ideal to run the migrations on every sync, it is a
+  # trade-off that allows them to be run automatically.
+  jobAnnotations:
+    "argocd.argoproj.io/hook": Sync
+
+images:
+  airflow:
+    repository: ${airflow_image_repo}
+    tag: ${airflow_image_tag}
+
+scheduler:
+  replicas: 1
+
+triggerer:
+  replicas: 1
+
+dagProcessor:
+  enabled: true
+  replicas: 1
+
+postgresql:
+  enabled: false
+
+pgbouncer:
+  enabled: true
+  replicas: 1
+
+webserverSecretKeySecretName: ${webserver_secret_name}
+
+webserver:
+  replicas: 1
+
+workers:
+  keda:
+    enabled: true
+    pollingInterval: 1
+    maxReplicaCount: 128
+    # Specify HPA related options
+    # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md
+    advanced:
+      horizontalPodAutoscalerConfig:
+        behavior:
+          scaleUp:
+            policies:
+            - type: Percent
+              value: 900
+              periodSeconds: 30
+          scaleDown:
+            stabilizationWindowSeconds: 300
+            policies:
+              - type: Percent
+                value: 100
+                periodSeconds: 5
+
+data:
+  metadataSecretName: ${metadata_secret_name}
+  resultBackendSecretName: ~
+
+config:
+  logging:
+    remote_logging: true
+    logging_level: "INFO"
+    remote_base_log_folder: ${airflow_logs_s3_location}
+    remote_log_conn_id: "aws_default"
+    encrypt_s3_logs: false
+  celery:
+    worker_concurrency: 1
+
+env:
+  - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
+    value: "${kubernetes_namespace}"
+
+# https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
+extraEnv: |
+  - name: AIRFLOW__API__AUTH_BACKENDS
+    value: "airflow.api.auth.backend.basic_auth"
+  - name: AIRFLOW__CORE__PARALLELISM
+    value: "128"
+  - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
+    value: "64"
+  - name: AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG
+    value: "64"
+  - name: AIRFLOW__SCHEDULER__MAX_DAGRUNS_TO_CREATE_PER_LOOP
+    value: "64"
+  - name: AIRFLOW__SCHEDULER__SCHEDULER_HEARTBEAT_SEC
+    value: "1"
+  - name: AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE
+    value: "8"

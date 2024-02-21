@@ -1,0 +1,84 @@
+fail_fast: true
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-xml
+      - id: check-added-large-files
+        args:
+          - --maxkb=50000
+      - id: check-json # Checks json files for parsable syntax.
+      - id: pretty-format-json # Sets a standard for formatting json files.
+        args:
+          - --autofix
+      - id: requirements-txt-fixer # Sorts entries in requirements.txt.
+      - id: check-ast # Simply checks whether the files parse as valid python.
+      - id: detect-private-key # Detects the presence of private keys.
+      - id: detect-aws-credentials # Detects *your* aws credentials from the aws cli credentials file.
+        args:
+          - --allow-missing-credentials
+      - id: check-toml # Checks toml files for parsable syntax.
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: "v0.39.0"
+    hooks:
+      - id: markdownlint
+        args: ["--config", ".markdownlintrc", "--ignore", "CHANGELOG.md"]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 24.1.1
+    hooks:
+      - id: black
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.1
+    hooks:
+      - id: ruff
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: "1.7.7" # you must change this to newest version
+    hooks:
+      - id: bandit
+        args:
+          [
+            "--configfile=pyproject.toml",
+            "--severity-level=high",
+            "--confidence-level=high",
+          ]
+        additional_dependencies: [".[toml]"]
+
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.12.1-beta
+    hooks:
+      - id: hadolint # requires hadolint is installed (brew install hadolint)
+        args:
+          - --no-color
+          - --failure-threshold=error
+          - --verbose
+
+  # - repo: https://github.com/antonbabenko/pre-commit-terraform
+  #   rev: v1.86.0
+  #   hooks:
+  #     - id: terraform_validate # Validates all Terraform configuration files.
+  #       args:
+  #         - --tf-init-args=-upgrade
+  #     - id: terraform_fmt # Rewrites all Terraform configuration files to a canonical format.
+  #     - id: terraform_tflint # Validates all Terraform configuration files with TFLint.
+  #     - id: terraform_trivy # Static analysis of Terraform templates to spot potential security issues.
+  #       args:
+  #         - >
+  #           --args=--severity=CRITICAL
+  #           --skip-dirs="**/.terraform"
+  #           --tf-exclude-downloaded-modules
+  #     - id: terraform_docs
+  #       args:
+  #         - --hook-config=--add-to-existing-file=true
+  #         - --hook-config=--create-file-if-not-exist=true

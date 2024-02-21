@@ -91,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/the-jobs-database#how-jobs-are-updated-in-the-database
 
 ## Deployments
-  
+
 --------
 
 # [Unity Release 23.2] - 2023-07-14
@@ -120,7 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - [unity-sps-prototype #193) [New Feature]: Create SNS topic, SQS queue and Lambda function for Jobs Database as part of U-SPS deployment
         - [https://github.com/unity-sds/unity-sps-prototype/issues/193](https://github.com/unity-sds/unity-sps-prototype/issues/193)
     - [unity-sps-prototype $194] [Bug]: Prevent duplicate documents in jobs database
-        - [https://github.com/unity-sds/unity-sps-prototype/issues/194](https://github.com/unity-sds/unity-sps-prototype/issues/194)   
+        - [https://github.com/unity-sds/unity-sps-prototype/issues/194](https://github.com/unity-sds/unity-sps-prototype/issues/194)
 - EPIC #10: `chirp-workflow-execution`
     - [unity-sps-workflows #8] [Dependency]: Stub implementation for CHIRP workflow
       - [https://github.com/unity-sds/unity-sps-workflows/issues/8](https://github.com/unity-sds/unity-sps-workflows/issues/8)
@@ -136,7 +136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - EPIC #4: `no magic`
     - [unity-sps-prototype #132] As a user, i want to be explicit about inputs into my process execution (no magic)!
       - [https://github.com/unity-sds/unity-sps-prototype/issues/132](https://github.com/unity-sds/unity-sps-prototype/issues/132)
-     
+
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.1.0
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-ui-remote:unity-v1.1.0
@@ -168,7 +168,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MCP Dev:
   - Processing Endpoint (WPS-T API): **http://aa17aedf4454a4cc596a67a1efb73411-1350404365.us-west-2.elb.amazonaws.com:5001**
   - Scaling Endpoint (SPS API): **http://a440158f49fab4278bdcf2bcb145082b-625745.us-west-2.elb.amazonaws.com:5002**
-    
+
 --------
 # [Unity Release 23.1] - 2023-04-11
 
@@ -176,7 +176,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - unity-sps : https://github.com/unity-sds/unity-sps/releases/tag/1.0.0
 - unity-sps-prototype: https://github.com/unity-sds/unity-sps-prototype/releases/tag/1.0.0
 - unity-sps-api: https://github.com/unity-sds/unity-sps-api/releases/tag/1.0.0
-- unity-sps-register_job: 
+- unity-sps-register_job:
   - MCP-Dev: https://github.com/unity-sds/unity-sps-register_job/releases/tag/1.0.0-MCP_Dev
   - MCP-Test: https://github.com/unity-sds/unity-sps-register_job/releases/tag/1.0.0-MCP_Test
 - unity-sps-workflows: https://github.com/unity-sds/unity-sps-workflows/releases/tag/1.0.0
@@ -194,7 +194,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - https://github.com/unity-sds/unity-sps-prototype/issues/154
     - [unity-sps-prototype #159]: Return the input parameters as part of the WPS-T DescribeProcess method
       - https://github.com/unity-sds/unity-sps-prototype/issues/159
-    - [unity-sps-prototype #167]: The WPS-T method to register a process may time out while building the PGE Docker image 
+    - [unity-sps-prototype #167]: The WPS-T method to register a process may time out while building the PGE Docker image
       - https://github.com/unity-sds/unity-sps-prototype/issues/167
 - EPIC #142: `processing-instance-types`
     - [unity-sps-prototype #142]: As a project manager, i want to set default compute types for processing nodes at deploy time, so that i can predict costs for the system (Static)
@@ -206,7 +206,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
       - https://github.com/unity-sds/unity-sps-prototype/issues/170
     - [unity-sps-prototype #167]: Scale the number of worker nodes in the Kubernetes cluster
       - https://github.com/unity-sds/unity-sps-prototype/issues/171
-    
+
 ## Docker Containers
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-core:unity-v1.0.0
 - ghcr.io/unity-sds/unity-sps-prototype/hysds-ui-remote:unity-v1.0.0
@@ -238,5 +238,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - MCP Dev:
   - Processing Endpoint (WPS-T API): http://aa17aedf4454a4cc596a67a1efb73411-1350404365.us-west-2.elb.amazonaws.com:5001
   - Scaling Endpoint (SPS API): http://a440158f49fab4278bdcf2bcb145082b-625745.us-west-2.elb.amazonaws.com:5002
-  
+
 ------------
