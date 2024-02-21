@@ -18,6 +18,7 @@
 [Website](https://unity-sds.gitbook.io) | [Docs](https://unity-sds.gitbook.io/docs/developer-docs/science-processing)
 
 This repository contains high level information (such as documentation, change log, etc.) about the U-SPS software stack. The actual U-SPS code is contained within the following set of GitHub repositories:
+
 * [U-SPS Prototype](https://github.com/unity-sds/unity-sps-prototype): Terraform scripts to deploy the U-SPS cluster (either the HySDS or Airflow implementations)
 * [U-SPS Workflows](https://github.com/unity-sds/unity-sps-workflows): Examples of CWL workflows that can be executed on a U-SPS cluster
 * [U-SPS API](https://github.com/unity-sds/unity-sps-api): The API used to manage a U-SPS cluster
@@ -49,7 +50,7 @@ This guide provides a quick way to get started with our project. Please see our 
 * Docker 20.10 or higher
 * Kubernetes 1.20 or higher
 * Terraform 0.14 or higher
-  
+
 ### Setup Instructions
 
 1. Follow the [U-SPS Setup Guide](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/cluster-provisioning-with-terraform).
@@ -95,7 +96,8 @@ See our: [LICENSE](LICENSE)
 
 ## Support
 
-Key points of contact are: 
+Key points of contact are:
+
 * [@Luca Cinquini](https://github.com/LucaCinquini)
 * [@Namrata Malarout](https://github.com/NamrataM)
 * [@Drew Meyers](https://github.com/drewm-jpl)
