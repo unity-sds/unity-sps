@@ -26,9 +26,9 @@ jobs:
     # - name: Install dependencies for Python tests
     #   run: |
     #     pip install -e ".[test]"
-    # - uses: pre-commit/action@v3.0.1
-    #   with:
-    #     extra_args: --all-files
+    - uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: --all-files
     # - name: Test with pytest
     #   run: |
     #     pytest -vv --gherkin-terminal-reporter unity-test/unit
