@@ -45,7 +45,6 @@ def pytest_addoption(parser):
         "--airflow-endpoint",
         action="store",
         help="Base URL for the Airflow service endpoint",
-        required=True,
     )
 
 
