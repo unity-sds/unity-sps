@@ -39,7 +39,6 @@ jobs:
         tar -xzf terraform-docs.tar.gz
         chmod +x terraform-docs
         mv terraform-docs /usr/local/bin/
-
     # - name: Install dependencies for Python tests
     #   run: |
     #     pip install -e ".[test]"
