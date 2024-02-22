@@ -23,6 +23,9 @@ jobs:
       run: |
         wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
         chmod +x /usr/local/bin/hadolint
+    - name: Install TFLint for pre-commit hook
+      run: |
+        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
     # - name: Install dependencies for Python tests
     #   run: |
     #     pip install -e ".[test]"
