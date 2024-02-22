@@ -26,7 +26,7 @@ repos:
     rev: "v0.39.0"
     hooks:
       - id: markdownlint
-        args: ["--config", ".markdownlintrc", "--ignore", "CHANGELOG.md"]
+        args: ["--config", ".markdownlintrc", "--ignore", "CHANGELOG.md", "--ignore", "terraform-docs/**"]
 
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
