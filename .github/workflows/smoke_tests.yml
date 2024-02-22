@@ -1,4 +1,4 @@
-name: Smoke Tests with Pytest
+name: Smoke Tests
 
 on:
   schedule:
@@ -14,7 +14,7 @@ on:
         description: "Base URL for the Airflow endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
         type: string
 jobs:
-  unit-tests:
+  smoke-tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -31,12 +31,12 @@ jobs:
 
     - name: MCP Venue Dev - Smoke tests
       run: |
-        pytest -vv --gherkin-terminal-reporter
-        unity-test/system/smoke
+        pytest -vv --gherkin-terminal-reporter \
+        unity-test/system/smoke \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
 
     - name: MCP Venue Test - Smoke tests
       run: |
-        pytest -vv --gherkin-terminal-reporter
-        unity-test/system/smoke
+        pytest -vv --gherkin-terminal-reporter \
+        unity-test/system/smoke \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}

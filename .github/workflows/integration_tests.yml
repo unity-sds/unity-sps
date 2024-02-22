@@ -1,4 +1,4 @@
-name: Integration Tests with Pytest
+name: Integration Tests
 
 on:
   schedule:
@@ -32,13 +32,13 @@ jobs:
     - name: MCP Venue Dev - Integration tests
       continue-on-error: true
       run: |
-        pytest -vv --gherkin-terminal-reporter
-        unity-test/system/integration
+        pytest -vv --gherkin-terminal-reporter \
+        unity-test/system/integration \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
 
     - name: MCP Venue Test - Integration tests
       continue-on-error: true
       run: |
-        pytest -vv --gherkin-terminal-reporter
-        unity-test/system/integration
+        pytest -vv --gherkin-terminal-reporter \
+        unity-test/system/integration \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
