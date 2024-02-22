@@ -20,4 +20,5 @@ jobs:
 
     - name: Run unit tests
       run: |
-        pytest -vv --gherkin-terminal-reporter unity-test/unit
+        pytest -vv --gherkin-terminal-reporter \
+        unity-test/unit
