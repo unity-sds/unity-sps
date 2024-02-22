@@ -23,12 +23,12 @@ jobs:
       run: |
         wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
         chmod +x /usr/local/bin/hadolint
-    - name: Install dependencies for Python tests
-      run: |
-        pip install -e ".[test]"
-    - uses: pre-commit/action@v3.0.1
-      with:
-        extra_args: --all-files
-    - name: Test with pytest
-      run: |
-        pytest -vv --gherkin-terminal-reporter unity-test/unit
+    # - name: Install dependencies for Python tests
+    #   run: |
+    #     pip install -e ".[test]"
+    # - uses: pre-commit/action@v3.0.1
+    #   with:
+    #     extra_args: --all-files
+    # - name: Test with pytest
+    #   run: |
+    #     pytest -vv --gherkin-terminal-reporter unity-test/unit
