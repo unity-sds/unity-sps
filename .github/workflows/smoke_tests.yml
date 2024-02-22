@@ -1,0 +1,42 @@
+name: Smoke Tests with Pytest
+
+on: [pull_request]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.11'
+    - name: Read .terraform-version
+      id: tf_version
+      run: echo "TF_VERSION=$(cat .terraform-version)" >> $GITHUB_ENV
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TF_VERSION }}
+    - name: Install Hadolint for pre-commit hook
+      run: |
+        wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+        chmod +x /usr/local/bin/hadolint
+    - name: Install TFLint for pre-commit hook
+      run: |
+        curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+    - name: Install trivy for pre-commit hook
+      run: |
+        sudo apt-get install wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/trivy.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install trivy
+    # - name: Install dependencies for Python tests
+    #   run: |
+    #     pip install -e ".[test]"
+    - uses: pre-commit/action@v3.0.1
+      with:
+        extra_args: --config .pre-commit-config-ci.yaml --all-files
+    # - name: Test with pytest
+    #   run: |
+    #     pytest -vv --gherkin-terminal-reporter unity-test/unit
