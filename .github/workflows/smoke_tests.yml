@@ -29,4 +29,6 @@ jobs:
 
     - name: Run smoke tests
       run: |
-        pytest -vv --gherkin-terminal-reporter unity-test/system/smoke
+        pytest -vv --gherkin-terminal-reporter
+        unity-test/system/smoke
+        --airflow-endpoint=${{ github.event.inputs.AIRFLOW_ENDPOINT || vars.MCP_DEV_AIRFLOW_ENDPOINT }}
