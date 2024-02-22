@@ -1,4 +1,4 @@
-name: Integration Tests with Pytest
+name: Integration Tests
 
 on:
   schedule:

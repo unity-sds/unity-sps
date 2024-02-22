@@ -1,4 +1,4 @@
-name: Unit Tests with Pytest
+name: Unit Tests
 
 on: [pull_request]
 
