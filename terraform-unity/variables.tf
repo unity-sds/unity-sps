@@ -71,7 +71,7 @@ variable "custom_airflow_docker_image" {
     tag  = string
   })
   default = {
-    name = "ghcr.io/unity-sds/unity-sps-prototype/sps-airflow"
+    name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
     tag  = "develop"
   }
 }
