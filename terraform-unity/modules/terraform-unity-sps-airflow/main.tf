@@ -62,7 +62,6 @@ resource "kubernetes_secret" "airflow_webserver" {
   }
 }
 
-
 resource "kubernetes_role" "airflow_pod_creator" {
   metadata {
     name      = "airflow-pod-creator"
@@ -229,6 +228,7 @@ resource "helm_release" "airflow" {
       metadata_secret_name     = "airflow-metadata-secret"
       webserver_secret_name    = "airflow-webserver-secret"
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
+      airflow_worker_role_arn  = data.aws_eks_node_group.default.node_role_arn
     })
   ]
   set_sensitive {

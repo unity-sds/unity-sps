@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: docker-cwl-pod
+spec:
+  restartPolicy: Never
+  serviceAccountName: airflow-worker
+
+  containers:
+  - name: cwl-docker
+    image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:development-tag2
+    command: ["/usr/share/cwl/docker_cwl_entrypoint.sh"]
+    securityContext:
+      privileged: true
