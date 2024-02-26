@@ -20,7 +20,11 @@ POD_NAMESPACE = "airflow"
 
 
 # Default DAG configuration
-dag_default_args = {"owner": "airflow", "depends_on_past": False, "start_date": datetime(2024, 1, 1, 0, 0)}
+dag_default_args = {
+    "owner": "unity-sps",
+    "depends_on_past": False,
+    "start_date": datetime.utcfromtimestamp(0),
+}
 CWL_WORKFLOW = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/1.0/preprocess/sbg-preprocess-workflow.cwl"
 )
@@ -29,7 +33,7 @@ dag = DAG(
     dag_id="sbg-preprocess-cwl-dag",
     description="SBG Preprocess Workflow as CWL",
     tags=["SBG", "Unity", "SPS", "NASA", "JPL"],
-    is_paused_upon_creation=True,
+    is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
     max_active_runs=1,
