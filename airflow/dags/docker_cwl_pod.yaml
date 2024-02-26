@@ -3,8 +3,8 @@ kind: Pod
 metadata:
   name: docker-cwl-pod
 spec:
-
   restartPolicy: Never
+  serviceAccountName: airflow-worker
 
   containers:
   - name: cwl-docker
