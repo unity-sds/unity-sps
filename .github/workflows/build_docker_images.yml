@@ -12,6 +12,7 @@ env:
   REGISTRY: ghcr.io
   TAG: ${{ github.event.inputs.tag }}
   SPS_AIRFLOW: ${{ github.repository }}/sps-airflow
+  SPS_DOCKER_CWL: ${{ github.repository }}/sps-docker-cwl
 
 jobs:
   build-sps-airflow:
@@ -36,4 +37,27 @@ jobs:
           file: airflow/docker/custom_airflow/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.SPS_AIRFLOW }}:${{ env.TAG }}
+          labels: ${{ steps.metascheduler.outputs.labels }}
+  build-sps-docker-cwl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for SPS Docker CWL image
+        id: metascheduler
+        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.SPS_DOCKER_CWL }}
+      - name: Build and push SPS Docker CWL image
+        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        with:
+          context: ./airflow/docker/cwl
+          file: airflow/docker/cwl/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.SPS_DOCKER_CWL }}:${{ env.TAG }}
           labels: ${{ steps.metascheduler.outputs.labels }}
