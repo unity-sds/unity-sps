@@ -26,17 +26,9 @@ until docker version > /dev/null 2>&1
 do
   sleep 1
 done
-echo "done sleeping"
-
 
 # Execute CWL workflow
 . /usr/share/cwl/venv/bin/activate
-aws s3 ls
-aws ssm get-parameter --name /sps/processing/workflows/edl_username --region us-west-2
-
-# wait for 60 minutes
-sleep 3600
-
 cwl-runner --outdir "$output_dir" --no-match-user --no-read-only "$cwl_workflow" /tmp/job_args.json
 deactivate
 
