@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 
+from airflow.models.param import Param
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
@@ -31,6 +32,7 @@ dag = DAG(
     schedule=None,
     max_active_runs=1,
     default_args=dag_default_args,
+    params={"cwl_workflow": Param(CWL_WORKFLOW, type="string")},
 )
 
 # Task that executes the specific CWL workflow with the previous arguments
