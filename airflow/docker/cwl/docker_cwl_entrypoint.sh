@@ -18,7 +18,7 @@ cat /tmp/job_args.json
 mkdir -p "$output_dir"
 
 # Start Docker engine
-dockerd > dockerd-logfile 2>&1
+dockerd &> dockerd-logfile &
 
 # Wait until Docker engine is running
 # Loop until 'docker version' exits with 0.
