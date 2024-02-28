@@ -222,8 +222,8 @@ resource "helm_release" "airflow" {
   namespace  = kubernetes_namespace.airflow.metadata[0].name
   values = [
     templatefile("${path.module}/../../../airflow/helm/values.tmpl.yaml", {
-      airflow_image_repo       = var.custom_airflow_docker_image.name
-      airflow_image_tag        = var.custom_airflow_docker_image.tag
+      airflow_image_repo       = var.docker_images.airflow.name
+      airflow_image_tag        = var.docker_images.airflow.tag
       kubernetes_namespace     = kubernetes_namespace.airflow.metadata[0].name
       metadata_secret_name     = "airflow-metadata-secret"
       webserver_secret_name    = "airflow-webserver-secret"
@@ -236,6 +236,55 @@ resource "helm_release" "airflow" {
     value = var.airflow_webserver_password
   }
   depends_on = [aws_db_instance.airflow_db, helm_release.keda, kubernetes_secret.airflow_metadata, kubernetes_secret.airflow_webserver]
+}
+
+resource "kubernetes_deployment" "ogc_processes_api" {
+  metadata {
+    name      = "ogc-processes-api"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+
+  spec {
+    replicas = 2
+    selector {
+      match_labels = {
+        app = "ogc-processes-api"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app = "ogc-processes-api"
+        }
+      }
+      spec {
+        container {
+          image = "${var.docker_images.ogc_processes_api.name}:${var.docker_images.ogc_processes_api.tag}"
+          name  = "ogc-processes-api"
+          port {
+            container_port = 80
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "ogc_processes_api" {
+  metadata {
+    name      = "ogc-processes-api"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    selector = {
+      app = "ogc-processes-api"
+    }
+    port {
+      port        = 80
+      target_port = 80
+    }
+    type = "ClusterIP"
+  }
 }
 
 resource "kubernetes_ingress_v1" "airflow_ingress" {
@@ -267,9 +316,56 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
             }
           }
         }
+        # path {
+        #   path      = "/ogc-processes-api"
+        #   path_type = "Prefix"
+        #   backend {
+        #     service {
+        #       name = "ogc-processes-api"
+        #       port {
+        #         number = 80
+        #       }
+        #     }
+        #   }
+        # }
       }
     }
   }
   wait_for_load_balancer = true
   depends_on             = [helm_release.airflow]
+}
+
+resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
+  metadata {
+    name      = "ogc-processes-api-ingress"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+    annotations = {
+      "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"      = "ip"
+      "alb.ingress.kubernetes.io/subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
+      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 5001}]"
+      "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
+    }
+  }
+
+  spec {
+    ingress_class_name = "alb"
+    rule {
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = kubernetes_service.ogc_processes_api.metadata[0].name
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  wait_for_load_balancer = true
 }

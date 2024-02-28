@@ -47,10 +47,16 @@ variable "helm_charts" {
   }))
 }
 
-variable "custom_airflow_docker_image" {
-  description = "Docker image for the customized Airflow image."
+variable "docker_images" {
+  description = "Docker images for the services."
   type = object({
-    name = string
-    tag  = string
+    airflow = object({
+      name = string
+      tag  = string
+    }),
+    ogc_processes_api = object({
+      name = string
+      tag  = string
+    })
   })
 }
