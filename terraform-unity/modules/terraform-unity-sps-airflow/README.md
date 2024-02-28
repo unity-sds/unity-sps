@@ -60,6 +60,7 @@ No modules.
 | [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/data-sources/security_group) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/data-sources/ssm_parameter) | data source |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/data-sources/ingress_v1) | data source |
+| [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/data-sources/ingress_v1) | data source |
 
 ## Inputs
 
@@ -81,4 +82,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_airflow_webserver_url"></a> [airflow\_webserver\_url](#output\_airflow\_webserver\_url) | The URL of the Airflow webserver service |
+| <a name="output_ogc_processes_api_url"></a> [ogc\_processes\_api\_url](#output\_ogc\_processes\_api\_url) | The URL of the OGC Processes API service |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
