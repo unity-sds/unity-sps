@@ -29,7 +29,7 @@ done
 
 # Execute CWL workflow
 . /usr/share/cwl/venv/bin/activate
-cwl-runner --outdir "$output_dir" --no-match-user --no-read-only "$cwl_workflow" /tmp/job_args.json
+cwl-runner --outdir "$output_dir" "$cwl_workflow" /tmp/job_args.json
 deactivate
 
 # Stop Docker engine
