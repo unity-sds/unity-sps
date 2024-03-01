@@ -370,9 +370,6 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
   wait_for_load_balancer = true
 }
 
-data "aws_caller_identity" "current" {}
-
-
 resource "aws_iam_policy" "airflow_worker_policy" {
   name        = "AirflowWorkerPolicy"
   description = "Policy for Airflow Workers to access AWS services"
