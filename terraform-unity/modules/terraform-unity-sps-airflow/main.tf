@@ -228,7 +228,7 @@ resource "helm_release" "airflow" {
       metadata_secret_name     = "airflow-metadata-secret"
       webserver_secret_name    = "airflow-webserver-secret"
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
-      airflow_worker_role_arn  = data.aws_eks_node_group.default.node_role_arn
+      airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
     })
   ]
   set_sensitive {
@@ -368,4 +368,67 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
     }
   }
   wait_for_load_balancer = true
+}
+
+data "aws_caller_identity" "current" {}
+
+
+resource "aws_iam_policy" "airflow_worker_policy" {
+  name        = "AirflowWorkerPolicy"
+  description = "Policy for Airflow Workers to access AWS services"
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Action" : [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:CreateLogGroup",
+            "s3:ListBucket",
+            "s3:GetObject",
+            "s3:PutObject",
+            "sqs:SendMessage",
+            "sqs:ReceiveMessage",
+            "sns:Publish",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage",
+            "secretsmanager:GetSecretValue",
+            "ssm:GetParameters"
+          ],
+          "Resource" : "*"
+        }
+      ]
+    }
+  )
+}
+
+resource "aws_iam_role" "airflow_worker_role" {
+  name = "AirflowWorkerRole"
+  assume_role_policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Principal" : {
+            "Federated" : "arn:aws:iam::429178552491:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/7E914336E4CD991EA4B403BA606CB778"
+          },
+          "Action" : "sts:AssumeRoleWithWebIdentity",
+          "Condition" : {
+            "StringEquals" : {
+              "oidc.eks.us-west-2.amazonaws.com/id/7E914336E4CD991EA4B403BA606CB778:sub" : "system:serviceaccount:airflow:airflow-worker"
+            }
+          }
+        }
+      ]
+    }
+  )
+  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
+}
+
+resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {
+  role       = aws_iam_role.airflow_worker_role.name
+  policy_arn = aws_iam_policy.airflow_worker_policy.arn
 }

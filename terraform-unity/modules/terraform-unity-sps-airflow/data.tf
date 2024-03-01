@@ -23,8 +23,3 @@ data "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
 }
-
-data "aws_eks_node_group" "default" {
-  cluster_name    = var.eks_cluster_name
-  node_group_name = "defaultGroup"
-}
