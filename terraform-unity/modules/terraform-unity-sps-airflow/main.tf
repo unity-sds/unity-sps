@@ -371,7 +371,7 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
 }
 
 resource "aws_iam_policy" "airflow_worker_policy" {
-  name        = "AirflowWorkerPolicy"
+  name        = "${var.project}-${var.venue}-${var.service_area}-AirflowWorkerPolicy-${local.counter}"
   description = "Policy for Airflow Workers to access AWS services"
   policy = jsonencode(
     {
@@ -402,7 +402,7 @@ resource "aws_iam_policy" "airflow_worker_policy" {
 }
 
 resource "aws_iam_role" "airflow_worker_role" {
-  name = "AirflowWorkerRole"
+  name = "${var.project}-${var.venue}-${var.service_area}-AirflowWorker-${local.counter}"
   assume_role_policy = jsonencode(
     {
       "Version" : "2012-10-17",
@@ -410,12 +410,12 @@ resource "aws_iam_role" "airflow_worker_role" {
         {
           "Effect" : "Allow",
           "Principal" : {
-            "Federated" : "arn:aws:iam::429178552491:oidc-provider/oidc.eks.us-west-2.amazonaws.com/id/7E914336E4CD991EA4B403BA606CB778"
+            "Federated" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
           },
           "Action" : "sts:AssumeRoleWithWebIdentity",
           "Condition" : {
             "StringEquals" : {
-              "oidc.eks.us-west-2.amazonaws.com/id/7E914336E4CD991EA4B403BA606CB778:sub" : "system:serviceaccount:airflow:airflow-worker"
+              "${local.oidc_provider_url}:sub" : "system:serviceaccount:${kubernetes_namespace.airflow.metadata[0].name}:airflow-worker"
             }
           }
         }

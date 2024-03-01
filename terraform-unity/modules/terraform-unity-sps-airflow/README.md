@@ -16,7 +16,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.36.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.35.0 |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.12.1 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.25.2 |
 | <a name="provider_null"></a> [null](#provider\_null) | 3.2.2 |
