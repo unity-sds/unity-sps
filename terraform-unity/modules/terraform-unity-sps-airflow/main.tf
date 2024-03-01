@@ -214,6 +214,66 @@ resource "aws_s3_bucket" "airflow_logs" {
   })
 }
 
+resource "aws_iam_policy" "airflow_worker_policy" {
+  name        = "${var.project}-${var.venue}-${var.service_area}-AirflowWorkerPolicy-${local.counter}"
+  description = "Policy for Airflow Workers to access AWS services"
+  policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Action" : [
+            "logs:CreateLogStream",
+            "logs:PutLogEvents",
+            "logs:CreateLogGroup",
+            "s3:ListBucket",
+            "s3:GetObject",
+            "s3:PutObject",
+            "sqs:SendMessage",
+            "sqs:ReceiveMessage",
+            "sns:Publish",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage",
+            "secretsmanager:GetSecretValue",
+            "ssm:GetParameters"
+          ],
+          "Resource" : "*"
+        }
+      ]
+    }
+  )
+}
+
+resource "aws_iam_role" "airflow_worker_role" {
+  name = "${var.project}-${var.venue}-${var.service_area}-AirflowWorker-${local.counter}"
+  assume_role_policy = jsonencode(
+    {
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Effect" : "Allow",
+          "Principal" : {
+            "Federated" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
+          },
+          "Action" : "sts:AssumeRoleWithWebIdentity",
+          "Condition" : {
+            "StringEquals" : {
+              "${local.oidc_provider_url}:sub" : "system:serviceaccount:${kubernetes_namespace.airflow.metadata[0].name}:airflow-worker"
+            }
+          }
+        }
+      ]
+    }
+  )
+  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
+}
+
+resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {
+  role       = aws_iam_role.airflow_worker_role.name
+  policy_arn = aws_iam_policy.airflow_worker_policy.arn
+}
+
 resource "helm_release" "airflow" {
   name       = "airflow"
   repository = var.helm_charts.airflow.repository
@@ -368,64 +428,4 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
     }
   }
   wait_for_load_balancer = true
-}
-
-resource "aws_iam_policy" "airflow_worker_policy" {
-  name        = "${var.project}-${var.venue}-${var.service_area}-AirflowWorkerPolicy-${local.counter}"
-  description = "Policy for Airflow Workers to access AWS services"
-  policy = jsonencode(
-    {
-      "Version" : "2012-10-17",
-      "Statement" : [
-        {
-          "Effect" : "Allow",
-          "Action" : [
-            "logs:CreateLogStream",
-            "logs:PutLogEvents",
-            "logs:CreateLogGroup",
-            "s3:ListBucket",
-            "s3:GetObject",
-            "s3:PutObject",
-            "sqs:SendMessage",
-            "sqs:ReceiveMessage",
-            "sns:Publish",
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:BatchGetImage",
-            "secretsmanager:GetSecretValue",
-            "ssm:GetParameters"
-          ],
-          "Resource" : "*"
-        }
-      ]
-    }
-  )
-}
-
-resource "aws_iam_role" "airflow_worker_role" {
-  name = "${var.project}-${var.venue}-${var.service_area}-AirflowWorker-${local.counter}"
-  assume_role_policy = jsonencode(
-    {
-      "Version" : "2012-10-17",
-      "Statement" : [
-        {
-          "Effect" : "Allow",
-          "Principal" : {
-            "Federated" : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
-          },
-          "Action" : "sts:AssumeRoleWithWebIdentity",
-          "Condition" : {
-            "StringEquals" : {
-              "${local.oidc_provider_url}:sub" : "system:serviceaccount:${kubernetes_namespace.airflow.metadata[0].name}:airflow-worker"
-            }
-          }
-        }
-      ]
-    }
-  )
-  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
-}
-
-resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {
-  role       = aws_iam_role.airflow_worker_role.name
-  policy_arn = aws_iam_policy.airflow_worker_policy.arn
 }
