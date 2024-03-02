@@ -1,5 +1,5 @@
 module "unity-eks" {
-  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=8-launch-template-hop-limit"
+  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=main"
   deployment_name = var.cluster_name
 
   nodegroups = var.nodegroups
