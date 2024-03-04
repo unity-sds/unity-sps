@@ -72,7 +72,7 @@ def setup(ti=None, **context):
         "output_data_bucket": context["params"]["output_data_bucket"],
         "input_aux_stac": context["params"]["input_aux_stac"],
         "output_isofit_collection_id": context["params"]["output_isofit_collection_id"],
-        "output_resample_collection_id": context["params"]["output_resample_collection_id"]
+        "output_resample_collection_id": context["params"]["output_resample_collection_id"],
     }
     ti.xcom_push(key="cwl_args", value=json.dumps(task_dict))
 

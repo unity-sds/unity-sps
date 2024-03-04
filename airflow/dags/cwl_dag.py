@@ -49,15 +49,14 @@ dag = DAG(
     default_args=dag_default_args,
     params={
         "cwl_workflow": Param(
-            default_cwl_workflow,
-            type="string",
-            title="CWL workflow",
-            description="The CWL workflow URL"),
+            default_cwl_workflow, type="string", title="CWL workflow", description="The CWL workflow URL"
+        ),
         "args_as_json": Param(
             json.dumps(default_args_as_json_dict),
             type="string",
             title="CWL wokflow parameters",
-            description="The job parameters encodes as a JSON string, or the URL of a JSON or YAML file"),
+            description="The job parameters encodes as a JSON string, or the URL of a JSON or YAML file"
+        ),
     },
 )
 
