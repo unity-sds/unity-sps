@@ -25,7 +25,7 @@ else
   echo "Using job arguments from JSON string:" && cat /tmp/job_args.json
   job_args="/tmp/job_args.json"
 fi
-echo "Executing CWL workflow: $cwl_workflow with json arguments: $job_args and output directory: $output_dir"
+echo "Executing the CWL workflow: $cwl_workflow with json arguments: $job_args and output directory: $output_dir"
 
 # create output directory if it doesn't exist
 mkdir -p "$output_dir"
@@ -42,7 +42,7 @@ done
 
 # Execute CWL workflow
 . /usr/share/cwl/venv/bin/activate
-cwl-runner --outdir "$output_dir" "$cwl_workflow" /tmp/job_args.json
+cwl-runner --outdir "$output_dir" "$cwl_workflow" "$job_args"
 deactivate
 
 # Stop Docker engine
