@@ -66,8 +66,7 @@ default_env_vars = {}
 cwl_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="cwl-task",
-    # FIXME
-    is_delete_operator_pod=False,
+    is_delete_operator_pod=True,
     hostnetwork=False,
     startup_timeout_seconds=1000,
     get_logs=True,
