@@ -8,7 +8,7 @@ spec:
 
   containers:
   - name: cwl-docker
-    image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:develop-1
+    image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:develop
     command: ["/usr/share/cwl/docker_cwl_entrypoint.sh"]
     securityContext:
       privileged: true
