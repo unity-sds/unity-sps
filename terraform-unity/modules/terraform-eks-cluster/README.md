@@ -19,7 +19,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_unity-eks"></a> [unity-eks](#module\_unity-eks) | git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module | 0.1.3 |
+| <a name="module_unity-eks"></a> [unity-eks](#module\_unity-eks) | git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module | main |
 
 ## Resources
 
@@ -35,6 +35,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_cluster_name"></a> [cluster\_name](#input\_cluster\_name) | n/a | `string` | n/a | yes |
+| <a name="input_nodegroups"></a> [nodegroups](#input\_nodegroups) | A map of node group configurations | <pre>map(object({<br>    create_iam_role            = optional(bool)<br>    iam_role_arn               = optional(string)<br>    ami_id                     = optional(string)<br>    min_size                   = optional(number)<br>    max_size                   = optional(number)<br>    desired_size               = optional(number)<br>    instance_types             = optional(list(string))<br>    capacity_type              = optional(string)<br>    enable_bootstrap_user_data = optional(bool)<br>    metadata_options           = optional(map(any))<br>  }))</pre> | <pre>{<br>  "defaultGroup": {<br>    "desired_size": 1,<br>    "instance_types": [<br>      "m5.xlarge"<br>    ],<br>    "max_size": 1,<br>    "metadata_options": {<br>      "http_endpoint": "enabled",<br>      "http_put_response_hop_limit": 3<br>    },<br>    "min_size": 1<br>  }<br>}</pre> | no |
 
 ## Outputs
 

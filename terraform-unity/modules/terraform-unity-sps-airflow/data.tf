@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 data "aws_eks_cluster" "cluster" {
   name = var.eks_cluster_name
 }
@@ -22,9 +24,4 @@ data "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
     name      = kubernetes_ingress_v1.ogc_processes_api_ingress.metadata[0].name
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-}
-
-data "aws_eks_node_group" "default" {
-  cluster_name    = var.eks_cluster_name
-  node_group_name = "defaultGroup"
 }

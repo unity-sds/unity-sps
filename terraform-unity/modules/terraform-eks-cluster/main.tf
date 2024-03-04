@@ -1,15 +1,9 @@
 module "unity-eks" {
-  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=0.1.3"
+  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=main"
   deployment_name = var.cluster_name
 
-  nodegroups = {
-    defaultGroup = {
-      instance_types = ["m5.xlarge"]
-      min_size       = 1
-      max_size       = 1
-      desired_size   = 1
-    }
-  }
+  nodegroups = var.nodegroups
+
   aws_auth_roles = [{
     rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/mcp-tenantOperator"
     username = "admin"

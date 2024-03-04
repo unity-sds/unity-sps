@@ -42,10 +42,10 @@ dag = DAG(
     params={
         "cwl_workflow": Param(CWL_WORKFLOW, type="string"),
         "input_cmr_stac": Param(CMR_STAC, type="string"),
-        #"input_processing_labels": Param(["label1", "label2"], type="string[]"),
-        #"input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
-        #"input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        #"input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        # "input_processing_labels": Param(["label1", "label2"], type="string[]"),
+        # "input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
+        # "input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        # "input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "input_unity_dapa_api": Param("https://d3vc8w9zcq658.cloudfront.net", type="string"),
         "input_unity_dapa_client": Param("40c2s0ulbhp9i0fmaph3su9jch", type="string"),
         "input_crid": Param("001", type="string"),
@@ -53,6 +53,7 @@ dag = DAG(
         "output_data_bucket": Param("sps-dev-ds-storage", type="string"),
     },
 )
+
 
 # Task that serializes the job arguments into a JSON string
 def setup(ti=None, **context):
