@@ -42,14 +42,21 @@ dag = DAG(
     dag_id="cwl-dag",
     description="DAG to execute a generic CWL workflow",
     tags=["cwl", "unity-sps", "docker"],
-    is_paused_upon_creation=True,
+    is_paused_upon_creation=False,
     catchup=False,
     schedule_interval=None,
     max_active_runs=1,
     default_args=dag_default_args,
     params={
-        "cwl_workflow": Param(default_cwl_workflow, type="string"),
-        "args_as_json": Param(json.dumps(default_args_as_json_dict), type="string"),
+        "cwl_workflow": Param(
+            default_cwl_workflow, type="string", title="CWL workflow", description="The CWL workflow URL"
+        ),
+        "args_as_json": Param(
+            json.dumps(default_args_as_json_dict),
+            type="string",
+            title="CWL wokflow parameters",
+            description="The job parameters encodes as a JSON string, or the URL of a JSON or YAML file",
+        ),
     },
 )
 
