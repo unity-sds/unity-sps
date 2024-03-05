@@ -12,6 +12,11 @@ data "aws_ssm_parameter" "subnet_ids" {
   name = "/unity/cs/account/network/subnet_list"
 }
 
+data "aws_eks_node_group" "default_group" {
+  cluster_name    = var.eks_cluster_name
+  node_group_name = "defaultGroup"
+}
+
 data "kubernetes_ingress_v1" "airflow_ingress" {
   metadata {
     name      = kubernetes_ingress_v1.airflow_ingress.metadata[0].name

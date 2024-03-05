@@ -151,8 +151,9 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.7.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.35.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.38.0 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.12.1 |
+| <a name="requirement_kubectl"></a> [kubectl](#requirement\_kubectl) | 2.0.4 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.25.2 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | 3.2.2 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | 3.6.0 |

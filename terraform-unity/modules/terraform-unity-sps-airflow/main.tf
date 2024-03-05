@@ -429,3 +429,141 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
   }
   wait_for_load_balancer = true
 }
+
+module "karpenter" {
+  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version = "20.5.0"
+
+  cluster_name = data.aws_eks_cluster.cluster.name
+  # rule_name_prefix
+  # iam_policy_use_name_prefix
+
+  create_node_iam_role              = false
+  node_iam_role_arn                 = data.aws_eks_node_group.default_group.node_role_arn
+  iam_role_permissions_boundary_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
+
+  enable_irsa            = true
+  irsa_oidc_provider_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
+
+  # Since the nodegroup role will already have an access entry
+  create_access_entry = false
+
+  tags = {
+    Environment = "dev"
+    Terraform   = "true"
+  }
+}
+
+resource "helm_release" "karpenter" {
+  name             = "karpenter"
+  namespace        = "karpenter"
+  create_namespace = true
+  repository       = "oci://public.ecr.aws/karpenter"
+  chart            = "karpenter"
+  version          = "v0.34.0"
+  wait             = false
+
+  values = [
+    <<-EOT
+    settings:
+      clusterName: ${data.aws_eks_cluster.cluster.name}
+      clusterEndpoint: ${data.aws_eks_cluster.cluster.endpoint}
+      interruptionQueue: ${module.karpenter.queue_name}
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: ${module.karpenter.iam_role_arn}
+    EOT
+  ]
+}
+
+resource "kubectl_manifest" "karpenter_node_class" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.k8s.aws/v1beta1
+    kind: EC2NodeClass
+    metadata:
+      name: default
+    spec:
+      amiFamily: AL2
+      role: ${split("/", data.aws_eks_node_group.default_group.node_role_arn)[length(split("/", data.aws_eks_node_group.default_group.node_role_arn)) - 1]}
+      subnetSelectorTerms:
+        - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]}"
+        - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][1]}"
+      securityGroupSelectorTerms:
+        - tags:
+            kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}: owned
+      tags:
+        karpenter.sh/discovery: ${data.aws_eks_cluster.cluster.name}
+  YAML
+
+  depends_on = [
+    helm_release.karpenter
+  ]
+}
+
+resource "kubectl_manifest" "karpenter_node_pool" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.sh/v1beta1
+    kind: NodePool
+    metadata:
+      name: default
+    spec:
+      template:
+        spec:
+          nodeClassRef:
+            name: default
+          requirements:
+            - key: "karpenter.k8s.aws/instance-category"
+              operator: In
+              values: ["c", "m", "r"]
+            - key: "karpenter.k8s.aws/instance-cpu"
+              operator: In
+              values: ["4", "8", "16", "32"]
+            - key: "karpenter.k8s.aws/instance-hypervisor"
+              operator: In
+              values: ["nitro"]
+            - key: "karpenter.k8s.aws/instance-generation"
+              operator: Gt
+              values: ["2"]
+      limits:
+        cpu: 1000
+      disruption:
+        consolidationPolicy: WhenEmpty
+        consolidateAfter: 30s
+  YAML
+
+  depends_on = [
+    kubectl_manifest.karpenter_node_class
+  ]
+}
+
+# Example deployment using the [pause image](https://www.ianlewis.org/en/almighty-pause-container)
+# and starts with zero replicas
+resource "kubectl_manifest" "karpenter_example_deployment" {
+  yaml_body = <<-YAML
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: inflate
+    spec:
+      replicas: 0
+      selector:
+        matchLabels:
+          app: inflate
+      template:
+        metadata:
+          labels:
+            app: inflate
+        spec:
+          terminationGracePeriodSeconds: 0
+          containers:
+            - name: inflate
+              image: public.ecr.aws/eks-distro/kubernetes/pause:3.7
+              resources:
+                requests:
+                  cpu: 1
+  YAML
+
+  depends_on = [
+    helm_release.karpenter
+  ]
+}
