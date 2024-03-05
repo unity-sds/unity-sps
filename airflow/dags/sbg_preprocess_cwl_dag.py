@@ -86,9 +86,18 @@ cwl_task = KubernetesPodOperator(
     task_id="SBG_Preprocess_CWL",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-cwl-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}"],
+    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}", "/scratch"],
     # resources={"request_memory": "512Mi", "limit_memory": "1024Mi"},
     dag=dag,
+    volumes=[
+        {
+            "name": "kubernetes-pod-operator-ebs-volume",
+            "persistentVolumeClaim": {"claimName": "kubernetes-pod-operator-ebs-pvc"},
+        }
+    ],
+    volume_mounts=[
+        {"name": "kubernetes-pod-operator-ebs-volume", "mountPath": "/scratch", "readOnly": False}
+    ],
 )
 
 setup_task >> cwl_task
