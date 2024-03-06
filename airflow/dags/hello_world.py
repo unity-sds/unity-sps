@@ -52,7 +52,7 @@ def delete_shared_data_file():
 
 
 with DAG(
-    dag_id="full_workflow",
+    dag_id="hello_world",
     default_args=default_args,
     schedule=None,
     is_paused_upon_creation=False,

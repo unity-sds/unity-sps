@@ -8,6 +8,10 @@ data "aws_eks_cluster_auth" "cluster" {
   name = var.eks_cluster_name
 }
 
+data "aws_vpc" "cluster_vpc" {
+  id = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
+}
+
 data "aws_ssm_parameter" "subnet_ids" {
   name = "/unity/cs/account/network/subnet_list"
 }
