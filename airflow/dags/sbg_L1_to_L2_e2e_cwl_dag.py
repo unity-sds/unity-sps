@@ -54,6 +54,7 @@ dag = DAG(
         # For unity data upload step, unity catalog
         "output_isofit_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RFL___1", type="string"),
         "output_resample_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1", type="string"),
+        "output_refcorrect_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1", type="string"),
     },
 )
 
@@ -73,6 +74,7 @@ def setup(ti=None, **context):
         "input_aux_stac": context["params"]["input_aux_stac"],
         "output_isofit_collection_id": context["params"]["output_isofit_collection_id"],
         "output_resample_collection_id": context["params"]["output_resample_collection_id"],
+        "output_refcorrect_collection_id": context["params"]["output_refcorrect_collection_id"],
     }
     ti.xcom_push(key="cwl_args", value=json.dumps(task_dict))
 
