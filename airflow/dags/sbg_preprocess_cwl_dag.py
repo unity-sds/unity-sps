@@ -97,7 +97,7 @@ cwl_task = KubernetesPodOperator(
     # resources={"request_memory": "512Mi", "limit_memory": "1024Mi"},
     dag=dag,
     volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path="/scratch", sub_path="{{ dag_run.run_id }}"),
+        k8s.V1VolumeMount(name="workers-volume", mount_path="/scratch", sub_path="{{ dag_run.run_id }}")
     ],
     volumes=[
         k8s.V1Volume(
