@@ -298,7 +298,7 @@ resource "aws_security_group" "airflow_kpo_efs" {
 
 resource "aws_security_group_rule" "airflow_kpo_efs" {
   type              = "ingress"
-  from_port         = 2049 # NFS port
+  from_port         = 2049
   to_port           = 2049
   protocol          = "tcp"
   security_group_id = aws_security_group.airflow_kpo_efs.id
@@ -333,7 +333,8 @@ resource "aws_efs_access_point" "airflow_kpo" {
   })
 }
 
-resource "kubernetes_storage_class" "nfs" {
+# https://github.com/hashicorp/terraform-provider-kubernetes/issues/864
+resource "kubernetes_storage_class" "efs" {
   metadata {
     name = "filestore"
   }
@@ -358,7 +359,7 @@ resource "kubernetes_persistent_volume" "efs_pv" {
         volume_handle = "${aws_efs_file_system.airflow_kpo.id}::${aws_efs_access_point.airflow_kpo.id}"
       }
     }
-    storage_class_name = kubernetes_storage_class.nfs.metadata[0].name
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
@@ -375,7 +376,7 @@ resource "kubernetes_persistent_volume_claim" "efs_pvc" {
       }
     }
     volume_name        = "kpo-efs"
-    storage_class_name = kubernetes_storage_class.nfs.metadata[0].name
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
