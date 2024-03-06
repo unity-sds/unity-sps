@@ -1,3 +1,11 @@
+"""
+# DAG Name: Hello World
+
+# Purpose
+
+# Usage
+"""  # noqa: E501
+
 import os
 import time
 from datetime import datetime
@@ -18,14 +26,14 @@ def hello_world():
 
 
 def write_to_shared_data():
-    file_path = "/path/to/shared-task-data/test_file.txt"  # Adjust the path as necessary
+    file_path = "/shared-task-data/test_file.txt"  # Adjust the path as necessary
     with open(file_path, "w") as f:
         f.write("This is a test file written at " + str(datetime.now()) + "\n")
     print(f"Successfully written to {file_path}")
 
 
 def read_from_shared_data():
-    file_path = "/path/to/shared-task-data/test_file.txt"  # Adjust the path as necessary
+    file_path = "/shared-task-data/test_file.txt"  # Adjust the path as necessary
     try:
         with open(file_path, "r") as f:
             contents = f.read()
@@ -35,7 +43,7 @@ def read_from_shared_data():
 
 
 def delete_shared_data_file():
-    file_path = "/path/to/shared-task-data/test_file.txt"  # Adjust the path as necessary
+    file_path = "/shared-task-data/test_file.txt"  # Adjust the path as necessary
     try:
         os.remove(file_path)
         print(f"Successfully deleted {file_path}")
