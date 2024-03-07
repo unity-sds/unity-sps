@@ -88,6 +88,14 @@ workers:
   serviceAccount:
     annotations:
       eks.amazonaws.com/role-arn: "${airflow_worker_role_arn}"
+  extraVolumes:
+    - name: workers-volume
+      persistentVolumeClaim:
+        claimName: ${workers_pvc_name}
+  extraVolumeMounts:
+    - name: workers-volume
+      mountPath: /shared-task-data
+      readOnly: false
 
 data:
   metadataSecretName: ${metadata_secret_name}

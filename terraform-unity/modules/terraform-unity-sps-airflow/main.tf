@@ -274,6 +274,112 @@ resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {
   policy_arn = aws_iam_policy.airflow_worker_policy.arn
 }
 
+resource "aws_efs_file_system" "airflow_kpo" {
+  creation_token = "${var.project}-${var.venue}-${var.service_area}-AirflowKpoEfs-${local.counter}"
+
+  tags = merge(local.common_tags, {
+    Name      = "${var.project}-${var.venue}-${var.service_area}-AirflowKpoEfs-${local.counter}"
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_security_group" "airflow_kpo_efs" {
+  name        = "${var.project}-${var.venue}-${var.service_area}-AirflowKpoEfsSg-${local.counter}"
+  description = "Security group for the EFS used in Airflow Kubernetes Pod Operators"
+  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
+
+  tags = merge(local.common_tags, {
+    Name      = "${var.project}-${var.venue}-${var.service_area}-AirflowKpoEfsSg-${local.counter}"
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_security_group_rule" "airflow_kpo_efs" {
+  type              = "ingress"
+  from_port         = 2049
+  to_port           = 2049
+  protocol          = "tcp"
+  security_group_id = aws_security_group.airflow_kpo_efs.id
+  cidr_blocks       = [data.aws_vpc.cluster_vpc.cidr_block] # VPC CIDR to allow entire VPC. Adjust as necessary.
+}
+
+resource "aws_efs_mount_target" "airflow_kpo" {
+  for_each        = nonsensitive(toset(jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]))
+  file_system_id  = aws_efs_file_system.airflow_kpo.id
+  subnet_id       = each.value
+  security_groups = [aws_security_group.airflow_kpo_efs.id]
+}
+
+resource "aws_efs_access_point" "airflow_kpo" {
+  file_system_id = aws_efs_file_system.airflow_kpo.id
+  posix_user {
+    gid = 0
+    uid = 50000
+  }
+  root_directory {
+    path = "/efs"
+    creation_info {
+      owner_gid   = 0
+      owner_uid   = 50000
+      permissions = "0755"
+    }
+  }
+  tags = merge(local.common_tags, {
+    Name      = "${var.project}-${var.venue}-${var.service_area}-AirflowKpoEfsAp-${local.counter}"
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+# https://github.com/hashicorp/terraform-provider-kubernetes/issues/864
+resource "kubernetes_storage_class" "efs" {
+  metadata {
+    name = "filestore"
+  }
+  reclaim_policy      = "Retain"
+  storage_provisioner = "efs.csi.aws.com"
+}
+
+resource "kubernetes_persistent_volume" "efs_pv" {
+  metadata {
+    name = "kpo-efs"
+  }
+
+  spec {
+    capacity = {
+      storage = "5Gi"
+    }
+    access_modes                     = ["ReadWriteMany"]
+    persistent_volume_reclaim_policy = "Retain"
+    persistent_volume_source {
+      csi {
+        driver        = "efs.csi.aws.com"
+        volume_handle = "${aws_efs_file_system.airflow_kpo.id}::${aws_efs_access_point.airflow_kpo.id}"
+      }
+    }
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
+resource "kubernetes_persistent_volume_claim" "efs_pvc" {
+  metadata {
+    name      = "kpo-efs"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    access_modes = ["ReadWriteMany"]
+    resources {
+      requests = {
+        storage = "5Gi"
+      }
+    }
+    volume_name        = "kpo-efs"
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
 resource "helm_release" "airflow" {
   name       = "airflow"
   repository = var.helm_charts.airflow.repository
@@ -289,6 +395,7 @@ resource "helm_release" "airflow" {
       webserver_secret_name    = "airflow-webserver-secret"
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
       airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
+      workers_pvc_name         = kubernetes_persistent_volume_claim.efs_pvc.metadata[0].name
     })
   ]
   set_sensitive {
