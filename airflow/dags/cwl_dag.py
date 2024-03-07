@@ -7,6 +7,7 @@ import json
 import uuid
 from datetime import datetime
 import os
+import shutil
 
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.models.param import Param
