@@ -44,8 +44,7 @@ done
 # Execute CWL workflow
 . /usr/share/cwl/venv/bin/activate
 pwd
-mkdir -p ./cache
-cwl-runner --cachedir ./cache --tmp-outdir-prefix "$PWD"/ "$cwl_workflow" "$job_args"
+cwl-runner --tmp-outdir-prefix "$PWD"/ "$cwl_workflow" "$job_args"
 deactivate
 
 # Stop Docker engine
