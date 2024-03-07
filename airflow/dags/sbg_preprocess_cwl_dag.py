@@ -90,7 +90,7 @@ cwl_task = KubernetesPodOperator(
     arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}", WORKING_DIR],
     dag=dag,
     volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path="/scratch", sub_path="{{ dag_run.run_id }}")
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
     volumes=[
         k8s.V1Volume(
