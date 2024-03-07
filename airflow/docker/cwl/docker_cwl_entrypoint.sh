@@ -10,7 +10,7 @@
 # $3: optional working directory, defaults to the current directory
 # Note: The working must be accessible by the Docker container that executes this script
 
-set -e
+set -ex
 cwl_workflow=$1
 job_args=$2
 work_dir=${3:-.}
@@ -43,7 +43,9 @@ done
 
 # Execute CWL workflow
 . /usr/share/cwl/venv/bin/activate
-cwl-runner "$cwl_workflow" "$job_args"
+pwd
+mkdir -p ./cache
+cwl-runner --cachedir ./cache --tmp-outdir-prefix "$PWD"/ "$cwl_workflow" "$job_args"
 deactivate
 
 # Stop Docker engine
