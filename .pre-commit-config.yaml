@@ -71,7 +71,7 @@ repos:
         args:
           - --tf-init-args=-upgrade
       - id: terraform_fmt # Rewrites all Terraform configuration files to a canonical format.
-      # - id: terraform_tflint # Validates all Terraform configuration files with TFLint.
+      - id: terraform_tflint # Validates all Terraform configuration files with TFLint.
       - id: terraform_trivy # Static analysis of Terraform templates to spot potential security issues.
         args:
           - >
