@@ -131,3 +131,7 @@ extraEnv: |
     value: "1"
   - name: AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE
     value: "8"
+  - name: AIRFLOW__WEBSERVER__NAVBAR_COLOR
+    value: "${webserver_navbar_color}"
+  - name: AIRFLOW__WEBSERVER__INSTANCE_NAME
+    value: "${webserver_instance_name}"

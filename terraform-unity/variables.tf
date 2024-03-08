@@ -1,50 +1,52 @@
 variable "project" {
-  description = "The project or mission deploying Unity SPS"
+  description = "The project or mission deploying Unity SPS."
   type        = string
   default     = "unity"
 }
 
 variable "venue" {
-  description = "The MCP venue in which the cluster will be deployed (dev, test, prod)"
+  description = "The MCP venue in which the resources will be deployed."
   type        = string
-  default     = null
+  validation {
+    condition     = can(regex("^(dev|test|prod|sbg-dev)$", var.venue))
+    error_message = "Invalid deployment type."
+  }
 }
 
 variable "service_area" {
-  description = "The service area owner of the resources being deployed"
+  description = "The service area owner of the resources being deployed."
   type        = string
   default     = "sps"
 }
 
+variable "deployment_name" {
+  description = "The name of the deployment."
+  type        = string
+}
+
 variable "counter" {
-  description = "value"
+  description = "Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead."
   type        = string
   default     = ""
 }
 
 variable "release" {
-  description = "The SPS release version"
-  type        = string
-}
-
-variable "eks_cluster_name" {
-  description = "The name of the EKS cluster."
+  description = "The software release version."
   type        = string
 }
 
 variable "kubeconfig_filepath" {
-  description = "Path to the kubeconfig file for the Kubernetes cluster"
+  description = "The path to the kubeconfig file for the Kubernetes cluster."
   type        = string
-  default     = "../k8s/kubernetes.yml"
 }
 
 variable "airflow_webserver_password" {
-  description = "value"
+  description = "The password for the Airflow webserver and UI."
   type        = string
 }
 
 variable "helm_charts" {
-  description = "Settings for the required Helm charts."
+  description = "Helm charts for the associated services."
   type = map(object({
     repository = string
     chart      = string
@@ -65,7 +67,7 @@ variable "helm_charts" {
 }
 
 variable "docker_images" {
-  description = "Docker images for the services."
+  description = "Docker images for the associated services."
   type = object({
     airflow = object({
       name = string
