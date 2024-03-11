@@ -9,7 +9,7 @@ spec:
   containers:
   - name: cwl-docker
     # image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0-alpha.1
-    image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:develop9
+    image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:develop10
     imagePullPolicy: Always
     command: ["/usr/share/cwl/docker_cwl_entrypoint.sh"]
     securityContext:

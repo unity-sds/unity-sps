@@ -29,7 +29,8 @@ WORKING_DIR = "/scratch"
 
 # Example arguments
 default_cwl_workflow = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
-default_args_as_json_dict = {
+# default_cwl_args = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml"
+default_cwl_args = {
     "input_processing_labels": ["label1", "label2"],
     "input_cmr_stac": "https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z",
     "input_unity_dapa_client": "40c2s0ulbhp9i0fmaph3su9jch",
@@ -60,12 +61,15 @@ dag = DAG(
         "cwl_workflow": Param(
             default_cwl_workflow, type="string", title="CWL workflow", description="The CWL workflow URL"
         ),
-        "args_as_json": Param(
-            json.dumps(default_args_as_json_dict),
+        "cwl_args": Param(
+            json.dumps(default_cwl_args),
             type="string",
-            title="CWL wokflow parameters",
+            title="CWL workflow parameters",
             description="The job parameters encodes as a JSON string, or the URL of a JSON or YAML file",
         ),
+        "working_dir": Param(
+            WORKING_DIR, type="string", title="Working directory", description="Use '.' for EBS, '/scratch' for EFS"
+        )
     },
 )
 
@@ -95,7 +99,7 @@ cwl_task = KubernetesPodOperator(
         metadata=k8s.V1ObjectMeta(name="docker-cwl-pod-" + uuid.uuid4().hex),
     ),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=["{{ params.cwl_workflow }}", "{{ params.args_as_json }}", WORKING_DIR],
+    arguments=["{{ params.cwl_workflow }}", "{{ params.cwl_args }}", "{{ params.working_dir }}"],
     dag=dag,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
