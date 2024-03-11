@@ -1,9 +1,31 @@
-output "airflow_webserver_url" {
-  description = "The URL of the Airflow webserver service"
-  value       = "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+output "airflow_urls" {
+  description = "SSM parameter IDs and URLs for the various Airflow endpoints."
+  value = {
+    "ui" = {
+      "ssm_param_id" = aws_ssm_parameter.airflow_ui_url.id,
+      "url"          = nonsensitive(aws_ssm_parameter.airflow_ui_url.value)
+    }
+    "rest_api" = {
+      "ssm_param_id" = aws_ssm_parameter.airflow_api_url.id,
+      "url"          = nonsensitive(aws_ssm_parameter.airflow_api_url.value)
+    }
+  }
 }
 
 output "ogc_processes_api_url" {
-  description = "The URL of the OGC Processes API service"
-  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
+  description = "SSM parameter IDs and URLs for the OGC Processes API endpoint."
+  value = {
+    "ssm_param_id" = aws_ssm_parameter.ogc_processes_api_url.id,
+    "url"          = nonsensitive(aws_ssm_parameter.ogc_processes_api_url.value)
+  }
+}
+
+output "s3_buckets" {
+  description = "SSM parameter IDs and bucket names for the various buckets used in the pipeline."
+  value = {
+    "airflow_logs" = {
+      "ssm_param_id" = aws_ssm_parameter.airflow_logs.id,
+      "bucket"       = nonsensitive(aws_ssm_parameter.airflow_logs.value)
+    }
+  }
 }

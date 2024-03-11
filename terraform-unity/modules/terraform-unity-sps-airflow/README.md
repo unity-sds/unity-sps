@@ -46,6 +46,10 @@ No modules.
 | [aws_security_group_rule.airflow_kpo_efs](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.eks_egress_to_rds](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.rds_ingress_from_eks](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/security_group_rule) | resource |
+| [aws_ssm_parameter.airflow_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/deployment) | resource |
@@ -78,14 +82,14 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | value | `string` | n/a | yes |
-| <a name="input_counter"></a> [counter](#input\_counter) | value | `string` | n/a | yes |
-| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
-| <a name="input_eks_cluster_name"></a> [eks\_cluster\_name](#input\_eks\_cluster\_name) | value | `string` | n/a | yes |
-| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Settings for the required Helm charts. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
-| <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | Path to the kubeconfig file for the Kubernetes cluster | `string` | n/a | yes |
+| <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | The password for the Airflow webserver and UI. | `string` | n/a | yes |
+| <a name="input_counter"></a> [counter](#input\_counter) | Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead. | `string` | n/a | yes |
+| <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | The name of the deployment. | `string` | n/a | yes |
+| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
+| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
+| <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | n/a | yes |
-| <a name="input_release"></a> [release](#input\_release) | The SPS release version | `string` | n/a | yes |
+| <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | n/a | yes |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed | `string` | n/a | yes |
 | <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the cluster will be deployed (dev, test, prod) | `string` | n/a | yes |
 
@@ -93,6 +97,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_airflow_webserver_url"></a> [airflow\_webserver\_url](#output\_airflow\_webserver\_url) | The URL of the Airflow webserver service |
-| <a name="output_ogc_processes_api_url"></a> [ogc\_processes\_api\_url](#output\_ogc\_processes\_api\_url) | The URL of the OGC Processes API service |
+| <a name="output_airflow_urls"></a> [airflow\_urls](#output\_airflow\_urls) | SSM parameter IDs and URLs for the various Airflow endpoints. |
+| <a name="output_ogc_processes_api_url"></a> [ogc\_processes\_api\_url](#output\_ogc\_processes\_api\_url) | SSM parameter IDs and URLs for the OGC Processes API endpoint. |
+| <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | SSM parameter IDs and bucket names for the various buckets used in the pipeline. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
