@@ -18,6 +18,11 @@ POD_TEMPLATE_FILE = "/opt/airflow/dags/docker_cwl_pod.yaml"
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
 
+# The path of the working directory where the CWL workflow is executed
+# (aka the starting directory for cwl-runner).
+# This is fixed to the EFS /scratch directory in this DAG.
+WORKING_DIR = "/scratch"
+
 # Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
@@ -93,7 +98,7 @@ cwl_task = KubernetesPodOperator(
     task_id="SBG_L1_to_L2_End_To_End_CWL",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-l1-to-l2-e2e-cwl-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}"],
+    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}", WORKING_DIR],
     # resources={"request_memory": "512Mi", "limit_memory": "1024Mi"},
     dag=dag,
 )

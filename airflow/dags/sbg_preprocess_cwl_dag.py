@@ -21,7 +21,8 @@ POD_TEMPLATE_FILE = "/opt/airflow/dags/docker_cwl_pod.yaml"
 POD_NAMESPACE = "airflow"
 
 # The path of the working directory where the CWL workflow is executed
-# (aka the starting directory for cwl-runner)
+# (aka the starting directory for cwl-runner).
+# This is fixed to the EFS /scratch directory in this DAG.
 WORKING_DIR = "/scratch"
 
 # Default DAG configuration
