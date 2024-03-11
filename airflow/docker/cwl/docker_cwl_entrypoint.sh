@@ -32,7 +32,10 @@ mkdir -p "$work_dir"
 cd $work_dir
 
 # Start Docker engine
-dockerd &> dockerd-logfile &
+# Move the Docker root directory to the larger EFS partition
+docker_dir="$work_dir"/docker
+mkdir -p "$docker_dir"
+dockerd --data-root "$docker_dir" &> dockerd-logfile &
 
 # Wait until Docker engine is running
 # Loop until 'docker version' exits with 0.
