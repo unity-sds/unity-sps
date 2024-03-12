@@ -18,6 +18,11 @@ POD_TEMPLATE_FILE = "/opt/airflow/dags/docker_cwl_pod.yaml"
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
 
+# The path of the working directory where the CWL workflow is executed
+# (aka the starting directory for cwl-runner).
+# This is fixed to the EFS /scratch directory in this DAG.
+WORKING_DIR = "/scratch"
+
 # Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
@@ -34,7 +39,7 @@ dag = DAG(
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=1,
+    max_active_runs=100,
     default_args=dag_default_args,
     params={
         "cwl_workflow": Param(CWL_WORKFLOW, type="string"),
@@ -54,6 +59,7 @@ dag = DAG(
         # For unity data upload step, unity catalog
         "output_isofit_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RFL___1", type="string"),
         "output_resample_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1", type="string"),
+        "output_refcorrect_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1", type="string"),
     },
 )
 
@@ -73,6 +79,7 @@ def setup(ti=None, **context):
         "input_aux_stac": context["params"]["input_aux_stac"],
         "output_isofit_collection_id": context["params"]["output_isofit_collection_id"],
         "output_resample_collection_id": context["params"]["output_resample_collection_id"],
+        "output_refcorrect_collection_id": context["params"]["output_refcorrect_collection_id"],
     }
     ti.xcom_push(key="cwl_args", value=json.dumps(task_dict))
 
@@ -91,7 +98,11 @@ cwl_task = KubernetesPodOperator(
     task_id="SBG_L1_to_L2_End_To_End_CWL",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-l1-to-l2-e2e-cwl-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}"],
+    arguments=[
+        "{{ params.cwl_workflow }}",
+        "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}",
+        WORKING_DIR,
+    ],
     # resources={"request_memory": "512Mi", "limit_memory": "1024Mi"},
     dag=dag,
 )

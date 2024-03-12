@@ -176,20 +176,20 @@ No resources.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | value | `string` | n/a | yes |
-| <a name="input_counter"></a> [counter](#input\_counter) | value | `string` | `""` | no |
-| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | <pre>{<br>  "airflow": {<br>    "name": "ghcr.io/unity-sds/unity-sps/sps-airflow",<br>    "tag": "develop"<br>  },<br>  "ogc_processes_api": {<br>    "name": "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api",<br>    "tag": "develop"<br>  }<br>}</pre> | no |
-| <a name="input_eks_cluster_name"></a> [eks\_cluster\_name](#input\_eks\_cluster\_name) | The name of the EKS cluster. | `string` | n/a | yes |
-| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Settings for the required Helm charts. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | <pre>{<br>  "airflow": {<br>    "chart": "airflow",<br>    "repository": "https://airflow.apache.org",<br>    "version": "1.11.0"<br>  },<br>  "keda": {<br>    "chart": "keda",<br>    "repository": "https://kedacore.github.io/charts",<br>    "version": "v2.13.1"<br>  }<br>}</pre> | no |
-| <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | Path to the kubeconfig file for the Kubernetes cluster | `string` | `"../k8s/kubernetes.yml"` | no |
-| <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | `"unity"` | no |
-| <a name="input_release"></a> [release](#input\_release) | The SPS release version | `string` | n/a | yes |
-| <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed | `string` | `"sps"` | no |
-| <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the cluster will be deployed (dev, test, prod) | `string` | `null` | no |
+| <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | The password for the Airflow webserver and UI. | `string` | n/a | yes |
+| <a name="input_counter"></a> [counter](#input\_counter) | Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead. | `string` | `""` | no |
+| <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | The name of the deployment. | `string` | n/a | yes |
+| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | <pre>{<br>  "airflow": {<br>    "name": "ghcr.io/unity-sds/unity-sps/sps-airflow",<br>    "tag": "develop"<br>  },<br>  "ogc_processes_api": {<br>    "name": "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api",<br>    "tag": "develop"<br>  }<br>}</pre> | no |
+| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | <pre>{<br>  "airflow": {<br>    "chart": "airflow",<br>    "repository": "https://airflow.apache.org",<br>    "version": "1.11.0"<br>  },<br>  "keda": {<br>    "chart": "keda",<br>    "repository": "https://kedacore.github.io/charts",<br>    "version": "v2.13.1"<br>  }<br>}</pre> | no |
+| <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
+| <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS. | `string` | `"unity"` | no |
+| <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | n/a | yes |
+| <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed. | `string` | `"sps"` | no |
+| <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the resources will be deployed. | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_load_balancer_hostnames"></a> [load\_balancer\_hostnames](#output\_load\_balancer\_hostnames) | Load Balancer Ingress Hostnames |
+| <a name="output_resources"></a> [resources](#output\_resources) | SSM parameter IDs for pipeline resources. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

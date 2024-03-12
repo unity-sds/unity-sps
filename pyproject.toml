@@ -33,7 +33,7 @@ Homepage = "https://github.com/unity-sds/unity-sps"
 develop = []
 test = [
     "python-dotenv==1.0.1",
-    "pytest-bdd==7.0.1",
+    "pytest-bdd==7.1.1",
     "pytest-mock==3.12.0",
     "requests==2.31.0",
     "apache-airflow==2.8.1",
