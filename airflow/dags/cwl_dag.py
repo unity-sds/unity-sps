@@ -28,8 +28,11 @@ POD_NAMESPACE = "airflow"
 WORKING_DIR = "/scratch"
 
 # Example arguments
-default_cwl_workflow = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+# default_cwl_workflow = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 # default_cwl_args = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml"
+default_cwl_workflow = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.cwl"
+default_cwl_args = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.dev.yml"
+'''
 default_cwl_args = {
     "input_processing_labels": ["label1", "label2"],
     "input_cmr_stac": "https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z",
@@ -39,6 +42,7 @@ default_cwl_args = {
     "output_collection_id": "urn:nasa:unity:unity:dev:SBG-L1B_PRE___1",
     "output_data_bucket": "sps-dev-ds-storage",
 }
+'''
 
 # Default DAG configuration
 dag_default_args = {

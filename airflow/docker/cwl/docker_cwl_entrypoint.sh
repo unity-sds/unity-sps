@@ -31,14 +31,12 @@ echo "Executing the CWL workflow: $cwl_workflow with json arguments: $job_args a
 mkdir -p "$work_dir"
 cd $work_dir
 
-# FIXME
-sleep 3600
-
 # Start Docker engine
 # Move the Docker root directory to the larger EFS partition
-docker_dir="$work_dir"/docker
-mkdir -p "$docker_dir"
-dockerd --data-root "$docker_dir" &> dockerd-logfile &
+# docker_dir="$work_dir"/docker
+# mkdir -p "$docker_dir"
+# dockerd --data-root "$docker_dir" &> dockerd-logfile &
+dockerd &> dockerd-logfile &
 
 # Wait until Docker engine is running
 # Loop until 'docker version' exits with 0.
