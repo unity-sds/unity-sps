@@ -1,11 +1,13 @@
 # DAG for executing the SBG Preprocess Workflow
 # See https://github.com/unity-sds/sbg-workflows/blob/main/preprocess/sbg-preprocess-workflow.cwl
 import json
+import os
+import shutil
 import uuid
 from datetime import datetime
 
 from airflow.models.param import Param
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
@@ -18,6 +20,10 @@ POD_TEMPLATE_FILE = "/opt/airflow/dags/docker_cwl_pod.yaml"
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
 
+# The path of the working directory where the CWL workflow is executed
+# (aka the starting directory for cwl-runner).
+# This is fixed to the EFS /scratch directory in this DAG.
+WORKING_DIR = "/scratch"
 
 # Default DAG configuration
 dag_default_args = {
@@ -37,15 +43,11 @@ dag = DAG(
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=1,
+    max_active_runs=100,
     default_args=dag_default_args,
     params={
         "cwl_workflow": Param(CWL_WORKFLOW, type="string"),
         "input_cmr_stac": Param(CMR_STAC, type="string"),
-        # "input_processing_labels": Param(["label1", "label2"], type="string[]"),
-        # "input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
-        # "input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        # "input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "input_unity_dapa_api": Param("https://d3vc8w9zcq658.cloudfront.net", type="string"),
         "input_unity_dapa_client": Param("40c2s0ulbhp9i0fmaph3su9jch", type="string"),
         "input_crid": Param("001", type="string"),
@@ -57,12 +59,14 @@ dag = DAG(
 
 # Task that serializes the job arguments into a JSON string
 def setup(ti=None, **context):
+    context = get_current_context()
+    dag_run_id = context["dag_run"].run_id
+    local_dir = os.path.dirname(f"/shared-task-data/{dag_run_id}")
+    os.makedirs(local_dir, exist_ok=True)
+
     task_dict = {
         "input_processing_labels": ["label1", "label2"],
         "input_cmr_stac": context["params"]["input_cmr_stac"],
-        # "input_cmr_collection_name": context["params"]["input_cmr_collection_name"],
-        # "input_cmr_search_start_time": context["params"]["input_cmr_search_start_time"],
-        # "input_cmr_search_stop_time": context["params"]["input_cmr_search_stop_time"],
         "input_unity_dapa_api": context["params"]["input_unity_dapa_api"],
         "input_unity_dapa_client": context["params"]["input_unity_dapa_client"],
         "input_crid": context["params"]["input_crid"],
@@ -86,9 +90,39 @@ cwl_task = KubernetesPodOperator(
     task_id="SBG_Preprocess_CWL",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-cwl-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}"],
-    # resources={"request_memory": "512Mi", "limit_memory": "1024Mi"},
+    arguments=[
+        "{{ params.cwl_workflow }}",
+        "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}",
+        WORKING_DIR,
+    ],
+    dag=dag,
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
+)
+
+
+def cleanup(**context):
+    dag_run_id = context["dag_run"].run_id
+    local_dir = f"/shared-task-data/{dag_run_id}"
+    if os.path.exists(local_dir):
+        shutil.rmtree(local_dir)
+        print(f"Deleted directory: {local_dir}")
+    else:
+        print(f"Directory does not exist, no need to delete: {local_dir}")
+
+
+cleanup_task = PythonOperator(
+    task_id="Cleanup",
+    python_callable=cleanup,
     dag=dag,
 )
 
-setup_task >> cwl_task
+
+setup_task >> cwl_task >> cleanup_task

@@ -1,6 +1,10 @@
+resource "random_id" "counter" {
+  byte_length = 2
+}
+
 module "unity-eks" {
   source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=main"
-  deployment_name = var.cluster_name
+  deployment_name = local.cluster_name
 
   nodegroups = var.nodegroups
 

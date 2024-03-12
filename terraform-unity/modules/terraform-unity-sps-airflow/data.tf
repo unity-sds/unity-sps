@@ -1,11 +1,15 @@
 data "aws_caller_identity" "current" {}
 
 data "aws_eks_cluster" "cluster" {
-  name = var.eks_cluster_name
+  name = format(local.resource_name_prefix, "eks")
 }
 
 data "aws_eks_cluster_auth" "cluster" {
-  name = var.eks_cluster_name
+  name = format(local.resource_name_prefix, "eks")
+}
+
+data "aws_vpc" "cluster_vpc" {
+  id = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
 }
 
 data "aws_ssm_parameter" "subnet_ids" {
