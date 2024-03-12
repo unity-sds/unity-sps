@@ -31,7 +31,9 @@ dag_default_args = {
     "depends_on_past": False,
     "start_date": datetime.utcfromtimestamp(0),
 }
-CWL_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+CWL_WORKFLOW = (
+    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+)
 CMR_STAC = "https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z"
 
 dag = DAG(
@@ -88,7 +90,11 @@ cwl_task = KubernetesPodOperator(
     task_id="SBG_Preprocess_CWL",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-cwl-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}", WORKING_DIR],
+    arguments=[
+        "{{ params.cwl_workflow }}",
+        "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}",
+        WORKING_DIR,
+    ],
     dag=dag,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")

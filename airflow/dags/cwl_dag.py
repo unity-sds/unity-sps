@@ -4,13 +4,13 @@
 # Parameter cwl_workflow: the URL of the CWL workflow to execute.
 # Parameter args_as_json: JSON string contained the specific values for the workflow specific inputs.
 import json
-import uuid
-from datetime import datetime
 import os
 import shutil
+import uuid
+from datetime import datetime
 
-from airflow.operators.python import PythonOperator, get_current_context
 from airflow.models.param import Param
+from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
@@ -28,7 +28,9 @@ POD_NAMESPACE = "airflow"
 WORKING_DIR = "/scratch"
 
 # Example arguments
-default_cwl_workflow = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+default_cwl_workflow = (
+    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+)
 # default_cwl_args = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml"
 default_cwl_args = {
     "input_processing_labels": ["label1", "label2"],
@@ -41,11 +43,7 @@ default_cwl_args = {
 }
 
 # Default DAG configuration
-dag_default_args = {
-    "owner": "unity-sps",
-    "depends_on_past": False,
-    "start_date": datetime(2024, 1, 1, 0, 0)
-}
+dag_default_args = {"owner": "unity-sps", "depends_on_past": False, "start_date": datetime(2024, 1, 1, 0, 0)}
 
 # The DAG
 dag = DAG(
@@ -68,13 +66,17 @@ dag = DAG(
             description="The job parameters encodes as a JSON string, or the URL of a JSON or YAML file",
         ),
         "working_dir": Param(
-            WORKING_DIR, type="string", title="Working directory", description="Use '.' for EBS, '/scratch' for EFS"
-        )
+            WORKING_DIR,
+            type="string",
+            title="Working directory",
+            description="Use '.' for EBS, '/scratch' for EFS",
+        ),
     },
 )
 
 # Environment variables
 default_env_vars = {}
+
 
 # This task that creates the working directory on the shared volume
 def setup(ti=None, **context):
@@ -111,6 +113,7 @@ cwl_task = KubernetesPodOperator(
         )
     ],
 )
+
 
 def cleanup(**context):
     dag_run_id = context["dag_run"].run_id
