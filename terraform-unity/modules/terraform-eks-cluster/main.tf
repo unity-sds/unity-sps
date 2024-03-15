@@ -3,7 +3,7 @@ resource "random_id" "counter" {
 }
 
 module "unity-eks" {
-  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=node-group-disk-size"
+  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=main"
   deployment_name = local.cluster_name
 
   nodegroups = var.nodegroups
