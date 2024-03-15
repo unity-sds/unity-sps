@@ -1,4 +1,6 @@
-# DAG for SBG Workflow #1
+# DAG for SBG Preprocess Workflow
+
+# Workflow:
 # See https://github.com/unity-sds/sbg-workflows/blob/main/preprocess/sbg-preprocess-workflow.cwl
 # --> http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2FSBG-unity-preprocess/versions/18/PLAIN-CWL/descriptor/%2Fworkflow.cwl
 import json
@@ -35,9 +37,7 @@ LOG_LEVEL = "20"
 # This path must be inside the shared Persistent Volume
 STAGE_IN_RESULTS = "/scratch/granules/stage-in-results.json"
 
-
-# CWL_URL = "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2FSBG-unity-preprocess/versions/16/PLAIN-CWL/descriptor/%2Fprocess.cwl"
-CWL_URL = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/sbg/sbg/process.cwl"
+CWL_URL = "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2FSBG-unity-preprocess/versions/18/PLAIN-CWL/descriptor/%2Fprocess.cwl"
 # YAML_FILE = "/scratch/process.yaml"
 ARGS = {"download_dir": {"class": "Directory", "path": "/scratch/granules"}}
 
@@ -48,7 +48,7 @@ dag = DAG(
     dag_id="sbg-preprocess-no-cwl",
     description="SBG Preprocess Workflow",
     tags=["SBG", "Unity", "SPS", "NASA", "JPL"],
-    is_paused_upon_creation=True,
+    is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
     max_active_runs=100,
@@ -70,6 +70,8 @@ dag = DAG(
     },
 )
 
+# Step: Stage In
+# ref: http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2FSBG-unity-preprocess/versions/18/PLAIN-CWL/descriptor/%2Fstage_in.cwl
 stage_in_env_vars = [
     k8s.V1EnvVar(name="CLIENT_ID", value="{{ params.input_unity_dapa_client }}"),
     k8s.V1EnvVar(name="COGNITO_URL", value=COGNITO_URL),
@@ -118,8 +120,8 @@ stage_in_task = KubernetesPodOperator(
     ],
 )
 
-'''
-# ref:http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2FSBG-unity-preprocess/versions/16/PLAIN-CWL/descriptor/%2Fprocess.cwl
+# Step: process
+# ref: http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2FSBG-unity-preprocess/versions/18/PLAIN-CWL/descriptor/%2Fprocess.cwl
 preprocess_task = KubernetesPodOperator(
     # image = SBG_PREPROCESS_IMAGE,
     # cmds = ["papermill", "/home/jovyan/process.ipynb", "--cwd", "/home/jovyan",
@@ -127,64 +129,33 @@ preprocess_task = KubernetesPodOperator(
     # arguments=["-p", "input_stac_collection_file", os.path.join(DOWNLOAD_DIR, "stage-in-results.json"),
     #           "-p", "output_stac_catalog_dir", os.path.join(DOWNLOAD_DIR, "process_output")],
     pod_template_file="/opt/airflow/dags/docker_cwl_pod.yaml",
-    arguments=[CWL_URL, json.dumps(ARGS), "/scratch/output_dir"],
+    arguments=[CWL_URL, json.dumps({
+        "crid": "001",
+        "download_dir": "/scratch/granules",
+        "output_collection": "L1B_processed",
+        "sensor": "EMIT",
+        "temp_directory": "/unity/ads/temp/nb_l1b_preprocess"
+    }), WORKING_DIR],
     # env_vars=stage_in_env_vars,
     namespace="airflow",
-    name="Process",
+    name="Preprocess",
     on_finish_action="delete_pod",
     hostnetwork=False,
     startup_timeout_seconds=1000,
     get_logs=True,
-    task_id="Process",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("process-pod-" + uuid.uuid4().hex))),
+    task_id="Preprocess",
+    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("preprocess-pod-" + uuid.uuid4().hex))),
     # do_xcom_push=True,
-    volumes=[volume],
-    volume_mounts=[volume_mount],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
     dag=dag,
 )
-'''
 
-'''
-stage_out_env_vars = [
-    # k8s.V1EnvVar(name="AWS_ACCESS_KEY_ID", value=AWS_ACCESS_KEY_ID),
-    # k8s.V1EnvVar(name="AWS_SECRET_ACCESS_KEY", value=AWS_SECRET_ACCESS_KEY),
-    # k8s.V1EnvVar(name="AWS_SESSION_TOKEN", value=AWS_SESSION_TOKEN),
-    # k8s.V1EnvVar(name="AWS_REGION", value=AWS_REGION),
-    k8s.V1EnvVar(name="PYTHONUNBUFFERED", value="1"),
-    # k8s.V1EnvVar(name="USERNAME", value=UNITY_USERNAME),
-    # k8s.V1EnvVar(name="PASSWORD", value=UNITY_PASSWORD),
-    # k8s.V1EnvVar(name="PASSWORD_TYPE", value=UNITY_PASSWORD_TYPE),
-    k8s.V1EnvVar(name="CLIENT_ID", value="{{ params.input_unity_dapa_client }}"),
-    k8s.V1EnvVar(name="COGNITO_URL", value=COGNITO_URL),
-    k8s.V1EnvVar(name="VERIFY_SSL", value="FALSE"),
-    k8s.V1EnvVar(name="DAPA_API", value="{{ params.input_unity_dapa_api }}"),
-    k8s.V1EnvVar(name="COLLECTION_ID", value="{{ params.output_collection_id }}"),
-    k8s.V1EnvVar(name="STAGING_BUCKET", value="{{ params.output_data_bucket }}"),
-    k8s.V1EnvVar(name="DELETE_FILES", value="FALSE"),
-    k8s.V1EnvVar(name="GRANULES_SEARCH_DOMAIN", value="UNITY"),
-    k8s.V1EnvVar(name="GRANULES_UPLOAD_TYPE", value="UPLOAD_S3_BY_STAC_CATALOG"),
-    k8s.V1EnvVar(name="UPLOAD_DIR", value=""),
-    k8s.V1EnvVar(name="OUTPUT_DIRECTORY", value=""),
-    k8s.V1EnvVar(name="CATALOG_FILE", value="/scratch/output_dir/process_output/catalog.json"),
-    k8s.V1EnvVar(name="LOG_LEVEL", value=LOG_LEVEL),
-]
-stage_out_task = KubernetesPodOperator(
-    image=UNITY_DS_IMAGE,
-    arguments=["UPLOAD"],
-    env_vars=stage_out_env_vars,
-    namespace="airflow",
-    name="Stage_Out",
-    on_finish_action="delete_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=1000,
-    get_logs=True,
-    task_id="Stage_Out",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("stage-out-pod-" + uuid.uuid4().hex))),
-    # do_xcom_push=True,
-    volumes=[volume],
-    volume_mounts=[volume_mount],
-    dag=dag,
-)
-'''
-
-stage_in_task
+stage_in_task >> preprocess_task
