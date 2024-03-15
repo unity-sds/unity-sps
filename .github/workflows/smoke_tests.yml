@@ -11,7 +11,7 @@ on:
         description: "Base URL for the Airflow endpoint in MCP Venue Dev (i.e. http://abc.def.ghi:port-number)"
         type: string
       MCP_VENUE_TEST_AIRFLOW_ENDPOINT:
-        description: "Base URL for the Airflow endpoint in MCP Venue TEST (i.e. http://abc.def.ghi:port-number)"
+        description: "Base URL for the Airflow endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
         type: string
       MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT:
         description: "Base URL for the Airflow endpoint in MCP Venue SBG Dev (i.e. http://abc.def.ghi:port-number)"
