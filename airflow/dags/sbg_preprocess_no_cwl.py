@@ -46,15 +46,6 @@ ARGS = {"download_dir": {"class": "Directory", "path": "/scratch/granules"}}
 # Default DAG configuration
 dag_default_args = {"owner": "unity-sps", "depends_on_past": False, "start_date": datetime(2024, 1, 1, 0, 0)}
 
-volume = k8s.V1Volume(
-    name="workers-volume",
-    persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
-)
-
-volume_mount = k8s.V1VolumeMount(
-    k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-)
-
 dag = DAG(
     dag_id="sbg-preprocess-no-cwl",
     description="SBG Preprocess Workflow",
@@ -129,11 +120,9 @@ stage_in_task = KubernetesPodOperator(
     ],
 )
 
-
 '''
-
 # ref:http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2FSBG-unity-preprocess/versions/16/PLAIN-CWL/descriptor/%2Fprocess.cwl
-process_task = KubernetesPodOperator(
+preprocess_task = KubernetesPodOperator(
     # image = SBG_PREPROCESS_IMAGE,
     # cmds = ["papermill", "/home/jovyan/process.ipynb", "--cwd", "/home/jovyan",
     #         os.path.join(DOWNLOAD_DIR, "process_output/output_nb.ipynb"), "-f", "/scratch/inputs.json"],
@@ -155,7 +144,9 @@ process_task = KubernetesPodOperator(
     volume_mounts=[volume_mount],
     dag=dag,
 )
+'''
 
+'''
 stage_out_env_vars = [
     # k8s.V1EnvVar(name="AWS_ACCESS_KEY_ID", value=AWS_ACCESS_KEY_ID),
     # k8s.V1EnvVar(name="AWS_SECRET_ACCESS_KEY", value=AWS_SECRET_ACCESS_KEY),
@@ -198,16 +189,4 @@ stage_out_task = KubernetesPodOperator(
 )
 '''
 
-"""
-def preprocess(ti=None, **context):
-    # cmr_query = ti.xcom_pull(task_ids=['CMR_Query'])[0]
-    #print(cmr_query)
-    os.path.li
-
-
-preprocess_task = PythonOperator(task_id="Preprocess",
-                                 python_callable=preprocess,
-                                 dag=dag)
-"""
-
-# stage_in_task >> process_task
+stage_in_task
