@@ -2,9 +2,7 @@ name: Smoke Tests
 
 on:
   schedule:
-    # Runs around midnight Pacific Time (UTC-7)
-    # Doesn't account for daylight saving transitions
-    - cron: "0 7 * * *"
+    - cron: "0 7 * * *" # Runs around midnight Pacific Time (UTC-7)
   workflow_dispatch:
     inputs:
       MCP_VENUE_DEV_AIRFLOW_ENDPOINT:
@@ -16,6 +14,7 @@ on:
       MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT:
         description: "Base URL for the Airflow endpoint in MCP Venue SBG Dev (i.e. http://abc.def.ghi:port-number)"
         type: string
+
 jobs:
   smoke-tests:
     runs-on: ubuntu-latest
@@ -33,6 +32,7 @@ jobs:
         pip install -e ".[test]"
 
     - name: MCP Venue Dev - Smoke tests
+      id: mcp_venue_dev_smoke_tests
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
       continue-on-error: true
@@ -42,6 +42,7 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
 
     - name: MCP Venue Test - Smoke tests
+      id: mcp_venue_test_smoke_tests
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
       continue-on-error: true
@@ -51,6 +52,7 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
 
     - name: MCP Venue SBG Dev - Smoke tests
+      id: mcp_sbg_dev_smoke_tests
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_SBG_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
       continue-on-error: true
@@ -58,3 +60,14 @@ jobs:
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT }}
+
+    # Final step to check outcomes and potentially fail the job
+    - name: Check Smoke Tests Results
+      if: always()
+      run: |
+        if [ "${{ steps.mcp_venue_dev_smoke_tests.outcome }}" != "success" ] || [ "${{ steps.mcp_venue_test_smoke_tests.outcome }}" != "success" ] || [ "${{ steps.mcp_sbg_dev_smoke_tests.outcome }}" != "success" ]; then
+          echo "One or more smoke tests failed."
+          exit 1
+        else
+          echo "All smoke tests passed."
+        fi
