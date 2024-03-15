@@ -32,9 +32,7 @@ EDL_PASSWORD_TYPE = "PARAM_STORE"
 EDL_BASE_URL = "https://urs.earthdata.nasa.gov/"
 LOG_LEVEL = "20"
 
-
 # This path must be inside the shared Persistent Volume
-STAC_JSON_PATH = "/scratch/search_results.json"
 STAGE_IN_RESULTS = "/scratch/granules/stage-in-results.json"
 
 
@@ -91,7 +89,7 @@ stage_in_env_vars = [
     k8s.V1EnvVar(name="PASSWORD", value=UNITY_PASSWORD),
     k8s.V1EnvVar(name="PASSWORD_TYPE", value=UNITY_PASSWORD_TYPE),
     k8s.V1EnvVar(name="STAC_AUTH_TYPE", value="NONE"),
-    k8s.V1EnvVar(name="STAC_JSON", value=STAC_JSON_PATH),
+    k8s.V1EnvVar(name="STAC_JSON", value="{{ params.input_cmr_stac }}"),
     k8s.V1EnvVar(name="USERNAME", value=UNITY_USERNAME),
     k8s.V1EnvVar(name="VERIFY_SSL", value="TRUE")
 ]
