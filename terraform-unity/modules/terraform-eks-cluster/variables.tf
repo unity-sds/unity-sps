@@ -25,11 +25,6 @@ variable "counter" {
   type        = string
 }
 
-# variable "release" {
-#   description = "The software release version."
-#   type        = string
-# }
-
 variable "nodegroups" {
   description = "A map of node group configurations"
   type = map(object({
