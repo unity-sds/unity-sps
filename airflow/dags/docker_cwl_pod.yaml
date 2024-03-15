@@ -9,10 +9,8 @@ spec:
   containers:
   - name: cwl-docker
     image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0-alpha.3
-    # image: ghcr.io/unity-sds/unity-sps/sps-docker-cwl:develop15
     imagePullPolicy: Always
     command: ["/usr/share/cwl/docker_cwl_entrypoint.sh"]
-    # args: ["https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.cwl", "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.dev.yml", "/scratch"]
     securityContext:
       privileged: true
     resources:

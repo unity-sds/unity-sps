@@ -6,6 +6,7 @@ import uuid
 from datetime import datetime
 
 from airflow.models.param import Param
+from airflow.operators.bash import BashOperator
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
@@ -116,10 +117,18 @@ stage_in_task = KubernetesPodOperator(
     task_id="Stage_In",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("stage-in-pod-" + uuid.uuid4().hex))),
     # do_xcom_push=True,
-    volumes=[volume],
-    volume_mounts=[volume_mount],
     dag=dag,
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
 )
+
 
 '''
 
@@ -201,4 +210,4 @@ preprocess_task = PythonOperator(task_id="Preprocess",
                                  dag=dag)
 """
 
-# stage_in_task >> process_task >> stage_out_task
+# stage_in_task >> process_task

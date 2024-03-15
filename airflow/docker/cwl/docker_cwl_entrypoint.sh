@@ -21,6 +21,7 @@ then
   # job_args does NOT start with '{'
   echo "Using job arguments from URL: $job_args"
 else
+  # job_args does start with '{'
   echo "$job_args" > /tmp/job_args.json
   echo "Using job arguments from JSON string:" && cat /tmp/job_args.json
   job_args="/tmp/job_args.json"
@@ -32,10 +33,6 @@ mkdir -p "$work_dir"
 cd $work_dir
 
 # Start Docker engine
-# Move the Docker root directory to the larger EFS partition
-# docker_dir="$work_dir"/docker
-# mkdir -p "$docker_dir"
-# dockerd --data-root "$docker_dir" &> dockerd-logfile &
 dockerd &> dockerd-logfile &
 
 # Wait until Docker engine is running
@@ -47,7 +44,6 @@ done
 
 # Execute CWL workflow
 . /usr/share/cwl/venv/bin/activate
-pwd
 cwl-runner --tmp-outdir-prefix "$PWD"/ "$cwl_workflow" "$job_args"
 deactivate
 
