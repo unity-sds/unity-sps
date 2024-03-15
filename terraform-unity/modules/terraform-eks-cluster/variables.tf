@@ -25,10 +25,10 @@ variable "counter" {
   type        = string
 }
 
-variable "release" {
-  description = "The software release version."
-  type        = string
-}
+# variable "release" {
+#   description = "The software release version."
+#   type        = string
+# }
 
 variable "nodegroups" {
   description = "A map of node group configurations"
@@ -43,16 +43,36 @@ variable "nodegroups" {
     capacity_type              = optional(string)
     enable_bootstrap_user_data = optional(bool)
     metadata_options           = optional(map(any))
+    block_device_mappings = optional(map(object({
+      device_name = string
+      ebs = object({
+        volume_size           = number
+        volume_type           = string
+        encrypted             = bool
+        delete_on_termination = bool
+      })
+    })))
   }))
   default = {
     defaultGroup = {
-      instance_types = ["m5.xlarge"]
+      instance_types = ["r6a.xlarge"]
       min_size       = 1
-      max_size       = 1
-      desired_size   = 1
+      max_size       = 3
+      desired_size   = 2
       metadata_options = {
         "http_endpoint" : "enabled",
         "http_put_response_hop_limit" : 3,
+      }
+      block_device_mappings = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size           = 100
+            volume_type           = "gp2"
+            encrypted             = true
+            delete_on_termination = true
+          }
+        }
       }
     }
   }
