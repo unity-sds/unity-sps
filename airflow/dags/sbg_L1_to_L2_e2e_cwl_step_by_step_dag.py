@@ -62,7 +62,7 @@ dag = DAG(
         "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "isofit_input_stac": Param(ISOFIT_INPUT_STAC, type="string"),
 
-        "isofit_input_aux_stac": Param("", type="string"),
+        "isofit_input_aux_stac": Param(ISOFIT_INPUT_AUX_STAC, type="string"),
         "isofit_isofit_output_collection_id": Param("ISOFIT_OUTPUT_COLLECTION_ID", type="string"),
 
         # For all steps
