@@ -3,11 +3,14 @@
 import json
 import uuid
 from datetime import datetime
+import os
+import shutil
 
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator
 from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
+from airflow.utils.trigger_rule import TriggerRule
 
 from airflow import DAG
 
@@ -167,4 +170,21 @@ isofit_task = KubernetesPodOperator(
     dag=dag,
 )
 
-setup_task >> preprocess_task >> isofit_task
+def cleanup(**context):
+    dag_run_id = context["dag_run"].run_id
+    local_dir = f"/shared-task-data/{dag_run_id}"
+    if os.path.exists(local_dir):
+        shutil.rmtree(local_dir)
+        print(f"Deleted directory: {local_dir}")
+    else:
+        print(f"Directory does not exist, no need to delete: {local_dir}")
+
+
+cleanup_task = PythonOperator(
+    task_id="Cleanup",
+    python_callable=cleanup,
+    trigger_rule=TriggerRule.ALWAYS,
+    dag=dag,
+)
+
+setup_task >> preprocess_task >> isofit_task >> cleanup_task
