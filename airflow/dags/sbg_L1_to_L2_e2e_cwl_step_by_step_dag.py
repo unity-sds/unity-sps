@@ -64,9 +64,8 @@ dag = DAG(
         "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "isofit_input_stac": Param(ISOFIT_INPUT_STAC, type="string"),
-
         "isofit_input_aux_stac": Param(ISOFIT_INPUT_AUX_STAC, type="string"),
-        "isofit_isofit_output_collection_id": Param("ISOFIT_OUTPUT_COLLECTION_ID", type="string"),
+        "isofit_output_collection_id": Param("ISOFIT_OUTPUT_COLLECTION_ID", type="string"),
 
         # For all steps
         "input_unity_dapa_client": Param(DAPA_CLIENT_DEV_VENUE, type="string"),
@@ -105,7 +104,7 @@ def setup(ti=None, **context):
         "input_unity_dapa_api": context["params"]["input_unity_dapa_api"],
         "input_crid": context["params"]["input_crid"],
         "output_collection_id": context["params"]["isofit_output_collection_id"],
-        "output_data_bucket": context["params"]["isofit_output_collection_id"],
+        "output_data_bucket": context["params"]["output_data_bucket"],
     }
     ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
 
