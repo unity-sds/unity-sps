@@ -46,6 +46,7 @@ done
 # List contents when done
 . /usr/share/cwl/venv/bin/activate
 pwd
+ls -lR
 cwl-runner --tmp-outdir-prefix "$PWD"/ "$cwl_workflow" "$job_args"
 ls -lR
 deactivate
