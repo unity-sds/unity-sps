@@ -97,7 +97,7 @@ def setup(ti=None, **context):
 
     preprocess_dict = {
         "input_processing_labels": ["label1", "label2"],
-        "input_cmr_stac": "/scratch/cmr-results.json",
+        "input_cmr_stac": "cmr-results.json",
         "input_unity_dapa_client": context["params"]["input_unity_dapa_client"],
         "input_unity_dapa_api": context["params"]["input_unity_dapa_api"],
         "input_crid": context["params"]["input_crid"],
