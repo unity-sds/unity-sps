@@ -229,4 +229,4 @@ cleanup_task = PythonOperator(
     dag=dag,
 )
 
-setup_task >> preprocess_task >> isofit_task >> cleanup_task
+setup_task >> cmr_task >> preprocess_task >> isofit_task >> cleanup_task
