@@ -54,14 +54,21 @@ dag = DAG(
     default_args=dag_default_args,
     params={
 
-        # PREPROCESS step
+        # step: CMR
+        "input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
+        "input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        "input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+
+        # step: PREPROCESS
         "preprocess_input_cmr_stac": Param(PREPROCESS_INPUT_AUX_STAC, type="string"),
         "preprocess_output_collection_id": Param(PREPROCESS_OUTPUT_COLLECTION_ID, type="string"),
 
-        # ISOFIT  Step
-        "isofit_input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
-        "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        # step: PREPROCESS DATA CATALOG
+
+        # step: ISOFIT
+        # "isofit_input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
+        # "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        # "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "isofit_input_stac": Param(ISOFIT_INPUT_STAC, type="string"),
         "isofit_input_aux_stac": Param(ISOFIT_INPUT_AUX_STAC, type="string"),
         "isofit_output_collection_id": Param(ISOFIT_OUTPUT_COLLECTION_ID, type="string"),
@@ -77,8 +84,16 @@ dag = DAG(
 )
 
 
+# Step: Setup
 # Task that serializes the job arguments into a JSON string
 def setup(ti=None, **context):
+
+    cmr_dict = {
+        "cmr_collection": context["params"]["input_cmr_collection_name"],
+        "cmr_start_time": context["params"]["input_cmr_search_start_time"],
+        "cmr_stop_time": context["params"]["input_cmr_search_stop_time"],
+    }
+    ti.xcom_push(key="cmr_query_args", value=json.dumps(cmr_dict))
 
     preprocess_dict = {
         "input_processing_labels": ["label1", "label2"],
@@ -93,9 +108,9 @@ def setup(ti=None, **context):
 
     isofit_dict = {
         "input_processing_labels": ["label1", "label2"],
-        "input_cmr_collection_name": context["params"]["isofit_input_cmr_collection_name"],
-        "input_cmr_search_start_time": context["params"]["isofit_input_cmr_search_start_time"],
-        "input_cmr_search_stop_time": context["params"]["isofit_input_cmr_search_stop_time"],
+        "input_cmr_collection_name": context["params"]["input_cmr_collection_name"],
+        "input_cmr_search_start_time": context["params"]["input_cmr_search_start_time"],
+        "input_cmr_search_stop_time": context["params"]["input_cmr_search_stop_time"],
         "input_stac": context["params"]["isofit_input_stac"],
         "unity_stac_auth": context["params"]["unity_stac_auth"],
         "input_aux_stac": context["params"]["isofit_input_aux_stac"],
@@ -109,6 +124,35 @@ def setup(ti=None, **context):
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
+
+# Step: CMR
+SBG_CMR_WORKFLOW = "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2Fcmr-trial/versions/4/PLAIN-CWL/descriptor/%2FDockstore.cwl"
+cmr_task = KubernetesPodOperator(
+    namespace=POD_NAMESPACE,
+    name="CMR_Query",
+    on_finish_action="delete_pod",
+    hostnetwork=False,
+    startup_timeout_seconds=1000,
+    get_logs=True,
+    task_id="SBG_CMR_Query",
+    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-cmr-query-pod-" + uuid.uuid4().hex))),
+    pod_template_file=POD_TEMPLATE_FILE,
+    arguments=[
+        SBG_CMR_WORKFLOW,
+        "{{ti.xcom_pull(task_ids='Setup', key='cmr_query_args')}}",
+        WORKING_DIR,
+    ],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
+    dag=dag,
+)
 
 # Step: PREPROCESS
 SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
