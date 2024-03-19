@@ -33,15 +33,8 @@ dag_default_args = {
     "start_date": datetime.utcfromtimestamp(0),
 }
 
-PREPROCESS_INPUT_AUX_STAC = 'https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z'
-ISOFIT_INPUT_STAC = "https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27"
-ISOFIT_INPUT_AUX_STAC = '{"numberMatched":{"total_size":1},"numberReturned":1,"stac_version":"1.0.0","type":"FeatureCollection","links":[{"rel":"self","href":"https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/items?limit=10"},{"rel":"root","href":"https://d3vc8w9zcq658.cloudfront.net"}],"features":[{"type":"Feature","stac_version":"1.0.0","id":"urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120","properties":{"datetime":"2024-02-14T22:04:41.078000Z","start_datetime":"2024-01-03T13:19:36Z","end_datetime":"2024-01-03T13:19:48Z","created":"2024-01-03T13:19:36Z","updated":"2024-02-14T22:05:25.248000Z","status":"completed","provider":"unity"},"geometry":{"type":"Point","coordinates":[0,0]},"links":[{"rel":"collection","href":"."}],"assets":{"sRTMnet_v120.h5":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-AUX___1/urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120.h5/sRTMnet_v120.h5","title":"sRTMnet_v120.h5","description":"size=-1;checksumType=md5;checksum=unknown;","roles":["data"]},"sRTMnet_v120_aux.npz":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-AUX___1/urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120.h5/sRTMnet_v120_aux.npz","title":"sRTMnet_v120_aux.npz","description":"size=-1;checksumType=md5;checksum=unknown;","roles":["data"]}},"bbox":[-180,-90,180,90],"stac_extensions":[],"collection":"urn:nasa:unity:unity:dev:SBG-AUX___1"}]}'
-ISOFIT_OUTPUT_COLLECTION_ID = "urn:nasa:unity:unity:dev:SBG-L2A_RFL___1"
-
-DAPA_CLIENT_DEV_VENUE = "40c2s0ulbhp9i0fmaph3su9jch"
-DAPA_API_DEV_VENUE = "https://d3vc8w9zcq658.cloudfront.net"
-PREPROCESS_OUTPUT_COLLECTION_ID = "urn:nasa:unity:unity:dev:SBG-L1B_PRE___1"
-OUTPUT_DATA_BUCKET = "sps-dev-ds-storage"
+# common parameters
+INPUT_PROCESSING_LABELS = ["label1", "label2"]
 
 dag = DAG(
     dag_id="sbg-l1-to-l2-e2e-cwl-step-by-step-dag",
@@ -54,32 +47,29 @@ dag = DAG(
     default_args=dag_default_args,
     params={
 
-        # step: CMR
-        "input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
-        "input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        "input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        # For step: CMR
+        #"input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
+        #"input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        #"input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
 
-        # step: PREPROCESS
-        # "preprocess_input_cmr_stac": Param(PREPROCESS_INPUT_AUX_STAC, type="string"),
-        "preprocess_output_collection_id": Param(PREPROCESS_OUTPUT_COLLECTION_ID, type="string"),
+        # For step: PREPROCESS
+        "preprocess_input_cmr_stac": Param("https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z", type="string"),
+        "preprocess_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L1B_PRE___1", type="string"),
 
-        # step: PREPROCESS DATA CATALOG
-
-        # step: ISOFIT
-        # "isofit_input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
-        # "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        # "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        "isofit_input_stac": Param(ISOFIT_INPUT_STAC, type="string"),
-        "isofit_input_aux_stac": Param(ISOFIT_INPUT_AUX_STAC, type="string"),
-        "isofit_output_collection_id": Param(ISOFIT_OUTPUT_COLLECTION_ID, type="string"),
+        # For step: ISOFIT
+        "isofit_input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
+        "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
+        "isofit_input_stac": Param("https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27", type="string"),
+        "isofit_input_aux_stac": Param('{"numberMatched":{"total_size":1},"numberReturned":1,"stac_version":"1.0.0","type":"FeatureCollection","links":[{"rel":"self","href":"https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/items?limit=10"},{"rel":"root","href":"https://d3vc8w9zcq658.cloudfront.net"}],"features":[{"type":"Feature","stac_version":"1.0.0","id":"urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120","properties":{"datetime":"2024-02-14T22:04:41.078000Z","start_datetime":"2024-01-03T13:19:36Z","end_datetime":"2024-01-03T13:19:48Z","created":"2024-01-03T13:19:36Z","updated":"2024-02-14T22:05:25.248000Z","status":"completed","provider":"unity"},"geometry":{"type":"Point","coordinates":[0,0]},"links":[{"rel":"collection","href":"."}],"assets":{"sRTMnet_v120.h5":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-AUX___1/urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120.h5/sRTMnet_v120.h5","title":"sRTMnet_v120.h5","description":"size=-1;checksumType=md5;checksum=unknown;","roles":["data"]},"sRTMnet_v120_aux.npz":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-AUX___1/urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120.h5/sRTMnet_v120_aux.npz","title":"sRTMnet_v120_aux.npz","description":"size=-1;checksumType=md5;checksum=unknown;","roles":["data"]}},"bbox":[-180,-90,180,90],"stac_extensions":[],"collection":"urn:nasa:unity:unity:dev:SBG-AUX___1"}]}', type="string"),
+        "isofit_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RFL___1", type="string"),
 
         # For all steps
-        "input_unity_dapa_client": Param(DAPA_CLIENT_DEV_VENUE, type="string"),
-        "input_unity_dapa_api": Param(DAPA_API_DEV_VENUE, type="string"),
-        "output_data_bucket": Param(OUTPUT_DATA_BUCKET, type="string"),
-        "input_crid": Param("001", type="string"),
+        "unity_dapa_client": Param("40c2s0ulbhp9i0fmaph3su9jch", type="string"),
+        "unity_dapa_api": Param("https://d3vc8w9zcq658.cloudfront.net", type="string"),
         "unity_stac_auth": Param("UNITY", type="string"),
-
+        "output_data_bucket": Param("sps-dev-ds-storage", type="string"),
+        "crid": Param("001", type="string"),
     },
 )
 
@@ -88,40 +78,36 @@ dag = DAG(
 # Task that serializes the job arguments into a JSON string
 def setup(ti=None, **context):
 
-    cmr_dict = {
-        "cmr_collection": context["params"]["input_cmr_collection_name"],
-        "cmr_start_time": context["params"]["input_cmr_search_start_time"],
-        "cmr_stop_time": context["params"]["input_cmr_search_stop_time"],
-    }
-    ti.xcom_push(key="cmr_query_args", value=json.dumps(cmr_dict))
+    #cmr_dict = {
+    #    "cmr_collection": context["params"]["input_cmr_collection_name"],
+    #    "cmr_start_time": context["params"]["input_cmr_search_start_time"],
+    #    "cmr_stop_time": context["params"]["input_cmr_search_stop_time"],
+    #}
+    #ti.xcom_push(key="cmr_query_args", value=json.dumps(cmr_dict))
 
     preprocess_dict = {
-        "input_processing_labels": ["label1", "label2"],
-        # Note: must pass the path RELATIVE to te working directory - not the absolute path on the Pod
-        "input_cmr_stac": {
-            "class": "File",
-            "path": "cmr-results.json",
-        },
-        "input_unity_dapa_client": context["params"]["input_unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["input_unity_dapa_api"],
-        "input_crid": context["params"]["input_crid"],
+        "input_processing_labels": INPUT_PROCESSING_LABELS,
+        "input_cmr_stac": context["params"]["preprocess_input_cmr_stac"],
         "output_collection_id": context["params"]["preprocess_output_collection_id"],
+        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
+        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
+        "input_crid": context["params"]["crid"],
         "output_data_bucket": context["params"]["output_data_bucket"],
     }
     ti.xcom_push(key="preprocess_args", value=json.dumps(preprocess_dict))
 
     isofit_dict = {
-        "input_processing_labels": ["label1", "label2"],
-        "input_cmr_collection_name": context["params"]["input_cmr_collection_name"],
-        "input_cmr_search_start_time": context["params"]["input_cmr_search_start_time"],
-        "input_cmr_search_stop_time": context["params"]["input_cmr_search_stop_time"],
+        "input_processing_labels": INPUT_PROCESSING_LABELS,
+        "input_cmr_collection_name": context["params"]["isofit_input_cmr_collection_name"],
+        "input_cmr_search_start_time": context["params"]["isofit_input_cmr_search_start_time"],
+        "input_cmr_search_stop_time": context["params"]["isofit_input_cmr_search_stop_time"],
         "input_stac": context["params"]["isofit_input_stac"],
-        "unity_stac_auth": context["params"]["unity_stac_auth"],
         "input_aux_stac": context["params"]["isofit_input_aux_stac"],
-        "input_unity_dapa_client": context["params"]["input_unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["input_unity_dapa_api"],
-        "input_crid": context["params"]["input_crid"],
         "output_collection_id": context["params"]["isofit_output_collection_id"],
+        "unity_stac_auth": context["params"]["unity_stac_auth"],
+        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
+        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
+        "input_crid": context["params"]["crid"],
         "output_data_bucket": context["params"]["output_data_bucket"],
     }
     ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
@@ -129,6 +115,7 @@ def setup(ti=None, **context):
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
+'''
 # Step: CMR
 SBG_CMR_WORKFLOW = "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fmike-gangl%2Fcmr-trial/versions/4/PLAIN-CWL/descriptor/%2FDockstore.cwl"
 cmr_task = KubernetesPodOperator(
@@ -158,10 +145,10 @@ cmr_task = KubernetesPodOperator(
     # do_xcom_push=True,
     dag=dag,
 )
+'''
 
 # Step: PREPROCESS
-# SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
-SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/preprocess/sbg-preprocess-workflow.cwl"
+SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 preprocess_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Preprocess",
@@ -227,6 +214,7 @@ def cleanup(**context):
     else:
         print(f"Directory does not exist, no need to delete: {local_dir}")
 
+
 # The cleanup task will run as long as at lest the Setup task succeeds
 cleanup_task = PythonOperator(
     task_id="Cleanup",
@@ -235,4 +223,4 @@ cleanup_task = PythonOperator(
     dag=dag,
 )
 
-setup_task >> cmr_task >> preprocess_task >> isofit_task >> cleanup_task
+setup_task >> preprocess_task >> isofit_task >> cleanup_task
