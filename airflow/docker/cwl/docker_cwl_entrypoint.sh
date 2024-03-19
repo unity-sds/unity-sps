@@ -15,22 +15,24 @@ cwl_workflow=$1
 job_args=$2
 work_dir=${3:-.}
 
+# create working directory if it doesn't exist
+mkdir -p "$work_dir"
+cd $work_dir
+
 # switch between the 2 cases a) and b) for job_args
+# remove arguments from previous tasks
+rm -f ./job_args.json
 if [ "$job_args" = "${job_args#{}" ]
 then
   # job_args does NOT start with '{'
   echo "Using job arguments from URL: $job_args"
 else
   # job_args starts with '{'
-  echo "$job_args" > /tmp/job_args.json
-  echo "Using job arguments from JSON string:" && cat /tmp/job_args.json
-  job_args="/tmp/job_args.json"
+  echo "$job_args" > ./job_args.json
+  echo "Using job arguments from JSON string:" && cat ./job_args.json
+  job_args="./job_args.json"
 fi
 echo "Executing the CWL workflow: $cwl_workflow with json arguments: $job_args and working directory: $work_dir"
-
-# create working directory if it doesn't exist
-mkdir -p "$work_dir"
-cd $work_dir
 
 # Start Docker engine
 dockerd &> dockerd-logfile &
