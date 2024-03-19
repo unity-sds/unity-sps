@@ -207,6 +207,37 @@ isofit_task = KubernetesPodOperator(
     dag=dag,
 )
 
+# Step: RESAMPLE
+SBG_RESAMPLE_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
+SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.dev.yml"
+resample_task = KubernetesPodOperator(
+    namespace=POD_NAMESPACE,
+    name="Resample",
+    on_finish_action="delete_pod",
+    hostnetwork=False,
+    startup_timeout_seconds=1000,
+    get_logs=True,
+    task_id="SBG_Resample",
+    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-resample-pod-" + uuid.uuid4().hex))),
+    pod_template_file=POD_TEMPLATE_FILE,
+    arguments=[
+        SBG_RESAMPLE_CWL,
+        SBG_RESAMPLE_ARGS,
+        WORKING_DIR,
+    ],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
+    dag=dag,
+)
+
+
 def cleanup(**context):
     dag_run_id = context["dag_run"].run_id
     local_dir = f"/shared-task-data/{dag_run_id}"
@@ -225,4 +256,4 @@ cleanup_task = PythonOperator(
     dag=dag,
 )
 
-setup_task >> preprocess_task >> isofit_task >> cleanup_task
+setup_task >> preprocess_task >> resample_task >> cleanup_task
