@@ -49,6 +49,9 @@ pwd
 ls -lR
 cwl-runner --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
 ls -lR
+# FIXME
+# mkdir -p /airflow/xcom/
+# cp cmr-results.json /airflow/xcom/return.json
 deactivate
 
 # Stop Docker engine

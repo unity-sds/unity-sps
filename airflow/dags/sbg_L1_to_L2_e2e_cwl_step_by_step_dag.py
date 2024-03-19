@@ -97,6 +97,7 @@ def setup(ti=None, **context):
 
     preprocess_dict = {
         "input_processing_labels": ["label1", "label2"],
+        # Note: must pass the path RELATIVE to te working directory - not the absolute path on the Pod
         "input_cmr_stac": "cmr-results.json",
         "input_unity_dapa_client": context["params"]["input_unity_dapa_client"],
         "input_unity_dapa_api": context["params"]["input_unity_dapa_api"],
@@ -151,11 +152,13 @@ cmr_task = KubernetesPodOperator(
             persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
         )
     ],
+    # do_xcom_push=True,
     dag=dag,
 )
 
 # Step: PREPROCESS
-SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+# SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/preprocess/sbg-preprocess-workflow.cwl"
 preprocess_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Preprocess",
