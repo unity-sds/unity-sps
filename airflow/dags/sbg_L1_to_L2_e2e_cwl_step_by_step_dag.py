@@ -37,29 +37,28 @@ dag_default_args = {
 INPUT_PROCESSING_LABELS = ["label1", "label2"]
 
 class CwlKubernetesPodOperator(KubernetesPodOperator):
-    def __init__(self, name, task_id, arguments, dag, dag_run_id):
-        super(KubernetesPodOperator, self).__init__(
-            namespace=POD_NAMESPACE,
-            name=name,
-            on_finish_action="delete_pod",
-            hostnetwork=False,
-            startup_timeout_seconds=1000,
-            get_logs=True,
-            task_id=task_id,
-            full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=(task_id.lower()+"-pod-" + uuid.uuid4().hex))),
-            pod_template_file=POD_TEMPLATE_FILE,
-            arguments=arguments,
-            volume_mounts=[
+    def __init__(self, name, task_id, arguments, dag, dag_run_id, **kwargs):
+        super().__init__(**kwargs)
+        self.namespace = POD_NAMESPACE
+        self.name = name
+        self.on_finish_action = "delete_pod",
+        self.hostnetwork=False
+        self.startup_timeout_seconds = 1000,
+        self.get_logs = True
+        self.task_id = task_id
+        self.full_pod_spec = k8s.V1Pod(k8s.V1ObjectMeta(name=(task_id.lower()+"-pod-" + uuid.uuid4().hex))),
+        self.pod_template_file = POD_TEMPLATE_FILE,
+        self.arguments = arguments
+        self.volume_mounts=[
                 k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path=dag_run_id)
             ],
-            volumes=[
+        self.volumes=[
                 k8s.V1Volume(
                     name="workers-volume",
                     persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
                 )
             ],
-            dag=dag,
-        )
+        self.dag=dag
 
 
 sbg_dag = DAG(
