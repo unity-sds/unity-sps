@@ -36,11 +36,6 @@ dag_default_args = {
 # common parameters
 INPUT_PROCESSING_LABELS = ["label1", "label2"]
 
-class CwlKubernetesPodOperator(KubernetesPodOperator):
-    def __init__(self, *args, **kwargs):
-        super(KubernetesPodOperator, self).__init__(*args, **kwargs)
-
-
 dag = DAG(
     dag_id="sbg-l1-to-l2-e2e-cwl-step-by-step-dag",
     description="SBG L1 to L2 End-To-End Workflow as step-by-step CWL DAGs",
@@ -156,7 +151,7 @@ cmr_task = KubernetesPodOperator(
 
 # Step: PREPROCESS
 SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
-preprocess_task = CwlKubernetesPodOperator(
+preprocess_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Preprocess",
     on_finish_action="delete_pod",
