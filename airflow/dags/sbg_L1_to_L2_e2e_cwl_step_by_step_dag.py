@@ -36,7 +36,33 @@ dag_default_args = {
 # common parameters
 INPUT_PROCESSING_LABELS = ["label1", "label2"]
 
-dag = DAG(
+class CwlKubernetesPodOperator(KubernetesPodOperator):
+    def __init__(self, name, task_id, arguments, dag, dag_run_id):
+        super(KubernetesPodOperator, self).__init__(
+            namespace=POD_NAMESPACE,
+            name=name,
+            on_finish_action="delete_pod",
+            hostnetwork=False,
+            startup_timeout_seconds=1000,
+            get_logs=True,
+            task_id=task_id,
+            full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=(task_id.lower()+"-pod-" + uuid.uuid4().hex))),
+            pod_template_file=POD_TEMPLATE_FILE,
+            arguments=arguments,
+            volume_mounts=[
+                k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path=dag_run_id)
+            ],
+            volumes=[
+                k8s.V1Volume(
+                    name="workers-volume",
+                    persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+                )
+            ],
+            dag=dag,
+        )
+
+
+sbg_dag = DAG(
     dag_id="sbg-l1-to-l2-e2e-cwl-step-by-step-dag",
     description="SBG L1 to L2 End-To-End Workflow as step-by-step CWL DAGs",
     tags=["SBG", "Unity", "SPS", "NASA", "JPL"],
@@ -72,6 +98,8 @@ dag = DAG(
         "crid": Param("001", type="string"),
     },
 )
+
+
 
 
 # Step: Setup
@@ -113,7 +141,7 @@ def setup(ti=None, **context):
     ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
 
 
-setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
+setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=sbg_dag)
 
 '''
 # Step: CMR
@@ -149,31 +177,16 @@ cmr_task = KubernetesPodOperator(
 
 # Step: PREPROCESS
 SBG_PREPROCESS_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
-preprocess_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
+preprocess_task = CwlKubernetesPodOperator(
     name="Preprocess",
-    on_finish_action="delete_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=1000,
-    get_logs=True,
     task_id="SBG_Preprocess",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-pod-" + uuid.uuid4().hex))),
-    pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_PREPROCESS_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}",
         WORKING_DIR,
     ],
-    volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
-        )
-    ],
-    dag=dag,
+    dag=sbg_dag,
+    dag_run_id="{{ dag_run.run_id }}"
 )
 
 # Step: ISOFIT
@@ -202,7 +215,7 @@ isofit_task = KubernetesPodOperator(
             persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
         )
     ],
-    dag=dag,
+    dag=sbg_dag,
 )
 
 def cleanup(**context):
@@ -220,7 +233,7 @@ cleanup_task = PythonOperator(
     task_id="Cleanup",
     python_callable=cleanup,
     trigger_rule=TriggerRule.ONE_SUCCESS,
-    dag=dag,
+    dag=sbg_dag,
 )
 
 setup_task >> preprocess_task >> isofit_task >> cleanup_task
