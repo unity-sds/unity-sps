@@ -179,6 +179,7 @@ preprocess_task = KubernetesPodOperator(
 )
 
 # Step: ISOFIT
+'''
 SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
 isofit_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
@@ -206,6 +207,7 @@ isofit_task = KubernetesPodOperator(
     ],
     dag=dag,
 )
+'''
 
 # Step: RESAMPLE
 SBG_RESAMPLE_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
@@ -237,6 +239,66 @@ resample_task = KubernetesPodOperator(
     dag=dag,
 )
 
+# Step: REFLECT-CORRECT
+SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
+SBG_REFLECT_CORRECT_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.dev.yml"
+reflect_correct_task = KubernetesPodOperator(
+    namespace=POD_NAMESPACE,
+    name="Reflect_Correct",
+    on_finish_action="delete_pod",
+    hostnetwork=False,
+    startup_timeout_seconds=1000,
+    get_logs=True,
+    task_id="SBG_Reflect_Correct",
+    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-reflect-correct-pod-" + uuid.uuid4().hex))),
+    pod_template_file=POD_TEMPLATE_FILE,
+    arguments=[
+        SBG_REFLECT_CORRECT_CWL,
+        SBG_REFLECT_CORRECT_ARGS,
+        WORKING_DIR,
+    ],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
+    dag=dag,
+)
+
+
+# Step: FRCOVER
+SBG_FRCOVER_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.cwl"
+SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.dev.yml"
+frcover_task = KubernetesPodOperator(
+    namespace=POD_NAMESPACE,
+    name="Frcover",
+    on_finish_action="delete_pod",
+    hostnetwork=False,
+    startup_timeout_seconds=1000,
+    get_logs=True,
+    task_id="SBG_Frcover",
+    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-frcover-pod-" + uuid.uuid4().hex))),
+    pod_template_file=POD_TEMPLATE_FILE,
+    arguments=[
+        SBG_FRCOVER_CWL,
+        SBG_FRCOVER_ARGS,
+        WORKING_DIR,
+    ],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
+    dag=dag,
+)
 
 def cleanup(**context):
     dag_run_id = context["dag_run"].run_id
@@ -256,4 +318,4 @@ cleanup_task = PythonOperator(
     dag=dag,
 )
 
-setup_task >> preprocess_task >> resample_task >> cleanup_task
+setup_task >> preprocess_task >> resample_task >> reflect_correct_task >> frcover_task >> cleanup_task
