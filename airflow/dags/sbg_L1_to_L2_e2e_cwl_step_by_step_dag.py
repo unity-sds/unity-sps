@@ -179,7 +179,6 @@ preprocess_task = KubernetesPodOperator(
 )
 
 # Step: ISOFIT
-'''
 SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
 isofit_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
@@ -207,7 +206,6 @@ isofit_task = KubernetesPodOperator(
     ],
     dag=dag,
 )
-'''
 
 # Step: RESAMPLE
 SBG_RESAMPLE_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
@@ -310,14 +308,22 @@ def cleanup(**context):
         print(f"Directory does not exist, no need to delete: {local_dir}")
 
 
-# The cleanup task will run as long as at lest the Setup task succeeds
-cleanup_task = PythonOperator(
-    task_id="Cleanup",
+# Must have 2 cleanup tasks for the success and failure scenarios
+cleanup_on_success_task = PythonOperator(
+    task_id="Cleanup_On_Success",
     python_callable=cleanup,
-    trigger_rule=TriggerRule.ONE_SUCCESS,
-    dag=dag,
+    trigger_rule=TriggerRule.ALL_SUCCESS,
+    dag=dag
 )
 
-# setup_task >> preprocess_task >> resample_task >> reflect_correct_task >> frcover_task >> cleanup_task
+cleanup_on_failure_task = PythonOperator(
+    task_id="Cleanup_On_Failure",
+    python_callable=cleanup,
+    trigger_rule=TriggerRule.ONE_FAILED,
+    dag=dag
+)
 
-setup_task >> reflect_correct_task >> frcover_task >> cleanup_task
+(setup_task >>
+ preprocess_task >> isofit_task >> resample_task >> reflect_correct_task >> frcover_task >>
+ [cleanup_on_success_task, cleanup_on_failure_task])
+
