@@ -16,7 +16,7 @@ WORKING_DIR="/scratch"
 set -ex
 cwl_workflow=$1
 job_args=$2
-json_output=${3:""}
+json_output=$3
 
 # create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
