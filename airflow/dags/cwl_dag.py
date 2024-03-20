@@ -64,13 +64,7 @@ dag = DAG(
             type="string",
             title="CWL workflow parameters",
             description="The job parameters encodes as a JSON string, or the URL of a JSON or YAML file",
-        ),
-        "working_dir": Param(
-            WORKING_DIR,
-            type="string",
-            title="Working directory",
-            description="Use '.' for EBS, '/scratch' for EFS",
-        ),
+        )
     },
 )
 
@@ -101,7 +95,7 @@ cwl_task = KubernetesPodOperator(
         metadata=k8s.V1ObjectMeta(name="docker-cwl-pod-" + uuid.uuid4().hex),
     ),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=["{{ params.cwl_workflow }}", "{{ params.cwl_args }}", "{{ params.working_dir }}"],
+    arguments=["{{ params.cwl_workflow }}", "{{ params.cwl_args }}"],
     dag=dag,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")

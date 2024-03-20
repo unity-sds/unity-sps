@@ -163,8 +163,7 @@ preprocess_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_PREPROCESS_CWL,
-        "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}",
-        WORKING_DIR,
+        "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -222,8 +221,7 @@ resample_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_RESAMPLE_CWL,
-        SBG_RESAMPLE_ARGS,
-        WORKING_DIR,
+        SBG_RESAMPLE_ARGS
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -252,8 +250,7 @@ reflect_correct_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_REFLECT_CORRECT_CWL,
-        SBG_REFLECT_CORRECT_ARGS,
-        WORKING_DIR,
+        SBG_REFLECT_CORRECT_ARGS
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -283,8 +280,7 @@ frcover_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_FRCOVER_CWL,
-        SBG_FRCOVER_ARGS,
-        WORKING_DIR,
+        SBG_FRCOVER_ARGS
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")

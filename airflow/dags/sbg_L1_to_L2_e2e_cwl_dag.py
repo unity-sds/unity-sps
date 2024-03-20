@@ -100,8 +100,7 @@ cwl_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         "{{ params.cwl_workflow }}",
-        "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}",
-        WORKING_DIR,
+        "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}"
     ],
     # resources={"request_memory": "512Mi", "limit_memory": "1024Mi"},
     dag=dag,
