@@ -91,6 +91,7 @@ echo_message_task = KubernetesPodOperator(
     dag=dag,
 )
 
+# NOTE: this CWL MUST stage the input file to the working directory inside the Docker container
 CAT_FILE_CWL = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/cat_file.cwl"
 cat_file_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
@@ -117,6 +118,34 @@ cat_file_task = KubernetesPodOperator(
         )
     ],
     dag=dag,
+    do_xcom_push=True
 )
 
-setup_task >> echo_message_task >> cat_file_task
+echo_xcom_task = KubernetesPodOperator(
+    namespace=POD_NAMESPACE,
+    name="Echo_Xcom",
+    on_finish_action="delete_pod",
+    hostnetwork=False,
+    startup_timeout_seconds=1000,
+    get_logs=True,
+    task_id="Echo_Xcom",
+    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("echo-xcom-pod-" + uuid.uuid4().hex))),
+    pod_template_file=POD_TEMPLATE_FILE,
+    arguments=[
+        ECHO_MESSAGE_CWL,
+        "{\"message\": \"{{ ti.xcom_pull('cat_file_task')[0] }}\" }",
+        WORKING_DIR,
+    ],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="workers-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+        )
+    ],
+    dag=dag,
+)
+
+setup_task >> echo_message_task >> cat_file_task >> echo_xcom_task
