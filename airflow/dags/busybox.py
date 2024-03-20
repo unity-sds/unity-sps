@@ -60,7 +60,7 @@ def setup(ti=None, **context):
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
-ECHO_MESSAGE_CWL = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo.cwl"
+ECHO_MESSAGE_CWL = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
 echo_message_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Echo_Message",
@@ -100,7 +100,7 @@ cat_file_task = KubernetesPodOperator(
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("cat_file-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
-        ECHO_MESSAGE_CWL,
+        CAT_FILE_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='cat_file_args')}}",
         WORKING_DIR,
     ],
