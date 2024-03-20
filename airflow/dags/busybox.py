@@ -133,7 +133,7 @@ echo_xcom_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         ECHO_MESSAGE_CWL,
-        "{\"message\": \"{{ ti.xcom_pull('cat_file_task')[0] }}\" }",
+        "{\"message\": \"{{ ti.xcom_pull('Cat_File')[0] }}\" }",
         WORKING_DIR,
     ],
     volume_mounts=[
