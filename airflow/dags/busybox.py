@@ -53,7 +53,10 @@ def setup(ti=None, **context):
     ti.xcom_push(key="echo_message_args", value=json.dumps(echo_message_dict))
 
     cat_file_dict = {
-        "the_file": "echo_message.txt"
+        "the_file": {
+            "class": "File",
+            "path": "echo_message.txt"
+        }
     }
     ti.xcom_push(key="cat_file_args", value=json.dumps(cat_file_dict))
 
