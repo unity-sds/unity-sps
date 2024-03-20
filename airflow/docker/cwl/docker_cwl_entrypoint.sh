@@ -7,17 +7,20 @@
 #        (example: { "name": "John Doe" })
 #  OR b) The URL of a YAML or JSON file containing the job parameters
 #        (example: https://github.com/unity-sds/sbg-workflows/blob/main/L1-to-L2-e2e.dev.yml)
-# $3: optional working directory, defaults to the current directory
-# Note: The working must be accessible by the Docker container that executes this script
+# $3: optional path to an output JSON file that needs to be shared as Airflow "xcom" data
+
+# Must be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
+# that executes this script
+WORKING_DIR="/scratch"
 
 set -ex
 cwl_workflow=$1
 job_args=$2
-work_dir=${3:-.}
+json_output=${3:""}
 
 # create working directory if it doesn't exist
-mkdir -p "$work_dir"
-cd $work_dir
+mkdir -p "$WORKING_DIR"
+cd $WORKING_DIR
 
 # switch between the 2 cases a) and b) for job_args
 # remove arguments from previous tasks
@@ -32,7 +35,8 @@ else
   echo "Using job arguments from JSON string:" && cat ./job_args.json
   job_args="./job_args.json"
 fi
-echo "Executing the CWL workflow: $cwl_workflow with json arguments: $job_args and working directory: $work_dir"
+echo "Executing the CWL workflow: $cwl_workflow with json arguments: $job_args and working directory: $WORKING_DIR"
+echo "JSON XCOM output: ${json_output}"
 
 # Start Docker engine
 dockerd &> dockerd-logfile &
@@ -52,9 +56,13 @@ ls -lR
 cwl-runner --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
 ls -lR
 
-# FIXME
-mkdir -p /airflow/xcom/
-echo "\"A new message in json format\"" > /airflow/xcom/return.json
+# Optionally, save the requested output file to a location
+# where it will be picked up by the Airflow XCOM mechanism
+# Note: the content of the file MUST be valid JSON or XCOM will fail.
+if [ ! -z "${json_output}" -a "${json_output}" != " " ]; then
+  mkdir -p /airflow/xcom/
+  cp ${json_output} /airflow/xcom/return.json
+fi
 
 deactivate
 

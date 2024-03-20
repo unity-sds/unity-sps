@@ -41,7 +41,7 @@ dag = DAG(
     max_active_runs=100,
     default_args=dag_default_args,
     params={
-        "message": Param("Hello World", type="string")
+        "message": Param("\"Hello World\"", type="string")
     },
 )
 
@@ -76,8 +76,7 @@ echo_message_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         ECHO_MESSAGE_CWL,
-        "{{ti.xcom_pull(task_ids='Setup', key='echo_message_args')}}",
-        WORKING_DIR,
+        "{{ti.xcom_pull(task_ids='Setup', key='echo_message_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -85,7 +84,7 @@ echo_message_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs")
         )
     ],
     dag=dag,
@@ -106,7 +105,7 @@ cat_file_task = KubernetesPodOperator(
     arguments=[
         CAT_FILE_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='cat_file_args')}}",
-        WORKING_DIR,
+        "cat_file.txt"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -133,8 +132,7 @@ echo_xcom_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         ECHO_MESSAGE_CWL,
-        "{\"message\": \"{{ ti.xcom_pull('Cat_File')[0] }}\" }",
-        WORKING_DIR,
+        "{\"message\": \"{{ ti.xcom_pull('Cat_File') }}\" }"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
