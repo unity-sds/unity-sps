@@ -47,11 +47,6 @@ dag = DAG(
     default_args=dag_default_args,
     params={
 
-        # For step: CMR
-        #"input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
-        #"input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        #"input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-
         # For step: PREPROCESS
         "preprocess_input_cmr_stac": Param("https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z", type="string"),
         "preprocess_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L1B_PRE___1", type="string"),
@@ -60,7 +55,7 @@ dag = DAG(
         "isofit_input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
         "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
-        # "isofit_input_stac": Param("https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27", type="string"),
+        "isofit_input_stac": Param("https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27", type="string"),
         "isofit_input_aux_stac": Param('{"numberMatched":{"total_size":1},"numberReturned":1,"stac_version":"1.0.0","type":"FeatureCollection","links":[{"rel":"self","href":"https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/items?limit=10"},{"rel":"root","href":"https://d3vc8w9zcq658.cloudfront.net"}],"features":[{"type":"Feature","stac_version":"1.0.0","id":"urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120","properties":{"datetime":"2024-02-14T22:04:41.078000Z","start_datetime":"2024-01-03T13:19:36Z","end_datetime":"2024-01-03T13:19:48Z","created":"2024-01-03T13:19:36Z","updated":"2024-02-14T22:05:25.248000Z","status":"completed","provider":"unity"},"geometry":{"type":"Point","coordinates":[0,0]},"links":[{"rel":"collection","href":"."}],"assets":{"sRTMnet_v120.h5":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-AUX___1/urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120.h5/sRTMnet_v120.h5","title":"sRTMnet_v120.h5","description":"size=-1;checksumType=md5;checksum=unknown;","roles":["data"]},"sRTMnet_v120_aux.npz":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-AUX___1/urn:nasa:unity:unity:dev:SBG-AUX___1:sRTMnet_v120.h5/sRTMnet_v120_aux.npz","title":"sRTMnet_v120_aux.npz","description":"size=-1;checksumType=md5;checksum=unknown;","roles":["data"]}},"bbox":[-180,-90,180,90],"stac_extensions":[],"collection":"urn:nasa:unity:unity:dev:SBG-AUX___1"}]}', type="string"),
         "isofit_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RFL___1", type="string"),
 
@@ -111,12 +106,12 @@ def setup(ti=None, **context):
         "input_cmr_collection_name": context["params"]["isofit_input_cmr_collection_name"],
         "input_cmr_search_start_time": context["params"]["isofit_input_cmr_search_start_time"],
         "input_cmr_search_stop_time": context["params"]["isofit_input_cmr_search_stop_time"],
-        # "input_stac": context["params"]["isofit_input_stac"],
+        "input_stac": context["params"]["isofit_input_stac"],
         # Output file from "preprocess" step. Path must be relative to the /scratch directory shared across tasks.
-        "input_stac": {
-            "class": "File",
-            "path": "stage_out_results.txt"
-        },
+        #"input_stac": {
+        #    "class": "File",
+        #    "path": "stage_out_results.txt"
+        #},
         "input_aux_stac": context["params"]["isofit_input_aux_stac"],
         "output_collection_id": context["params"]["isofit_output_collection_id"],
         "unity_stac_auth": context["params"]["unity_stac_auth"],
@@ -187,8 +182,8 @@ preprocess_task = KubernetesPodOperator(
 )
 
 # Step: ISOFIT
-# SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
-SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/isofit/sbg-isofit-workflow.cwl"
+SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
+# SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/isofit/sbg-isofit-workflow.cwl"
 isofit_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Isofit",
@@ -217,7 +212,7 @@ isofit_task = KubernetesPodOperator(
 
 # Step: RESAMPLE
 SBG_RESAMPLE_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
-# SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.dev.yml"
+SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.dev.yml"
 resample_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Resample",
@@ -230,7 +225,8 @@ resample_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_RESAMPLE_CWL,
-        "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"
+        SBG_RESAMPLE_ARGS
+        # "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -276,7 +272,7 @@ reflect_correct_task = KubernetesPodOperator(
 
 # Step: FRCOVER
 SBG_FRCOVER_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.cwl"
-# SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.dev.yml"
+SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.dev.yml"
 frcover_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Frcover",
@@ -289,7 +285,8 @@ frcover_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_FRCOVER_CWL,
-        "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"
+        SBG_FRCOVER_ARGS
+        # "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
