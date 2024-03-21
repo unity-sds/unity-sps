@@ -132,8 +132,7 @@ cmr_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_CMR_WORKFLOW,
-        "{{ti.xcom_pull(task_ids='Setup', key='cmr_query_args')}}",
-        WORKING_DIR,
+        "{{ti.xcom_pull(task_ids='Setup', key='cmr_query_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -191,8 +190,7 @@ isofit_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_ISOFIT_CWL,
-        "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}",
-        WORKING_DIR,
+        "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
