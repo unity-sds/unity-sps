@@ -74,6 +74,10 @@ echo_message_task = KubernetesPodOperator(
     task_id="Echo_Message",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("echo-message-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
+    container_resources=k8s.V1ResourceRequirements(
+        limits={"memory": "250M", "cpu": "100m", "ephemeral-storage": "50G"},
+        requests={"ephemeral-storage": "50G"}
+    ),
     arguments=[
         ECHO_MESSAGE_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='echo_message_args')}}"
