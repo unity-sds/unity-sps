@@ -60,12 +60,17 @@ dag = DAG(
         "isofit_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RFL___1", type="string"),
 
         # For step: RESAMPLE
+        "resample_input_stac": Param("https://1gp9st60gd.execute-api.us-west-2.amazonaws.com/dev/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L2A_RFL___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27", type="string"),
         "resample_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1", type="string"),
 
         # For step: REFLECT-CORRECT
 
         # For step: FRCOVER
+        "frcover_input_stac": Param("https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27", type="string"),
         "frcover_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2B_FRCOV___1", type="string"),
+        "frcover_sensor": Param("EMIT", type="sting"),
+        "frcover_temp_directory": Param("/tmp", type="string"),
+        "frcover_experimental": Param("False", type="string"),
 
         # For all steps
         "unity_dapa_client": Param("40c2s0ulbhp9i0fmaph3su9jch", type="string"),
@@ -82,13 +87,6 @@ dag = DAG(
 # Step: Setup
 # Task that serializes the job arguments into a JSON string
 def setup(ti=None, **context):
-
-    #cmr_dict = {
-    #    "cmr_collection": context["params"]["input_cmr_collection_name"],
-    #    "cmr_start_time": context["params"]["input_cmr_search_start_time"],
-    #    "cmr_stop_time": context["params"]["input_cmr_search_stop_time"],
-    #}
-    #ti.xcom_push(key="cmr_query_args", value=json.dumps(cmr_dict))
 
     preprocess_dict = {
         "input_processing_labels": INPUT_PROCESSING_LABELS,
@@ -123,11 +121,7 @@ def setup(ti=None, **context):
     ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
 
     resample_dict = {
-        # Output file from "isofit" step.
-        "input_stac": {
-            "class": "File",
-            "path": "stage_out_results.txt"
-        },
+        "input_stac": context["params"]["resample_input_stac"],
         "output_resample_collection_id": context["params"]["resample_output_collection_id"],
         "input_unity_dapa_client": context["params"]["unity_dapa_client"],
         "input_unity_dapa_api": context["params"]["unity_dapa_api"],
@@ -138,14 +132,16 @@ def setup(ti=None, **context):
 
     frcover_dict = {
         # Output file from "reflect-correct" step.
-        "input_stac": {
-            "class": "File",
-            "path": "stage_out_results.txt"
-        },
+        "input_stac": context["params"]["frcover_input_stac"],
         "output_frcover_collection_id": context["params"]["frcover_output_collection_id"],
+        "output_collection": context["params"]["frcover_output_collection_id"],
+        "sensor": context["params"]["frcover_sensor"],
+        "temp_directory": context["params"]["frcover_temp_directory"],
+        "experimental": context["params"]["experimental"],
         "input_unity_dapa_client": context["params"]["unity_dapa_client"],
         "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         "input_crid": context["params"]["crid"],
+        "crid": context["params"]["crid"],
         "output_data_bucket": context["params"]["output_data_bucket"],
     }
     ti.xcom_push(key="frcover_args", value=json.dumps(frcover_dict))
@@ -212,7 +208,7 @@ isofit_task = KubernetesPodOperator(
 
 # Step: RESAMPLE
 SBG_RESAMPLE_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
-SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.dev.yml"
+# SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.dev.yml"
 resample_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Resample",
@@ -225,8 +221,8 @@ resample_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_RESAMPLE_CWL,
-        SBG_RESAMPLE_ARGS
-        # "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"
+        # SBG_RESAMPLE_ARGS
+        "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -272,7 +268,7 @@ reflect_correct_task = KubernetesPodOperator(
 
 # Step: FRCOVER
 SBG_FRCOVER_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.cwl"
-SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.dev.yml"
+# SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.dev.yml"
 frcover_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Frcover",
@@ -285,8 +281,8 @@ frcover_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_FRCOVER_CWL,
-        SBG_FRCOVER_ARGS
-        # "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"
+        # SBG_FRCOVER_ARGS
+        "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
