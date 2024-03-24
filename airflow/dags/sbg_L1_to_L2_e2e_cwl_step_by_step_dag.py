@@ -137,7 +137,7 @@ def setup(ti=None, **context):
         "output_collection": context["params"]["frcover_output_collection_id"],
         "sensor": context["params"]["frcover_sensor"],
         "temp_directory": context["params"]["frcover_temp_directory"],
-        "experimental": context["params"]["experimental"],
+        "experimental": context["params"]["frcover_experimental"],
         "input_unity_dapa_client": context["params"]["unity_dapa_client"],
         "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         "input_crid": context["params"]["crid"],
