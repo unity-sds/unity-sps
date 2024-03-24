@@ -68,7 +68,7 @@ dag = DAG(
         # For step: FRCOVER
         "frcover_input_stac": Param("https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27", type="string"),
         "frcover_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2B_FRCOV___1", type="string"),
-        "frcover_sensor": Param("EMIT", type="sting"),
+        "frcover_sensor": Param("EMIT", type="string"),
         "frcover_temp_directory": Param("/tmp", type="string"),
         "frcover_experimental": Param("False", type="string"),
 
