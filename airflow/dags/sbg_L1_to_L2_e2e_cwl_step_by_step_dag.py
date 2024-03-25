@@ -27,9 +27,10 @@ POD_NAMESPACE = "airflow"
 WORKING_DIR = "/scratch"
 
 # Resources needed by each Task
+# EC2 r6a.xlarge	4vCPU	32GiB
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-        limits={"memory": "250M", "cpu": "100m", "ephemeral-storage": "20G"},
-        requests={"ephemeral-storage": "50G"}
+        limits={"memory": "4Gi", "cpu": "500m", "ephemeral-storage": "50G"},
+        requests={"memory": "2Gi", "cpu": "250m", "ephemeral-storage": "25G"}
 )
 
 # Default DAG configuration
