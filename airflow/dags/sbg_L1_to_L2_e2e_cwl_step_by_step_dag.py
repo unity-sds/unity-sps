@@ -13,6 +13,7 @@ from kubernetes.client import models as k8s
 from airflow.utils.trigger_rule import TriggerRule
 
 from airflow import DAG
+from airflow.models.baseoperator import chain
 
 # The Kubernetes Pod that executes the CWL-Docker container
 # Must use elevated privileges to start/stop the Docker engine
@@ -346,20 +347,8 @@ def cleanup(**context):
         print(f"Directory does not exist, no need to delete: {local_dir}")
 
 
-# Must have 2 cleanup tasks for the success and failure scenarios
-'''
-cleanup_on_success_task = PythonOperator(
-    task_id="Cleanup_On_Success",
-    python_callable=cleanup,
-    trigger_rule=TriggerRule.ALL_SUCCESS,
-    priority_weight=1,
-    weight_rule='upstream',
-    dag=dag
-)
-'''
-
 cleanup_task = PythonOperator(
-    task_id="Cleanup_On_Failure",
+    task_id="Cleanup",
     python_callable=cleanup,
     trigger_rule=TriggerRule.ALL_DONE,
     priority_weight=1,
@@ -367,5 +356,6 @@ cleanup_task = PythonOperator(
     dag=dag
 )
 
-setup_task >> preprocess_task >> [isofit_task >> resample_task, reflect_correct_task >> frcover_task ] >> cleanup_task
+# setup_task >> preprocess_task >> isofit_task >> resample_task >> reflect_correct_task >> frcover_task >> cleanup_task
 
+chain(setup_task, preprocess_task, [isofit_task, reflect_correct_task], [resample_task, frcover_task], cleanup_task)
