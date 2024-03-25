@@ -186,6 +186,8 @@ preprocess_task = KubernetesPodOperator(
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
     container_resources=CONTAINER_RESOURCES,
+    priority_weight=1,
+    weight_rule='upstream',
     arguments=[
         SBG_PREPROCESS_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"
@@ -215,7 +217,9 @@ isofit_task = KubernetesPodOperator(
     task_id="SBG_Isofit",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-isofit-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
+    priority_weight=1,
+    weight_rule='upstream',
     arguments=[
         SBG_ISOFIT_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"
@@ -245,7 +249,9 @@ resample_task = KubernetesPodOperator(
     task_id="SBG_Resample",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-resample-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
+    priority_weight=1,
+    weight_rule='upstream',
     arguments=[
         SBG_RESAMPLE_CWL,
         # SBG_RESAMPLE_ARGS
@@ -276,7 +282,9 @@ reflect_correct_task = KubernetesPodOperator(
     task_id="SBG_Reflect_Correct",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-reflect-correct-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
+    priority_weight=1,
+    weight_rule='upstream',
     arguments=[
         SBG_REFLECT_CORRECT_CWL,
         # SBG_REFLECT_CORRECT_ARGS
@@ -308,7 +316,9 @@ frcover_task = KubernetesPodOperator(
     task_id="SBG_Frcover",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-frcover-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
+    priority_weight=1,
+    weight_rule='upstream',
     arguments=[
         SBG_FRCOVER_CWL,
         # SBG_FRCOVER_ARGS
@@ -341,6 +351,8 @@ cleanup_on_success_task = PythonOperator(
     task_id="Cleanup_On_Success",
     python_callable=cleanup,
     trigger_rule=TriggerRule.ALL_SUCCESS,
+    priority_weight=1,
+    weight_rule='upstream',
     dag=dag
 )
 
@@ -348,10 +360,12 @@ cleanup_on_failure_task = PythonOperator(
     task_id="Cleanup_On_Failure",
     python_callable=cleanup,
     trigger_rule=TriggerRule.ONE_FAILED,
+    priority_weight=1,
+    weight_rule='upstream',
     dag=dag
 )
 
 (setup_task >>
- preprocess_task >> isofit_task >> resample_task >> reflect_correct_task >> frcover_task >>
+ preprocess_task >> [isofit_task, resample_task ] >> [reflect_correct_task, frcover_task ] >>
  [cleanup_on_success_task, cleanup_on_failure_task])
 
