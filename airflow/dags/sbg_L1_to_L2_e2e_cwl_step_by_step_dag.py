@@ -81,11 +81,14 @@ dag = DAG(
         "frcover_experimental": Param("False", type="string"),
 
         # For all steps
+        "crid": Param("001", type="string"),
+
+        # Unity venue-dependent parameters
+        # These values should be retrieved from SSM
         "unity_dapa_client": Param("40c2s0ulbhp9i0fmaph3su9jch", type="string"),
         "unity_dapa_api": Param("https://d3vc8w9zcq658.cloudfront.net", type="string"),
         "unity_stac_auth": Param("UNITY", type="string"),
         "output_data_bucket": Param("sps-dev-ds-storage", type="string"),
-        "crid": Param("001", type="string"),
     },
 )
 
@@ -132,7 +135,7 @@ def setup(ti=None, **context):
         "output_collection_id": context["params"]["isofit_output_collection_id"],
         "unity_stac_auth": context["params"]["unity_stac_auth"],
         "input_crid": context["params"]["crid"],
-    } | venue_dict
+    }.update(venue_dict)
     ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
 
     resample_dict = {
@@ -209,7 +212,7 @@ isofit_task = KubernetesPodOperator(
     task_id="SBG_Isofit",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-isofit-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
+    # container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_ISOFIT_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"
