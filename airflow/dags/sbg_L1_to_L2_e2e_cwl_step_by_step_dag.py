@@ -347,6 +347,7 @@ def cleanup(**context):
 
 
 # Must have 2 cleanup tasks for the success and failure scenarios
+'''
 cleanup_on_success_task = PythonOperator(
     task_id="Cleanup_On_Success",
     python_callable=cleanup,
@@ -355,17 +356,20 @@ cleanup_on_success_task = PythonOperator(
     weight_rule='upstream',
     dag=dag
 )
+'''
 
-cleanup_on_failure_task = PythonOperator(
+cleanup_task = PythonOperator(
     task_id="Cleanup_On_Failure",
     python_callable=cleanup,
-    trigger_rule=TriggerRule.ONE_FAILED,
+    trigger_rule=TriggerRule.ALL_DONE,
     priority_weight=1,
     weight_rule='upstream',
     dag=dag
 )
 
 (setup_task >>
- preprocess_task >> [isofit_task, resample_task ] >> [reflect_correct_task, frcover_task ] >>
- [cleanup_on_success_task, cleanup_on_failure_task])
+ preprocess_task
+ >> [isofit_task, resample_task ]
+ >> [reflect_correct_task, frcover_task ]
+ >> cleanup_task)
 
