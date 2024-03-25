@@ -112,13 +112,11 @@ def setup(ti=None, **context):
         "input_cmr_stac": context["params"]["preprocess_input_cmr_stac"],
         "output_collection_id": context["params"]["preprocess_output_collection_id"],
         "input_crid": context["params"]["crid"],
-        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
-        "output_data_bucket": context["params"]["output_data_bucket"],
+        # "input_unity_dapa_client": context["params"]["unity_dapa_client"],
+        # "input_unity_dapa_api": context["params"]["unity_dapa_api"],
+        # "output_data_bucket": context["params"]["output_data_bucket"],
     }
-    # FIXME
-    # } | venue_dict
-    ti.xcom_push(key="preprocess_args", value=json.dumps(preprocess_dict))
+    ti.xcom_push(key="preprocess_args", value=json.dumps(preprocess_dict.update(venue_dict)))
 
     isofit_dict = {
         "input_processing_labels": INPUT_PROCESSING_LABELS,
@@ -181,8 +179,7 @@ preprocess_task = KubernetesPodOperator(
     task_id="SBG_Preprocess",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    # FIXME
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_PREPROCESS_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"
@@ -212,7 +209,7 @@ isofit_task = KubernetesPodOperator(
     task_id="SBG_Isofit",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-isofit-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_ISOFIT_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"
