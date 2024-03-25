@@ -236,7 +236,9 @@ resource "aws_iam_policy" "airflow_worker_policy" {
             "ecr:GetDownloadUrlForLayer",
             "ecr:BatchGetImage",
             "secretsmanager:GetSecretValue",
-            "ssm:GetParameters"
+            "ssm:GetParameters",
+            "ssm:DescribeParameters",
+            "ssm:GetParameter"
           ],
           "Resource" : "*"
         }

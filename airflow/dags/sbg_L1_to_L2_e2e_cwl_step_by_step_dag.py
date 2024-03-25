@@ -29,7 +29,7 @@ WORKING_DIR = "/scratch"
 # Resources needed by each Task
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
         limits={"memory": "250M", "cpu": "100m", "ephemeral-storage": "20G"},
-        requests={"ephemeral-storage": "20G"}
+        requests={"ephemeral-storage": "50G"}
 )
 
 # Default DAG configuration
@@ -109,7 +109,12 @@ def setup(ti=None, **context):
         "input_cmr_stac": context["params"]["preprocess_input_cmr_stac"],
         "output_collection_id": context["params"]["preprocess_output_collection_id"],
         "input_crid": context["params"]["crid"],
-    } | venue_dict
+        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
+        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
+        "output_data_bucket": context["params"]["output_data_bucket"],
+    }
+    # FIXME
+    # } | venue_dict
     ti.xcom_push(key="preprocess_args", value=json.dumps(preprocess_dict))
 
     isofit_dict = {
@@ -173,7 +178,8 @@ preprocess_task = KubernetesPodOperator(
     task_id="SBG_Preprocess",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
+    # FIXME
+    # container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_PREPROCESS_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"
