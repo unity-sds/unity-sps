@@ -26,6 +26,12 @@ POD_NAMESPACE = "airflow"
 # This is fixed to the EFS /scratch directory in this DAG.
 WORKING_DIR = "/scratch"
 
+# Resources needed by each Task
+CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
+        limits={"memory": "250M", "cpu": "100m", "ephemeral-storage": "20G"},
+        requests={"ephemeral-storage": "20G"}
+)
+
 # Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
@@ -90,15 +96,20 @@ dag = DAG(
 # Task that serializes the job arguments into a JSON string
 def setup(ti=None, **context):
 
+    # dictionary containing venue dependent parameters common to all Tasks
+    # this dictionary is merged into each Task specific dictionary
+    venue_dict = {
+        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
+        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
+        "output_data_bucket": context["params"]["output_data_bucket"],
+    }
+
     preprocess_dict = {
         "input_processing_labels": INPUT_PROCESSING_LABELS,
         "input_cmr_stac": context["params"]["preprocess_input_cmr_stac"],
         "output_collection_id": context["params"]["preprocess_output_collection_id"],
-        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         "input_crid": context["params"]["crid"],
-        "output_data_bucket": context["params"]["output_data_bucket"],
-    }
+    } | venue_dict
     ti.xcom_push(key="preprocess_args", value=json.dumps(preprocess_dict))
 
     isofit_dict = {
@@ -115,31 +126,22 @@ def setup(ti=None, **context):
         "input_aux_stac": context["params"]["isofit_input_aux_stac"],
         "output_collection_id": context["params"]["isofit_output_collection_id"],
         "unity_stac_auth": context["params"]["unity_stac_auth"],
-        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         "input_crid": context["params"]["crid"],
-        "output_data_bucket": context["params"]["output_data_bucket"],
-    }
+    } | venue_dict
     ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
 
     resample_dict = {
         "input_stac": context["params"]["resample_input_stac"],
         "output_resample_collection_id": context["params"]["resample_output_collection_id"],
-        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         "input_crid": context["params"]["crid"],
-        "output_data_bucket": context["params"]["output_data_bucket"],
-    }
+    } | venue_dict
     ti.xcom_push(key="resample_args", value=json.dumps(resample_dict))
 
     reflect_correct_dict = {
         "input_stac": context["params"]["reflect_correct_input_stac"],
         "output_collection_id": context["params"]["reflect_correct_output_collection_id"],
-        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         "input_crid": context["params"]["crid"],
-        "output_data_bucket": context["params"]["output_data_bucket"],
-    }
+    } | venue_dict
     ti.xcom_push(key="reflect_correct_args", value=json.dumps(reflect_correct_dict))
 
     frcover_dict = {
@@ -150,13 +152,11 @@ def setup(ti=None, **context):
         "sensor": context["params"]["frcover_sensor"],
         "temp_directory": context["params"]["frcover_temp_directory"],
         "experimental": context["params"]["frcover_experimental"],
-        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
-        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         "input_crid": context["params"]["crid"],
         "crid": context["params"]["crid"],
-        "output_data_bucket": context["params"]["output_data_bucket"],
-    }
+    } | venue_dict
     ti.xcom_push(key="frcover_args", value=json.dumps(frcover_dict))
+
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
@@ -173,6 +173,7 @@ preprocess_task = KubernetesPodOperator(
     task_id="SBG_Preprocess",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_PREPROCESS_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"
@@ -202,6 +203,7 @@ isofit_task = KubernetesPodOperator(
     task_id="SBG_Isofit",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-isofit-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_ISOFIT_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"
@@ -231,6 +233,7 @@ resample_task = KubernetesPodOperator(
     task_id="SBG_Resample",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-resample-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_RESAMPLE_CWL,
         # SBG_RESAMPLE_ARGS
@@ -261,6 +264,7 @@ reflect_correct_task = KubernetesPodOperator(
     task_id="SBG_Reflect_Correct",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-reflect-correct-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_REFLECT_CORRECT_CWL,
         # SBG_REFLECT_CORRECT_ARGS
@@ -292,6 +296,7 @@ frcover_task = KubernetesPodOperator(
     task_id="SBG_Frcover",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-frcover-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_FRCOVER_CWL,
         # SBG_FRCOVER_ARGS
@@ -334,8 +339,7 @@ cleanup_on_failure_task = PythonOperator(
     dag=dag
 )
 
-# FIXME
-(setup_task >> reflect_correct_task >>
- preprocess_task >> isofit_task >> resample_task >> frcover_task >>
+(setup_task >>
+ preprocess_task >> isofit_task >> resample_task >> reflect_correct_task >> frcover_task >>
  [cleanup_on_success_task, cleanup_on_failure_task])
 
