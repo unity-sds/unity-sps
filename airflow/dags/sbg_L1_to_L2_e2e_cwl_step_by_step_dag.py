@@ -367,9 +367,5 @@ cleanup_task = PythonOperator(
     dag=dag
 )
 
-(setup_task >>
- preprocess_task
- >> [isofit_task, resample_task ]
- >> [reflect_correct_task, frcover_task ]
- >> cleanup_task)
+setup_task >> preprocess_task >> [isofit_task, resample_task ] >> [reflect_correct_task, frcover_task ] >> cleanup_task
 
