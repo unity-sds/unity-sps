@@ -138,7 +138,8 @@ def setup(ti=None, **context):
         "unity_stac_auth": context["params"]["unity_stac_auth"],
         "input_crid": context["params"]["crid"],
     }
-    ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict.update(venue_dict)))
+    isofit_dict.update(venue_dict)
+    ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
 
     resample_dict = {
         "input_stac": context["params"]["resample_input_stac"],
