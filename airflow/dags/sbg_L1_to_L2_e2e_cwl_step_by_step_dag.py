@@ -64,6 +64,8 @@ dag = DAG(
         "resample_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1", type="string"),
 
         # For step: REFLECT-CORRECT
+        "reflect_correct_input_stac": Param('{"type":"FeatureCollection","features":[{"type":"Feature","stac_version":"1.0.0","id":"urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1:SISTER_EMIT_L2A_RSRFL_20240103T131936_001","properties":{"datetime":"2024-01-03T13:19:36Z","start_datetime":"2024-01-03T13:19:36Z","end_datetime":"2024-01-03T13:19:48Z","created":"2024-03-04T23:08:10.189899+00:00","updated":"2024-03-04T23:08:10.203265Z"},"geometry":null,"links":[{"rel":"root","href":"./catalog.json","type":"application/json"},{"rel":"parent","href":"./catalog.json","type":"application/json"}],"assets":{"SISTER_EMIT_L2A_RSRFL_20240103T131936_001.bin":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1:SISTER_EMIT_L2A_RSRFL_20240103T131936_001/SISTER_EMIT_L2A_RSRFL_20240103T131936_001.bin","title":"binary file","description":"","roles":["data"]},"SISTER_EMIT_L2A_RSRFL_20240103T131936_001.hdr":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1:SISTER_EMIT_L2A_RSRFL_20240103T131936_001/SISTER_EMIT_L2A_RSRFL_20240103T131936_001.hdr","title":"header file","description":"","roles":["data"]},"SISTER_EMIT_L2A_RSRFL_20240103T131936_001_UNC.bin":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1:SISTER_EMIT_L2A_RSRFL_20240103T131936_001/SISTER_EMIT_L2A_RSRFL_20240103T131936_001_UNC.bin","title":"binary file","description":"","roles":["data"]},"SISTER_EMIT_L2A_RSRFL_20240103T131936_001_UNC.hdr":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1:SISTER_EMIT_L2A_RSRFL_20240103T131936_001/SISTER_EMIT_L2A_RSRFL_20240103T131936_001_UNC.hdr","title":"header file","description":"","roles":["data"]},"SISTER_EMIT_L2A_RSRFL_20240103T131936_001.png":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1:SISTER_EMIT_L2A_RSRFL_20240103T131936_001/SISTER_EMIT_L2A_RSRFL_20240103T131936_001.png","title":"image/png file","description":"","roles":["browse"]},"SISTER_EMIT_L2A_RSRFL_20240103T131936_001.json":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1/urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1:SISTER_EMIT_L2A_RSRFL_20240103T131936_001/SISTER_EMIT_L2A_RSRFL_20240103T131936_001.json","title":"text/json file","description":"","roles":["metadata"]}},"stac_extensions":[],"collection":"urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1"},{"type":"Feature","stac_version":"1.0.0","id":"urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001","properties":{"datetime":"2024-01-03T13:19:36Z","start_datetime":"2024-01-03T13:19:36Z","end_datetime":"2024-01-03T13:19:48Z","created":"2024-03-04T22:50:20.726229+00:00","updated":"2024-03-04T22:50:20.726712Z"},"geometry":null,"links":[{"rel":"root","href":"./catalog.json","type":"application/json"},{"rel":"parent","href":"./catalog.json","type":"application/json"}],"assets":{"SISTER_EMIT_L1B_RDN_20240103T131936_001.bin":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001.bin","title":"binary file","description":"","roles":["data"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001.hdr":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001.hdr","title":"None file","description":"","roles":["metadata"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001_LOC.bin":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001_LOC.bin","title":"binary file","description":"","roles":["data"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001_LOC.hdr":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001_LOC.hdr","title":"None file","description":"","roles":["metadata"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001_OBS.bin":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001_OBS.bin","title":"binary file","description":"","roles":["data"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001_OBS.hdr":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001_OBS.hdr","title":"None file","description":"","roles":["metadata"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001.met.json":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001.met.json","title":"None file","description":"","roles":["metadata"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001_LOC.met.json":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001_LOC.met.json","title":"None file","description":"","roles":["metadata"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001_OBS.met.json":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001_OBS.met.json","title":"None file","description":"","roles":["metadata"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001.png":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001.png","title":"image/png file","description":"","roles":["browse"]},"SISTER_EMIT_L1B_RDN_20240103T131936_001.json":{"href":"s3://sps-dev-ds-storage/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1/urn:nasa:unity:unity:dev:SBG-L1B_PRE___1:SISTER_EMIT_L1B_RDN_20240103T131936_001/SISTER_EMIT_L1B_RDN_20240103T131936_001.json","title":"text/json file","description":"","roles":["metadata"]}},"stac_extensions":[],"collection":"urn:nasa:unity:unity:dev:SBG-L1B_PRE___1"}]}'),
+        "reflect_correct_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1"),
 
         # For step: FRCOVER
         "frcover_input_stac": Param("https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1/items?filter=start_datetime%20%3E%3D%20%272024-01-03T13%3A19%3A34Z%27%20AND%20start_datetime%20%3C%3D%20%272024-01-03T13%3A19%3A36Z%27", type="string"),
@@ -129,6 +131,16 @@ def setup(ti=None, **context):
         "output_data_bucket": context["params"]["output_data_bucket"],
     }
     ti.xcom_push(key="resample_args", value=json.dumps(resample_dict))
+
+    reflect_correct_dict = {
+        "input_stac": context["params"]["reflect_correct_input_stac"],
+        "output_collection_id": context["params"]["reflect_correct_output_collection_id"],
+        "input_unity_dapa_client": context["params"]["unity_dapa_client"],
+        "input_unity_dapa_api": context["params"]["unity_dapa_api"],
+        "input_crid": context["params"]["crid"],
+        "output_data_bucket": context["params"]["output_data_bucket"],
+    }
+    ti.xcom_push(key="reflect_correct_args", value=json.dumps(reflect_correct_dict))
 
     frcover_dict = {
         # Output file from "reflect-correct" step.
@@ -238,7 +250,7 @@ resample_task = KubernetesPodOperator(
 
 # Step: REFLECT-CORRECT
 SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
-SBG_REFLECT_CORRECT_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.dev.yml"
+# SBG_REFLECT_CORRECT_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.dev.yml"
 reflect_correct_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Reflect_Correct",
@@ -251,7 +263,8 @@ reflect_correct_task = KubernetesPodOperator(
     pod_template_file=POD_TEMPLATE_FILE,
     arguments=[
         SBG_REFLECT_CORRECT_CWL,
-        SBG_REFLECT_CORRECT_ARGS
+        # SBG_REFLECT_CORRECT_ARGS
+        "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}"
     ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -321,7 +334,8 @@ cleanup_on_failure_task = PythonOperator(
     dag=dag
 )
 
-(setup_task >>
- preprocess_task >> isofit_task >> resample_task >> reflect_correct_task >> frcover_task >>
+# FIXME
+(setup_task >> reflect_correct_task >>
+ preprocess_task >> isofit_task >> resample_task >> frcover_task >>
  [cleanup_on_success_task, cleanup_on_failure_task])
 
