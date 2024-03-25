@@ -29,8 +29,10 @@ WORKING_DIR = "/scratch"
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-        limits={"memory": "4Gi", "cpu": "500m", "ephemeral-storage": "50G"},
-        requests={"memory": "2Gi", "cpu": "250m", "ephemeral-storage": "25G"}
+        # limits={"memory": "4Gi", "cpu": "500m", "ephemeral-storage": "50G"},
+        # requests={"memory": "2Gi", "cpu": "250m", "ephemeral-storage": "25G"},
+        limits={"ephemeral-storage": "50G"},
+        requests={"ephemeral-storage": "50G"}
 )
 
 # Default DAG configuration
@@ -93,11 +95,6 @@ dag = DAG(
     },
 )
 
-def merge_two_dicts(x, y):
-    z = x.copy()
-    z.update(y)
-    return z
-
 
 # Step: Setup
 # Task that serializes the job arguments into a JSON string
@@ -120,7 +117,8 @@ def setup(ti=None, **context):
         # "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         # "output_data_bucket": context["params"]["output_data_bucket"],
     }
-    ti.xcom_push(key="preprocess_args", value=json.dumps(merge_two_dicts(preprocess_dict, venue_dict)))
+    preprocess_dict.update(venue_dict)
+    ti.xcom_push(key="preprocess_args", value=json.dumps(preprocess_dict))
 
     isofit_dict = {
         "input_processing_labels": INPUT_PROCESSING_LABELS,
@@ -146,13 +144,15 @@ def setup(ti=None, **context):
         "output_resample_collection_id": context["params"]["resample_output_collection_id"],
         "input_crid": context["params"]["crid"],
     }
-    ti.xcom_push(key="resample_args", value=json.dumps(resample_dict.update(venue_dict)))
+    resample_dict.update(venue_dict)
+    ti.xcom_push(key="resample_args", value=json.dumps(resample_dict))
 
     reflect_correct_dict = {
         "input_stac": context["params"]["reflect_correct_input_stac"],
         "output_collection_id": context["params"]["reflect_correct_output_collection_id"],
         "input_crid": context["params"]["crid"],
-    } | venue_dict
+    }
+    reflect_correct_dict.update(venue_dict)
     ti.xcom_push(key="reflect_correct_args", value=json.dumps(reflect_correct_dict))
 
     frcover_dict = {
@@ -165,7 +165,8 @@ def setup(ti=None, **context):
         "experimental": context["params"]["frcover_experimental"],
         "input_crid": context["params"]["crid"],
         "crid": context["params"]["crid"],
-    } | venue_dict
+    }
+    frcover_dict.update(venue_dict)
     ti.xcom_push(key="frcover_args", value=json.dumps(frcover_dict))
 
 
@@ -184,7 +185,7 @@ preprocess_task = KubernetesPodOperator(
     task_id="SBG_Preprocess",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
     arguments=[
         SBG_PREPROCESS_CWL,
         "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"
