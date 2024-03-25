@@ -93,7 +93,10 @@ dag = DAG(
     },
 )
 
-
+def merge_two_dicts(x, y):
+    z = x.copy()
+    z.update(y)
+    return z
 
 
 # Step: Setup
@@ -117,7 +120,7 @@ def setup(ti=None, **context):
         # "input_unity_dapa_api": context["params"]["unity_dapa_api"],
         # "output_data_bucket": context["params"]["output_data_bucket"],
     }
-    ti.xcom_push(key="preprocess_args", value=json.dumps(preprocess_dict.update(venue_dict)))
+    ti.xcom_push(key="preprocess_args", value=json.dumps(merge_two_dicts(preprocess_dict, venue_dict)))
 
     isofit_dict = {
         "input_processing_labels": INPUT_PROCESSING_LABELS,
@@ -134,15 +137,15 @@ def setup(ti=None, **context):
         "output_collection_id": context["params"]["isofit_output_collection_id"],
         "unity_stac_auth": context["params"]["unity_stac_auth"],
         "input_crid": context["params"]["crid"],
-    }.update(venue_dict)
-    ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict))
+    }
+    ti.xcom_push(key="isofit_args", value=json.dumps(isofit_dict.update(venue_dict)))
 
     resample_dict = {
         "input_stac": context["params"]["resample_input_stac"],
         "output_resample_collection_id": context["params"]["resample_output_collection_id"],
         "input_crid": context["params"]["crid"],
-    } | venue_dict
-    ti.xcom_push(key="resample_args", value=json.dumps(resample_dict))
+    }
+    ti.xcom_push(key="resample_args", value=json.dumps(resample_dict.update(venue_dict)))
 
     reflect_correct_dict = {
         "input_stac": context["params"]["reflect_correct_input_stac"],
