@@ -45,6 +45,7 @@ dag = DAG(
     },
 )
 
+# This Task creates dictionaries of data that is passed via Xcom to the downstream Tasks
 def setup(ti=None, **context):
 
     echo_message_dict = {
@@ -63,6 +64,10 @@ def setup(ti=None, **context):
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
+
+# This Task executes a CWL workflow that invokes the busybox Docker container.
+# to write a file in the shared '/scratch' directory.
+# It also includes an example on how to set limits on the resources used by the Pod.
 ECHO_MESSAGE_CWL = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
 echo_message_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
@@ -75,8 +80,8 @@ echo_message_task = KubernetesPodOperator(
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("echo-message-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
     container_resources=k8s.V1ResourceRequirements(
-        limits={"memory": "250M", "cpu": "100m", "ephemeral-storage": "50G"},
-        requests={"ephemeral-storage": "50G"}
+        limits={"memory": "250M", "cpu": "100m", "ephemeral-storage": "5G"},
+        requests={"ephemeral-storage": "5G"}
     ),
     arguments=[
         ECHO_MESSAGE_CWL,
@@ -94,7 +99,11 @@ echo_message_task = KubernetesPodOperator(
     dag=dag,
 )
 
-# NOTE: this CWL MUST stage the input file to the working directory inside the Docker container
+# This Task reads the file written to the '/scratch' directory by the upstream Task.
+# IMPORTANT: the "cat_file.cwl" MUST stage the input file to the working directory inside the Docker container
+# before the busybox Docker container can read it.
+# This Task also passes an additional optional parameter to the Pod to store the content of the
+# file "cat_file.txt" into Xcom so that it can be retrieved by the downstream Tasks.
 CAT_FILE_CWL = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/cat_file.cwl"
 cat_file_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
@@ -124,6 +133,7 @@ cat_file_task = KubernetesPodOperator(
     do_xcom_push=True
 )
 
+# This Task is an example on how to retrieve the Xcom data pushed by an upstream KubernetesPodOperator.
 echo_xcom_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="Echo_Xcom",
