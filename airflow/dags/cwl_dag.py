@@ -64,7 +64,7 @@ dag = DAG(
             type="string",
             title="CWL workflow parameters",
             description="The job parameters encodes as a JSON string, or the URL of a JSON or YAML file",
-        )
+        ),
     },
 )
 

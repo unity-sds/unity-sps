@@ -90,10 +90,7 @@ cwl_task = KubernetesPodOperator(
     task_id="SBG_Preprocess_CWL",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-cwl-pod-" + uuid.uuid4().hex))),
     pod_template_file=POD_TEMPLATE_FILE,
-    arguments=[
-        "{{ params.cwl_workflow }}",
-        "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}"
-    ],
+    arguments=["{{ params.cwl_workflow }}", "{{ti.xcom_pull(task_ids='Setup', key='cwl_args')}}"],
     dag=dag,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
