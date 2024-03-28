@@ -39,9 +39,9 @@ Version 2.0.0
   - [[Task]: Update the SPS documentation for administrators](https://github.com/unity-sds/unity-sps/issues/44)
 
 ## Docker Containers
-- ghcr.io/unity-sds/unity-sps/sps-airflow:develop67
-- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:develop67
-- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:workflow-versions
+- ghcr.io/unity-sds/unity-sps/sps-airflow:2.0.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.0.0
 
 
 ## Documentation
