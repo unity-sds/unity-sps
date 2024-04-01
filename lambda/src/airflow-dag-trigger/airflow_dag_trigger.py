@@ -10,7 +10,6 @@ from aws_lambda_powertools.utilities.parser import envelopes, event_parser
 from aws_lambda_powertools.utilities.parser.models import S3Model
 from aws_lambda_powertools.utilities.typing import LambdaContext
 
-# Configure your logger
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 

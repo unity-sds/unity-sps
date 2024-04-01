@@ -44,15 +44,8 @@ test = [
 ]
 experiment = []
 lambda-airflow-dag-trigger = [
-    "boto3<1.28.27",
-    "requests<=2.30.0",
-    "urllib3<1.27",
-    "jinja2==3.1.2",
-    "jsonschema==4.17.3",
-    "referencing==0.23.0",
-    "aws-lambda-powertools==2.22.0",
-    "pydantic>=1.8.2,<2.0.0",
-    "fastjsonschema>=2.14.5,<3.0.0",
+    "requests==2.31.0",
+    "aws-lambda-powertools==2.36.0",
 ]
 
 [tool.setuptools.packages.find]
