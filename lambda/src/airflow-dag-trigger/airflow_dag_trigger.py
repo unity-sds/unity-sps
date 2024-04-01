@@ -39,7 +39,7 @@ def lambda_handler(event: List[S3Model], context: LambdaContext) -> dict:
         object_key = unquote_plus(event[0].Records[0].s3.object.key)
         bucket_name = unquote_plus(event[0].Records[0].s3.bucket.name)
         logger.info(f"Source bucket: {bucket_name}, Source key: {object_key}")
-        dag_id = "cwl-dag"
+        dag_id = "sbg-l1-to-l2-e2e-cwl-step-by-step-dag"
         trigger_airflow_dag(dag_id)
     except Exception as e:
         logger.error(f"An unexpected error occurred: {e}")
