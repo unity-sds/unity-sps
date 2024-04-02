@@ -680,6 +680,11 @@ resource "aws_ssm_parameter" "isl_bucket" {
 
 resource "aws_sns_topic" "s3_isl_event_topic" {
   name = format(local.resource_name_prefix, "S3IslSnsTopic")
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "SNS-S3IslSnsTopic")
+    Component = "SNS"
+    Stack     = "SNS"
+  })
 }
 
 resource "aws_sns_topic_policy" "s3_isl_event_topic_policy" {
@@ -719,6 +724,11 @@ resource "aws_s3_bucket_notification" "isl_bucket_notification" {
 resource "aws_sqs_queue" "s3_isl_event_queue" {
   name                       = format(local.resource_name_prefix, "S3IslSqsQueue")
   visibility_timeout_seconds = 60
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "SQS-S3IslSqsQueue")
+    Component = "SQS"
+    Stack     = "SQS"
+  })
 }
 
 resource "aws_sqs_queue_policy" "s3_isl_event_queue_policy" {
