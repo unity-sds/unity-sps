@@ -806,7 +806,6 @@ resource "aws_iam_role" "lambda" {
       },
     ]
   })
-
   permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
 }
 
@@ -820,7 +819,6 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
 resource "aws_iam_policy" "lambda_sqs_access" {
   name        = format(local.resource_name_prefix, "LambdaSQSAccessPolicy")
   description = "Allows Lambda function to interact with SQS queue"
-
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
