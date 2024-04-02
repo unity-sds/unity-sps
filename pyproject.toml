@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unity-sps"
-version = "0.0.1-beta.1"
+version = "24.1-beta.1"
 authors = [
     { name = "Drew Meyers", email = "drew.meyers@jpl.nasa.gov" },
 ]
@@ -33,6 +33,7 @@ Homepage = "https://github.com/unity-sds/unity-sps"
 develop = []
 test = [
     "python-dotenv==1.0.1",
+    "pytest==8.0.2",
     "pytest-bdd==7.1.1",
     "pytest-mock==3.12.0",
     "requests==2.31.0",
@@ -42,6 +43,10 @@ test = [
     "apache-airflow-providers-cncf-kubernetes==8.0.0"
 ]
 experiment = []
+lambda-airflow-dag-trigger = [
+    "requests==2.31.0",
+    "aws-lambda-powertools[parser]==2.36.0",
+]
 
 [tool.setuptools.packages.find]
 exclude = ["tests*"]
