@@ -243,3 +243,7 @@ override.tf.json
 # Ignore CLI configuration files
 .terraformrc
 terraform.rc
+
+
+/lambda/deployment_packages/*
+!/lambda/deployment_packages/.gitkeep
