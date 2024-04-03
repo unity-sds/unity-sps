@@ -30,8 +30,8 @@ WORKING_DIR = "/scratch"
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-    limits={"memory": "12GiB", "cpu": "500m", "ephemeral-storage": "50G"},
-    requests={"memory": "12GiB", "cpu": "500m", "ephemeral-storage": "50G"},
+    limits={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "50G"},
+    requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "50G"},
     # limits={"ephemeral-storage": "50G"},
     # requests={"ephemeral-storage": "50G"},
 )
