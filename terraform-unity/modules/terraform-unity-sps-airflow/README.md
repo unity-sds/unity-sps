@@ -6,7 +6,7 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.7.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.38.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.43.0 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.12.1 |
 | <a name="requirement_kubectl"></a> [kubectl](#requirement\_kubectl) | 2.0.4 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.25.2 |
@@ -17,7 +17,7 @@
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.38.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.43.0 |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.12.1 |
 | <a name="provider_kubectl"></a> [kubectl](#provider\_kubectl) | 2.0.4 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.25.2 |
@@ -28,50 +28,50 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_karpenter"></a> [karpenter](#module\_karpenter) | terraform-aws-modules/eks/aws//modules/karpenter | 20.5.0 |
+| <a name="module_karpenter"></a> [karpenter](#module\_karpenter) | terraform-aws-modules/eks/aws//modules/karpenter | 20.8.4 |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [aws_cloudwatch_log_group.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/cloudwatch_log_group) | resource |
-| [aws_db_instance.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/db_instance) | resource |
-| [aws_db_subnet_group.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/db_subnet_group) | resource |
-| [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/efs_access_point) | resource |
-| [aws_efs_file_system.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/efs_file_system) | resource |
-| [aws_efs_mount_target.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/efs_mount_target) | resource |
-| [aws_iam_policy.airflow_worker_policy](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/iam_policy) | resource |
-| [aws_iam_policy.lambda_sqs_access](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/iam_policy) | resource |
-| [aws_iam_role.airflow_worker_role](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/iam_role) | resource |
-| [aws_iam_role.lambda](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/iam_role) | resource |
-| [aws_iam_role_policy_attachment.airflow_worker_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_iam_role_policy_attachment.lambda_logs](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_iam_role_policy_attachment.lambda_sqs_access_attach](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/iam_role_policy_attachment) | resource |
-| [aws_lambda_event_source_mapping.lambda_airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/lambda_event_source_mapping) | resource |
-| [aws_lambda_function.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/lambda_function) | resource |
-| [aws_s3_bucket.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/s3_bucket) | resource |
-| [aws_s3_bucket.inbound_staging_location](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/s3_bucket) | resource |
-| [aws_s3_bucket.lambdas](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/s3_bucket) | resource |
-| [aws_s3_bucket_notification.isl_bucket_notification](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/s3_bucket_notification) | resource |
-| [aws_s3_object.lambdas](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/s3_object) | resource |
-| [aws_secretsmanager_secret.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/secretsmanager_secret) | resource |
-| [aws_secretsmanager_secret_version.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/secretsmanager_secret_version) | resource |
-| [aws_security_group.airflow_kpo_efs](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/security_group) | resource |
-| [aws_security_group.rds_sg](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/security_group) | resource |
-| [aws_security_group_rule.airflow_kpo_efs](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.eks_egress_to_rds](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.rds_ingress_from_eks](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/security_group_rule) | resource |
-| [aws_sns_topic.s3_isl_event_topic](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/sns_topic) | resource |
-| [aws_sns_topic_policy.s3_isl_event_topic_policy](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/sns_topic_policy) | resource |
-| [aws_sns_topic_subscription.s3_isl_event_subscription](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/sns_topic_subscription) | resource |
-| [aws_sqs_queue.s3_isl_event_queue](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/sqs_queue) | resource |
-| [aws_sqs_queue_policy.s3_isl_event_queue_policy](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/sqs_queue_policy) | resource |
-| [aws_ssm_parameter.airflow_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.airflow_dag_trigger_lambda_package](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.isl_bucket](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/resources/ssm_parameter) | resource |
+| [aws_cloudwatch_log_group.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/cloudwatch_log_group) | resource |
+| [aws_db_instance.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/db_instance) | resource |
+| [aws_db_subnet_group.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/db_subnet_group) | resource |
+| [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_access_point) | resource |
+| [aws_efs_file_system.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_file_system) | resource |
+| [aws_efs_mount_target.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_mount_target) | resource |
+| [aws_iam_policy.airflow_worker_policy](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.lambda_sqs_access](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_policy) | resource |
+| [aws_iam_role.airflow_worker_role](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_role) | resource |
+| [aws_iam_role.lambda](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_role) | resource |
+| [aws_iam_role_policy_attachment.airflow_worker_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.lambda_logs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.lambda_sqs_access_attach](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_lambda_event_source_mapping.lambda_airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/lambda_event_source_mapping) | resource |
+| [aws_lambda_function.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/lambda_function) | resource |
+| [aws_s3_bucket.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket.inbound_staging_location](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket.lambdas](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket_notification.isl_bucket_notification](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/s3_bucket_notification) | resource |
+| [aws_s3_object.lambdas](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/s3_object) | resource |
+| [aws_secretsmanager_secret.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/secretsmanager_secret) | resource |
+| [aws_secretsmanager_secret_version.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/secretsmanager_secret_version) | resource |
+| [aws_security_group.airflow_kpo_efs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group) | resource |
+| [aws_security_group.rds_sg](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group) | resource |
+| [aws_security_group_rule.airflow_kpo_efs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.eks_egress_to_rds](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.rds_ingress_from_eks](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group_rule) | resource |
+| [aws_sns_topic.s3_isl_event_topic](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/sns_topic) | resource |
+| [aws_sns_topic_policy.s3_isl_event_topic_policy](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/sns_topic_policy) | resource |
+| [aws_sns_topic_subscription.s3_isl_event_subscription](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/sns_topic_subscription) | resource |
+| [aws_sqs_queue.s3_isl_event_queue](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/sqs_queue) | resource |
+| [aws_sqs_queue_policy.s3_isl_event_queue_policy](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/sqs_queue_policy) | resource |
+| [aws_ssm_parameter.airflow_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.airflow_dag_trigger_lambda_package](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.isl_bucket](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [helm_release.karpenter](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
@@ -96,13 +96,13 @@
 | [random_id.airflow_webserver_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.0/docs/resources/id) | resource |
 | [random_id.counter](https://registry.terraform.io/providers/hashicorp/random/3.6.0/docs/resources/id) | resource |
 | [random_password.airflow_db](https://registry.terraform.io/providers/hashicorp/random/3.6.0/docs/resources/password) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/data-sources/caller_identity) | data source |
-| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/data-sources/eks_cluster) | data source |
-| [aws_eks_cluster_auth.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/data-sources/eks_cluster_auth) | data source |
-| [aws_eks_node_group.default_group](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/data-sources/eks_node_group) | data source |
-| [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/data-sources/security_group) | data source |
-| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/data-sources/ssm_parameter) | data source |
-| [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.38.0/docs/data-sources/vpc) | data source |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/caller_identity) | data source |
+| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_cluster) | data source |
+| [aws_eks_cluster_auth.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_cluster_auth) | data source |
+| [aws_eks_node_group.default_group](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_node_group) | data source |
+| [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/security_group) | data source |
+| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/data-sources/ingress_v1) | data source |
 

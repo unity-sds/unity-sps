@@ -56,12 +56,12 @@ variable "helm_charts" {
     airflow = {
       repository = "https://airflow.apache.org"
       chart      = "airflow"
-      version    = "1.11.0"
+      version    = "1.13.1"
     },
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.13.1"
+      version    = "v2.13.2"
     }
   }
 }

@@ -1,4 +1,4 @@
-FROM apache/airflow:2.8.1-python3.11
+FROM apache/airflow:2.8.4-python3.11
 
 COPY ./airflow/dags/ ${AIRFLOW_HOME}/dags/
 
