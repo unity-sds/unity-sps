@@ -30,10 +30,10 @@ WORKING_DIR = "/scratch"
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-    limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
-    requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
-    # limits={"ephemeral-storage": "50G"},
-    # requests={"ephemeral-storage": "50G"},
+    # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
+    # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
+    limits={"ephemeral-storage": "50G"},
+    requests={"ephemeral-storage": "50G"},
 )
 
 # Default DAG configuration
@@ -54,6 +54,7 @@ dag = DAG(
     catchup=False,
     schedule=None,
     max_active_runs=2,
+    max_active_tasks=4,
     default_args=dag_default_args,
     params={
         # For step: PREPROCESS
