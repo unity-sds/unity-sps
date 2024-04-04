@@ -11,7 +11,7 @@ from datetime import datetime
 
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
 from airflow import DAG
@@ -52,7 +52,7 @@ dag = DAG(
     tags=["cwl", "unity-sps", "docker"],
     is_paused_upon_creation=False,
     catchup=False,
-    schedule_interval=None,
+    schedule=None,
     max_active_runs=100,
     default_args=dag_default_args,
     params={
@@ -86,7 +86,7 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 cwl_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="cwl-task",
-    is_delete_operator_pod=True,
+    on_finish_action="delete_pod",
     hostnetwork=False,
     startup_timeout_seconds=1000,
     get_logs=True,
