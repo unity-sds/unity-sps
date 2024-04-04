@@ -30,8 +30,8 @@ WORKING_DIR = "/scratch"
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-    # limits={"memory": "4Gi", "cpu": "500m", "ephemeral-storage": "50G"},
-    # requests={"memory": "2Gi", "cpu": "250m", "ephemeral-storage": "25G"},
+    # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
+    # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
     limits={"ephemeral-storage": "50G"},
     requests={"ephemeral-storage": "50G"},
 )
@@ -53,7 +53,8 @@ dag = DAG(
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=100,
+    max_active_runs=2,
+    max_active_tasks=4,
     default_args=dag_default_args,
     params={
         # For step: PREPROCESS
@@ -364,8 +365,8 @@ cleanup_task = PythonOperator(
     task_id="Cleanup",
     python_callable=cleanup,
     trigger_rule=TriggerRule.ALL_DONE,
-    priority_weight=1,
-    weight_rule="upstream",
+    # priority_weight=1,
+    # weight_rule="upstream",
     dag=dag,
 )
 
