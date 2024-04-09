@@ -33,6 +33,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
+  default     = "2.0.0"
 }
 
 variable "kubeconfig_filepath" {
@@ -81,11 +82,11 @@ variable "docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "develop"
+      tag  = "2.0.0"
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "develop"
+      tag  = "2.0.0"
     }
   }
 }
