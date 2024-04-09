@@ -118,7 +118,7 @@ env:
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
   - name: AIRFLOW__API__AUTH_BACKENDS
-    value: "airflow.api.auth.backend.basic_auth"
+    value: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
   - name: AIRFLOW__CORE__PARALLELISM
     value: "128"
   - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
@@ -134,4 +134,4 @@ extraEnv: |
   - name: AIRFLOW__WEBSERVER__NAVBAR_COLOR
     value: "${webserver_navbar_color}"
   - name: AIRFLOW__WEBSERVER__INSTANCE_NAME
-    value: "${webserver_instance_name}"
+    value: "Deployment: ${webserver_instance_name}, ${service_area} Version: ${service_area_version}"
