@@ -400,6 +400,8 @@ resource "helm_release" "airflow" {
       workers_pvc_name         = kubernetes_persistent_volume_claim.efs_pvc.metadata[0].name
       webserver_instance_name  = format(local.resource_name_prefix, "airflow")
       webserver_navbar_color   = local.airflow_webserver_navbar_color
+      service_area             = upper(var.service_area)
+      service_area_version     = var.release
     })
   ]
   set_sensitive {
