@@ -86,7 +86,7 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 cwl_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
     name="cwl-task",
-    on_finish_action="delete_pod",
+    on_finish_action="delete_succeeded_pod",
     hostnetwork=False,
     startup_timeout_seconds=1000,
     get_logs=True,
