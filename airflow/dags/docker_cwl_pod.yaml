@@ -17,7 +17,7 @@ spec:
                 operator: In
                 values:
                   - sbg-task
-          topologyKey: topology.kubernetes.io/zone
+          topologyKey: topology.kubernetes.io/hostname
 
   containers:
   - name: cwl-docker
