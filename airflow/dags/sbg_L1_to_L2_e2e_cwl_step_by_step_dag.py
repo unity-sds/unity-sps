@@ -30,8 +30,8 @@ WORKING_DIR = "/scratch"
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-    # limits={"memory": "4Gi", "cpu": "500m", "ephemeral-storage": "50G"},
-    # requests={"memory": "2Gi", "cpu": "250m", "ephemeral-storage": "25G"},
+    # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
+    # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
     limits={"ephemeral-storage": "50G"},
     requests={"ephemeral-storage": "50G"},
 )
@@ -53,7 +53,8 @@ dag = DAG(
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=100,
+    max_active_runs=2,
+    max_active_tasks=4,
     default_args=dag_default_args,
     params={
         # For step: PREPROCESS
@@ -190,10 +191,10 @@ SBG_PREPROCESS_CWL = (
 )
 preprocess_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
-    name="Preprocess",
-    on_finish_action="delete_pod",
+    name="SBG_Preprocess",
+    on_finish_action="delete_succeeded_pod",
     hostnetwork=False,
-    startup_timeout_seconds=1000,
+    startup_timeout_seconds=14400,
     get_logs=True,
     task_id="SBG_Preprocess",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-preprocess-pod-" + uuid.uuid4().hex))),
@@ -221,10 +222,10 @@ SBG_ISOFIT_CWL = (
 # SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/isofit/sbg-isofit-workflow.cwl"
 isofit_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
-    name="Isofit",
-    on_finish_action="delete_pod",
+    name="SBG_Isofit",
+    on_finish_action="delete_succeeded_pod",
     hostnetwork=False,
-    startup_timeout_seconds=1000,
+    startup_timeout_seconds=14400,
     get_logs=True,
     task_id="SBG_Isofit",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-isofit-pod-" + uuid.uuid4().hex))),
@@ -252,10 +253,10 @@ SBG_RESAMPLE_CWL = (
 # SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.dev.yml"
 resample_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
-    name="Resample",
-    on_finish_action="delete_pod",
+    name="SBG_Resample",
+    on_finish_action="delete_succeeded_pod",
     hostnetwork=False,
-    startup_timeout_seconds=1000,
+    startup_timeout_seconds=14400,
     get_logs=True,
     task_id="SBG_Resample",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-resample-pod-" + uuid.uuid4().hex))),
@@ -285,10 +286,10 @@ SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workf
 # SBG_REFLECT_CORRECT_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.dev.yml"
 reflect_correct_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
-    name="Reflect_Correct",
-    on_finish_action="delete_pod",
+    name="SBG_Reflect_Correct",
+    on_finish_action="delete_succeeded_pod",
     hostnetwork=False,
-    startup_timeout_seconds=1000,
+    startup_timeout_seconds=14400,
     get_logs=True,
     task_id="SBG_Reflect_Correct",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-reflect-correct-pod-" + uuid.uuid4().hex))),
@@ -321,10 +322,10 @@ SBG_FRCOVER_CWL = (
 # SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.dev.yml"
 frcover_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
-    name="Frcover",
-    on_finish_action="delete_pod",
+    name="SBG_Frcover",
+    on_finish_action="delete_succeeded_pod",
     hostnetwork=False,
-    startup_timeout_seconds=1000,
+    startup_timeout_seconds=14400,
     get_logs=True,
     task_id="SBG_Frcover",
     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name=("sbg-frcover-pod-" + uuid.uuid4().hex))),
@@ -364,8 +365,8 @@ cleanup_task = PythonOperator(
     task_id="Cleanup",
     python_callable=cleanup,
     trigger_rule=TriggerRule.ALL_DONE,
-    priority_weight=1,
-    weight_rule="upstream",
+    # priority_weight=1,
+    # weight_rule="upstream",
     dag=dag,
 )
 
