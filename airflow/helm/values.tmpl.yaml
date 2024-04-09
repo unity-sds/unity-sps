@@ -85,6 +85,17 @@ workers:
               - type: Percent
                 value: 100
                 periodSeconds: 5
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "${airflow_worker_role_arn}"
+  extraVolumes:
+    - name: workers-volume
+      persistentVolumeClaim:
+        claimName: ${workers_pvc_name}
+  extraVolumeMounts:
+    - name: workers-volume
+      mountPath: /shared-task-data
+      readOnly: false
 
 data:
   metadataSecretName: ${metadata_secret_name}
@@ -120,3 +131,7 @@ extraEnv: |
     value: "1"
   - name: AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE
     value: "8"
+  - name: AIRFLOW__WEBSERVER__NAVBAR_COLOR
+    value: "${webserver_navbar_color}"
+  - name: AIRFLOW__WEBSERVER__INSTANCE_NAME
+    value: "${webserver_instance_name}"

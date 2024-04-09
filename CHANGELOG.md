@@ -6,6 +6,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 --------
+# [Unity Release 24.1] - 2024-04-04
+
+## Tag
+Version 2.0.0
+
+## Repositories:
+- unity-sps: https://github.com/unity-sds/unity-sps/releases/tag/2.0.0
+- unity-sps-api: https://github.com/unity-sds/unity-sps/releases/tag/2.0.0
+
+## Epics
+
+- EPIC: `Airflow Deployment`
+    - [[New Feature]: Deploy EKS to MCP venues with Terraform](https://github.com/unity-sds/unity-sps/issues/28)
+    - [[New Feature]: Deploy Airflow to MCP venues with Terraform (no adaptation yet)](https://github.com/unity-sds/unity-sps/issues/29)
+    - [[New Feature]: Create a CWL Operator or simply a CWL DAG to execute a CWL workflow](https://github.com/unity-sds/unity-sps/issues/31)
+    - [[New Feature]: Using shared disk space for inter-task communication](https://github.com/unity-sds/unity-sps/issues/32)
+    - [[New Feature]: Implement autoscaling of Kubernetes pods on a given set of worker nodes](https://github.com/unity-sds/unity-sps/issues/33)
+    - [[Task] Migrate the new SPS with Airflow code to unity-sps repository](https://github.com/unity-sds/unity-sps/issues/34)
+    - [[New Feature] Allow choosing EC2 types when deploying an EKS cluster](https://github.com/unity-sds/unity-sps/issues/35)
+    - [[New Feature]: Allow propagation of permissions to Docker containers](https://github.com/unity-sds/unity-sps/issues/8)
+    - [[New feature] Add Terraform parameters to customize the amount of disk available to each Pod](https://github.com/unity-sds/unity-sps/issues/36)
+- EPIC: `SBG Venue Deployment`
+  - [[New Feature]: Execution of available SBG worflows](https://github.com/unity-sds/unity-sps/issues/38)
+  - [[New Feature]: https://github.com/unity-sds/unity-sps/issues/39](https://github.com/unity-sds/unity-sps/issues/39)
+  - [[New Feature]: Execution of additional SBG workflows](https://github.com/unity-sds/unity-sps/issues/40)
+  - [[New Feature]: Deployment of latest SPS w/Airflow onto sbg venue](https://github.com/unity-sds/unity-sps/issues/41)
+  - [[New feature] Decompose SBG End-To-End CWL Workflow](https://github.com/unity-sds/unity-sps/issues/21)
+- EPIC: `SPS Infrastructure`
+  - [[Task]: Cleanup of AWS resources](https://github.com/unity-sds/unity-sps/issues/42)
+  - [[Task]: Reconfigure SDS Automated Tests](https://github.com/unity-sds/unity-sps/issues/43)
+  - [[Task]: Update the SPS documentation for administrators](https://github.com/unity-sds/unity-sps/issues/44)
+
+## Docker Containers
+- ghcr.io/unity-sds/unity-sps/sps-airflow:2.0.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.0.0
+
+
+## Documentation
+- [SPS EKS Cluster Provisioning with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-eks-cluster-provisioning-with-terraform)
+- [SPS Airflow Deployment with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-deployment-with-terraform)
+- [SPS Airflow Custom Docker Image Build Instructions](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
+
+
+--------
 
 # [Unity Release 23.3] - 2023-09-29
 

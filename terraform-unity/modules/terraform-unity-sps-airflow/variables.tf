@@ -13,33 +13,33 @@ variable "service_area" {
   type        = string
 }
 
+variable "deployment_name" {
+  description = "The name of the deployment."
+  type        = string
+}
+
 variable "counter" {
-  description = "value"
+  description = "Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead."
   type        = string
 }
 
 variable "release" {
-  description = "The SPS release version"
-  type        = string
-}
-
-variable "eks_cluster_name" {
-  description = "value"
+  description = "The software release version."
   type        = string
 }
 
 variable "kubeconfig_filepath" {
-  description = "Path to the kubeconfig file for the Kubernetes cluster"
+  description = "The path to the kubeconfig file for the Kubernetes cluster."
   type        = string
 }
 
 variable "airflow_webserver_password" {
-  description = "value"
+  description = "The password for the Airflow webserver and UI."
   type        = string
 }
 
 variable "helm_charts" {
-  description = "Settings for the required Helm charts."
+  description = "Helm charts for the associated services."
   type = map(object({
     repository = string
     chart      = string
@@ -47,10 +47,16 @@ variable "helm_charts" {
   }))
 }
 
-variable "custom_airflow_docker_image" {
-  description = "Docker image for the customized Airflow image."
+variable "docker_images" {
+  description = "Docker images for the associated services."
   type = object({
-    name = string
-    tag  = string
+    airflow = object({
+      name = string
+      tag  = string
+    }),
+    ogc_processes_api = object({
+      name = string
+      tag  = string
+    })
   })
 }
