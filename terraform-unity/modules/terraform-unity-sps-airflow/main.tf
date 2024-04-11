@@ -629,6 +629,8 @@ resource "kubectl_manifest" "karpenter_node_class" {
       name: default
     spec:
       amiFamily: AL2
+      amiSelectorTerms:
+        - id: "ami-0121a9a72d2b29816"
       role: ${split("/", data.aws_eks_node_group.default_group.node_role_arn)[length(split("/", data.aws_eks_node_group.default_group.node_role_arn)) - 1]}
       subnetSelectorTerms:
         - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]}"
@@ -638,6 +640,13 @@ resource "kubectl_manifest" "karpenter_node_class" {
             kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}: owned
       tags:
         karpenter.sh/discovery: ${data.aws_eks_cluster.cluster.name}
+      blockDeviceMappings:
+        - deviceName: /dev/xvda
+          ebs:
+            volumeSize: 30Gi
+            volumeType: gp3
+            encrypted: true
+            deleteOnTermination: true
   YAML
   depends_on = [
     helm_release.karpenter
