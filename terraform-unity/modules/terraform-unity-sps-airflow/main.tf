@@ -621,6 +621,14 @@ resource "helm_release" "karpenter" {
   ]
 }
 
+data "aws_ami" "al2_eks_optimized" {
+  filter {
+    name   = "image-id"
+    values = [var.mcp_al2_eks_optimized_ami.image_id]
+  }
+  owners = [var.mcp_al2_eks_optimized_ami.owner]
+}
+
 resource "kubectl_manifest" "karpenter_node_class" {
   yaml_body = <<-YAML
     apiVersion: karpenter.k8s.aws/v1beta1
@@ -630,7 +638,7 @@ resource "kubectl_manifest" "karpenter_node_class" {
     spec:
       amiFamily: AL2
       amiSelectorTerms:
-        - id: "ami-0121a9a72d2b29816"
+        - id: ${data.aws_ami.al2_eks_optimized.image_id}
       role: ${split("/", data.aws_eks_node_group.default_group.node_role_arn)[length(split("/", data.aws_eks_node_group.default_group.node_role_arn)) - 1]}
       subnetSelectorTerms:
         - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]}"
@@ -641,12 +649,12 @@ resource "kubectl_manifest" "karpenter_node_class" {
       tags:
         karpenter.sh/discovery: ${data.aws_eks_cluster.cluster.name}
       blockDeviceMappings:
-        - deviceName: /dev/xvda
+        - deviceName: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].device_name}
           ebs:
-            volumeSize: 30Gi
-            volumeType: gp3
-            encrypted: true
-            deleteOnTermination: true
+            volumeSize: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_size}
+            volumeType: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_type}
+            encrypted: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.encrypted}
+            deleteOnTermination: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.delete_on_termination}
   YAML
   depends_on = [
     helm_release.karpenter
