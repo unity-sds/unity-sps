@@ -4,6 +4,8 @@ from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperato
 
 from airflow import DAG
 
+POD_NAMESPACE = "airflow"
+
 default_args = {
     "owner": "unity-sps",
     "start_date": datetime.fromtimestamp(0),
@@ -21,7 +23,7 @@ dag = DAG(
 
 # Define KubernetesPodOperator tasks with default affinity
 compute_task = KubernetesPodOperator(
-    namespace="default",
+    namespace=POD_NAMESPACE,
     image="hello-world",
     name="compute-task",
     task_id="compute_task",
@@ -67,7 +69,7 @@ compute_task = KubernetesPodOperator(
 )
 
 memory_task = KubernetesPodOperator(
-    namespace="default",
+    namespace=POD_NAMESPACE,
     image="hello-world",
     name="memory-task",
     task_id="memory_task",
@@ -113,7 +115,7 @@ memory_task = KubernetesPodOperator(
 )
 
 general_task = KubernetesPodOperator(
-    namespace="default",
+    namespace=POD_NAMESPACE,
     image="hello-world",
     name="general-task",
     task_id="general_task",
