@@ -11,6 +11,8 @@ default_args = {
     "start_date": datetime.fromtimestamp(0),
 }
 
+default_params = {"placeholder": 1}
+
 
 dag = DAG(
     "kubernetes_tasks_with_affinity",
@@ -19,6 +21,7 @@ dag = DAG(
     schedule=None,
     is_paused_upon_creation=False,
     tags=["test"],
+    params=default_params,
 )
 
 # Define KubernetesPodOperator tasks with default affinity
