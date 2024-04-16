@@ -126,22 +126,22 @@ general_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     affinity={
-        "preferredDuringSchedulingIgnoredDuringExecution": [
-            {
-                "weight": 1,
-                "preference": {
-                    "matchExpressions": [
-                        {
-                            "key": "capacity-type",
-                            "operator": "In",
-                            "values": "{{ dag_run.conf['tasks']['general_task'].get('capacity_type', ['spot']) }}",
-                        }
-                    ]
-                },
-            }
-        ],
-        "requiredDuringSchedulingIgnoredDuringExecution": [
-            {
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "capacity-type",
+                                "operator": "In",
+                                "values": "{{ dag_run.conf['tasks']['general_task'].get('capacity_type', ['spot']) }}",
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
@@ -158,8 +158,8 @@ general_task = KubernetesPodOperator(
                         ]
                     }
                 ]
-            }
-        ],
+            },
+        }
     },
 )
 

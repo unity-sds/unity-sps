@@ -606,7 +606,7 @@ resource "helm_release" "karpenter" {
   create_namespace = true
   repository       = "oci://public.ecr.aws/karpenter"
   chart            = "karpenter"
-  version          = "0.35.4"
+  version          = "0.36.0"
   wait             = false
   values = [
     <<-EOT
@@ -651,7 +651,7 @@ resource "kubectl_manifest" "karpenter_node_class" {
       blockDeviceMappings:
         - deviceName: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].device_name}
           ebs:
-            volumeSize: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_size}
+            volumeSize: "${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_size}Gi"
             volumeType: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_type}
             encrypted: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.encrypted}
             deleteOnTermination: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.delete_on_termination}
@@ -675,10 +675,10 @@ resource "kubectl_manifest" "karpenter_node_pool" {
           requirements:
             - key: "karpenter.k8s.aws/instance-category"
               operator: In
-              values: ["c", "m", "r"]
+              values: ["m", "t", "c", "r"]
             - key: "karpenter.k8s.aws/instance-cpu"
               operator: In
-              values: ["4", "8", "16", "32"]
+              values: ["2", "4", "8", "16", "32"]
             - key: "karpenter.k8s.aws/instance-hypervisor"
               operator: In
               values: ["nitro"]
@@ -686,7 +686,7 @@ resource "kubectl_manifest" "karpenter_node_pool" {
               operator: Gt
               values: ["2"]
       limits:
-        cpu: 1000
+        cpu: 32000m
       disruption:
         consolidationPolicy: WhenEmpty
         consolidateAfter: 30s
