@@ -65,6 +65,7 @@ compute_task = KubernetesPodOperator(
             },
         }
     },
+    startup_timeout_seconds=900,
 )
 
 memory_task = KubernetesPodOperator(
@@ -107,6 +108,7 @@ memory_task = KubernetesPodOperator(
             },
         }
     },
+    startup_timeout_seconds=900,
 )
 
 general_task = KubernetesPodOperator(
@@ -149,6 +151,7 @@ general_task = KubernetesPodOperator(
             },
         }
     },
+    startup_timeout_seconds=900,
 )
 
 # Task sequence
