@@ -38,13 +38,7 @@ compute_task = KubernetesPodOperator(
             {
                 "weight": 1,
                 "preference": {
-                    "matchExpressions": [
-                        {
-                            "key": "capacity-type",
-                            "operator": "In",
-                            "values": "{{ dag_run.conf['tasks']['compute_task'].get('capacity_type', ['spot']) }}",
-                        }
-                    ]
+                    "matchExpressions": [{"key": "capacity-type", "operator": "In", "values": ["spot"]}]
                 },
             }
         ],
@@ -53,15 +47,11 @@ compute_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-category",
-                                "operator": "In",
-                                "values": "{{ dag_run.conf['tasks']['compute_task'].get('instance_category', ['c']) }}",
-                            },
+                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["c"]},
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
-                                "values": "{{ dag_run.conf['tasks']['compute_task'].get('instance_cpu', ['8', '16']) }}",
+                                "values": ["8", "16"],
                             },
                         ]
                     }
@@ -84,13 +74,7 @@ memory_task = KubernetesPodOperator(
             {
                 "weight": 1,
                 "preference": {
-                    "matchExpressions": [
-                        {
-                            "key": "capacity-type",
-                            "operator": "In",
-                            "values": "{{ dag_run.conf['tasks']['memory_task'].get('capacity_type', ['spot']) }}",
-                        }
-                    ]
+                    "matchExpressions": [{"key": "capacity-type", "operator": "In", "values": ["spot"]}]
                 },
             }
         ],
@@ -99,15 +83,11 @@ memory_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-category",
-                                "operator": "In",
-                                "values": "{{ dag_run.conf['tasks']['memory_task'].get('instance_category', ['r']) }}",
-                            },
+                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["r"]},
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
-                                "values": "{{ dag_run.conf['tasks']['memory_task'].get('instance_cpu', ['8', '16']) }}",
+                                "values": ["8", "16"],
                             },
                         ]
                     }
@@ -135,7 +115,7 @@ general_task = KubernetesPodOperator(
                             {
                                 "key": "capacity-type",
                                 "operator": "In",
-                                "values": "{{ dag_run.conf['tasks']['general_task'].get('capacity_type', ['spot']) }}",
+                                "values": ["spot"],
                             }
                         ]
                     },
@@ -145,15 +125,11 @@ general_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-category",
-                                "operator": "In",
-                                "values": "{{ dag_run.conf['tasks']['general_task'].get('instance_category', ['m']) }}",
-                            },
+                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["m"]},
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
-                                "values": "{{ dag_run.conf['tasks']['general_task'].get('instance_cpu', ['8', '16']) }}",
+                                "values": ["8", "16"],
                             },
                         ]
                     }
