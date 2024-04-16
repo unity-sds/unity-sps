@@ -146,7 +146,7 @@ variable "karpenter_default_node_pool_limits" {
     memory = string # Total memory limit across all nodes
   })
   default = {
-    cpu    = 80      # "80" # 10 instances * 8 vCPU
+    cpu    = 80      # 10 instances * 8 vCPU
     memory = "320Gi" # 10 instances * 32Gi
   }
 }
