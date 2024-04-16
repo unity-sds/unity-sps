@@ -139,14 +139,6 @@ resource "aws_security_group" "rds_sg" {
   })
 }
 
-data "aws_security_group" "default" {
-  vpc_id = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-  filter {
-    name   = "tag:Name"
-    values = ["${format(local.resource_name_prefix, "eks")}-node"]
-  }
-}
-
 # Ingress rule for RDS security group to allow PostgreSQL traffic from EKS nodes security group
 resource "aws_security_group_rule" "rds_ingress_from_eks" {
   type                     = "ingress"
@@ -622,14 +614,6 @@ resource "helm_release" "karpenter" {
         eks.amazonaws.com/role-arn: ${module.karpenter.iam_role_arn}
     EOT
   ]
-}
-
-data "aws_ami" "al2_eks_optimized" {
-  filter {
-    name   = "image-id"
-    values = [var.mcp_al2_eks_optimized_ami.image_id]
-  }
-  owners = [var.mcp_al2_eks_optimized_ami.owner]
 }
 
 resource "kubectl_manifest" "karpenter_node_class" {
