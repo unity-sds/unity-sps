@@ -34,16 +34,22 @@ compute_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     affinity={
-        "preferredDuringSchedulingIgnoredDuringExecution": [
-            {
-                "weight": 1,
-                "preference": {
-                    "matchExpressions": [{"key": "capacity-type", "operator": "In", "values": ["spot"]}]
-                },
-            }
-        ],
-        "requiredDuringSchedulingIgnoredDuringExecution": [
-            {
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
@@ -51,13 +57,13 @@ compute_task = KubernetesPodOperator(
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
-                                "values": ["8", "16"],
+                                "values": ["2", "4"],
                             },
                         ]
                     }
                 ]
-            }
-        ],
+            },
+        }
     },
 )
 
@@ -70,16 +76,22 @@ memory_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     affinity={
-        "preferredDuringSchedulingIgnoredDuringExecution": [
-            {
-                "weight": 1,
-                "preference": {
-                    "matchExpressions": [{"key": "capacity-type", "operator": "In", "values": ["spot"]}]
-                },
-            }
-        ],
-        "requiredDuringSchedulingIgnoredDuringExecution": [
-            {
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
@@ -87,13 +99,13 @@ memory_task = KubernetesPodOperator(
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
-                                "values": ["8", "16"],
+                                "values": ["2", "4"],
                             },
                         ]
                     }
                 ]
-            }
-        ],
+            },
+        }
     },
 )
 
@@ -129,7 +141,7 @@ general_task = KubernetesPodOperator(
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
-                                "values": ["8", "16"],
+                                "values": ["2", "4"],
                             },
                         ]
                     }
