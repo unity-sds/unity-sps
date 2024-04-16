@@ -68,3 +68,27 @@ variable "mcp_al2_eks_optimized_ami" {
     owner    = string
   })
 }
+
+variable "karpenter_default_node_pool_requirements" {
+  description = "Requirements for the default Karpenter node pool"
+  type = map(object({
+    key      = string
+    operator = string
+    values   = list(string)
+  }))
+}
+
+variable "karpenter_default_node_pool_limits" {
+  description = "Limits for the default Karpenter node pool"
+  type = object({
+    cpu = number
+  })
+}
+
+variable "karpenter_default_node_pool_disruption" {
+  description = "Disruption policy for the default Karpenter node pool"
+  type = object({
+    consolidationPolicy = string
+    consolidateAfter    = string
+  })
+}

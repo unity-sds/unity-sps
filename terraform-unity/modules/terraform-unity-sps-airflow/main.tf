@@ -673,23 +673,23 @@ resource "kubectl_manifest" "karpenter_node_pool" {
           nodeClassRef:
             name: default
           requirements:
-            - key: "karpenter.k8s.aws/instance-category"
-              operator: In
-              values: ["m", "t", "c", "r"]
-            - key: "karpenter.k8s.aws/instance-cpu"
-              operator: In
-              values: ["2", "4", "8", "16", "32"]
-            - key: "karpenter.k8s.aws/instance-hypervisor"
-              operator: In
-              values: ["nitro"]
-            - key: "karpenter.k8s.aws/instance-generation"
-              operator: Gt
-              values: ["2"]
+            - key: "${var.karpenter_default_node_pool_requirements["instance_category"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_category"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_category"].values)}
+            - key: "${var.karpenter_default_node_pool_requirements["instance_cpu"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_cpu"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_cpu"].values)}
+            - key: "${var.karpenter_default_node_pool_requirements["instance_hypervisor"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_hypervisor"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_hypervisor"].values)}
+            - key: "${var.karpenter_default_node_pool_requirements["instance_generation"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_generation"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_generation"].values)}
       limits:
-        cpu: 32000m
+        cpu: ${var.karpenter_default_node_pool_limits["cpu"]}
       disruption:
-        consolidationPolicy: WhenEmpty
-        consolidateAfter: 30s
+        consolidationPolicy: ${var.karpenter_default_node_pool_disruption["consolidationPolicy"]}
+        consolidateAfter: ${var.karpenter_default_node_pool_disruption["consolidateAfter"]}
   YAML
   depends_on = [
     kubectl_manifest.karpenter_node_class

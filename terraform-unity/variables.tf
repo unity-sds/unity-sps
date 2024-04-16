@@ -106,3 +106,56 @@ variable "mcp_al2_eks_optimized_ami" {
     owner    = "794625662971"
   }
 }
+
+variable "karpenter_default_node_pool_requirements" {
+  description = "Requirements for the default Karpenter node pool"
+  type = map(object({
+    key      = string
+    operator = string
+    values   = list(string)
+  }))
+  default = {
+    instance_category = {
+      key      = "karpenter.k8s.aws/instance-category",
+      operator = "In",
+      values   = ["m", "t", "c", "r"]
+    },
+    instance_cpu = {
+      key      = "karpenter.k8s.aws/instance-cpu",
+      operator = "In",
+      values   = ["2", "4", "8", "16", "32"]
+    },
+    instance_hypervisor = {
+      key      = "karpenter.k8s.aws/instance-hypervisor",
+      operator = "In",
+      values   = ["nitro"]
+    },
+    instance_generation = {
+      key      = "karpenter.k8s.aws/instance-generation",
+      operator = "Gt",
+      values   = ["2"]
+    }
+  }
+}
+
+variable "karpenter_default_node_pool_limits" {
+  description = "Limits for the default Karpenter node pool"
+  type = object({
+    cpu = number
+  })
+  default = {
+    cpu = 1000
+  }
+}
+
+variable "karpenter_default_node_pool_disruption" {
+  description = "Disruption policy for the default Karpenter node pool"
+  type = object({
+    consolidationPolicy = string
+    consolidateAfter    = string
+  })
+  default = {
+    consolidationPolicy = "WhenEmpty"
+    consolidateAfter    = "30s"
+  }
+}
