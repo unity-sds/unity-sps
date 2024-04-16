@@ -43,26 +43,28 @@ images:
     tag: ${airflow_image_tag}
 
 scheduler:
-  replicas: 1
+  replicas: 3
 
 triggerer:
   replicas: 1
+  keda:
+    enabled: true
 
 dagProcessor:
   enabled: true
-  replicas: 1
+  replicas: 3
 
 postgresql:
   enabled: false
 
 pgbouncer:
   enabled: true
-  replicas: 1
+  replicas: 3
 
 webserverSecretKeySecretName: ${webserver_secret_name}
 
 webserver:
-  replicas: 1
+  replicas: 3
 
 workers:
   keda:

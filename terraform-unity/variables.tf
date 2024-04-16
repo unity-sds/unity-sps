@@ -63,6 +63,11 @@ variable "helm_charts" {
       chart      = "keda"
       version    = "v2.13.2"
     }
+    karpenter = {
+      repository = "oci://public.ecr.aws/karpenter"
+      chart      = "karpenter"
+      version    = "0.36.0"
+    }
   }
 }
 
