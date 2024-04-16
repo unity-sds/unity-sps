@@ -16,9 +16,8 @@ data "aws_ssm_parameter" "subnet_ids" {
   name = "/unity/cs/account/network/subnet_list"
 }
 
-data "aws_eks_node_group" "default_group" {
-  cluster_name    = format(local.resource_name_prefix, "eks")
-  node_group_name = "defaultGroup"
+data "aws_iam_role" "cluster_iam_role" {
+  name = "${format(local.resource_name_prefix, "eks")}-eks-node-role"
 }
 
 data "kubernetes_ingress_v1" "airflow_ingress" {

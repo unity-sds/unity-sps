@@ -142,10 +142,12 @@ variable "karpenter_default_node_pool_requirements" {
 variable "karpenter_default_node_pool_limits" {
   description = "Limits for the default Karpenter node pool"
   type = object({
-    cpu = number
+    cpu    = number # Total CPU limit across all nodes provisioned by this Provisioner
+    memory = string # Total memory limit across all nodes
   })
   default = {
-    cpu = 1000
+    cpu    = 80      # "80" # 10 instances * 8 vCPU
+    memory = "320Gi" # 10 instances * 32Gi
   }
 }
 
@@ -158,5 +160,17 @@ variable "karpenter_default_node_pool_disruption" {
   default = {
     consolidationPolicy = "WhenEmpty"
     consolidateAfter    = "30s"
+  }
+}
+
+variable "karpenter_default_node_class_metadata_options" {
+  description = "Disruption policy for the default Karpenter node pool"
+  type = object({
+    httpEndpoint            = string
+    httpPutResponseHopLimit = number
+  })
+  default = {
+    httpEndpoint            = "enabled"
+    httpPutResponseHopLimit = 3
   }
 }

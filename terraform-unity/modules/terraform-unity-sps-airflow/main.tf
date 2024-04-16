@@ -582,22 +582,25 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
 }
 
 module "karpenter" {
-  source       = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version      = "20.8.4"
-  cluster_name = data.aws_eks_cluster.cluster.name
-  # rule_name_prefix
-  # iam_policy_use_name_prefix
+  source                            = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version                           = "20.8.4"
+  cluster_name                      = data.aws_eks_cluster.cluster.name
+  iam_policy_name                   = format(local.resource_name_prefix, "karpenter")
+  iam_policy_use_name_prefix        = false
+  iam_role_name                     = format(local.resource_name_prefix, "karpenter")
+  iam_role_use_name_prefix          = false
   create_node_iam_role              = false
-  node_iam_role_arn                 = data.aws_eks_node_group.default_group.node_role_arn
+  node_iam_role_arn                 = data.aws_iam_role.cluster_iam_role.arn
   iam_role_permissions_boundary_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
   enable_irsa                       = true
   irsa_oidc_provider_arn            = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
   # Since the nodegroup role will already have an access entry
   create_access_entry = false
-  tags = {
-    Environment = "dev"
-    Terraform   = "true"
-  }
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "karpenter")
+    Component = "karpenter"
+    Stack     = "karpenter"
+  })
 }
 
 resource "helm_release" "karpenter" {
@@ -639,7 +642,7 @@ resource "kubectl_manifest" "karpenter_node_class" {
       amiFamily: AL2
       amiSelectorTerms:
         - id: ${data.aws_ami.al2_eks_optimized.image_id}
-      role: ${split("/", data.aws_eks_node_group.default_group.node_role_arn)[length(split("/", data.aws_eks_node_group.default_group.node_role_arn)) - 1]}
+      role: ${data.aws_iam_role.cluster_iam_role.name}
       subnetSelectorTerms:
         - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]}"
         - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][1]}"
@@ -648,13 +651,26 @@ resource "kubectl_manifest" "karpenter_node_class" {
             kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}: owned
       tags:
         karpenter.sh/discovery: ${data.aws_eks_cluster.cluster.name}
+        Name: ${format(local.resource_name_prefix, "karpenter")}
+        Venue: ${var.venue}
+        Proj: ${var.project}
+        ServiceArea: ${var.service_area}
+        CapVersion: ${var.release}
+        Component: karpenter
+        CreatedBy: ${var.service_area}
+        Env: ${var.venue}
+        mission: ${var.project}
+        Stack: karpenter
       blockDeviceMappings:
         - deviceName: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].device_name}
           ebs:
-            volumeSize: "${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_size}Gi"
+            volumeSize: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_size}Gi
             volumeType: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_type}
             encrypted: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.encrypted}
             deleteOnTermination: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.delete_on_termination}
+      metadataOptions:
+        httpEndpoint: ${var.karpenter_default_node_class_metadata_options["httpEndpoint"]}
+        httpPutResponseHopLimit: ${var.karpenter_default_node_class_metadata_options["httpPutResponseHopLimit"]}
   YAML
   depends_on = [
     helm_release.karpenter
@@ -687,6 +703,7 @@ resource "kubectl_manifest" "karpenter_node_pool" {
               values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_generation"].values)}
       limits:
         cpu: ${var.karpenter_default_node_pool_limits["cpu"]}
+        memory: ${var.karpenter_default_node_pool_limits["memory"]}
       disruption:
         consolidationPolicy: ${var.karpenter_default_node_pool_disruption["consolidationPolicy"]}
         consolidateAfter: ${var.karpenter_default_node_pool_disruption["consolidateAfter"]}

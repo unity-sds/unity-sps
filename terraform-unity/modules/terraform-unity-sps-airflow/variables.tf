@@ -81,7 +81,8 @@ variable "karpenter_default_node_pool_requirements" {
 variable "karpenter_default_node_pool_limits" {
   description = "Limits for the default Karpenter node pool"
   type = object({
-    cpu = number
+    cpu    = number
+    memory = string
   })
 }
 
@@ -90,5 +91,13 @@ variable "karpenter_default_node_pool_disruption" {
   type = object({
     consolidationPolicy = string
     consolidateAfter    = string
+  })
+}
+
+variable "karpenter_default_node_class_metadata_options" {
+  description = "Disruption policy for the default Karpenter node pool"
+  type = object({
+    httpEndpoint            = string
+    httpPutResponseHopLimit = number
   })
 }

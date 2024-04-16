@@ -99,7 +99,7 @@
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/caller_identity) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_cluster) | data source |
 | [aws_eks_cluster_auth.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_cluster_auth) | data source |
-| [aws_eks_node_group.default_group](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_node_group) | data source |
+| [aws_iam_role.cluster_iam_role](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/iam_role) | data source |
 | [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/security_group) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/vpc) | data source |
@@ -115,8 +115,9 @@
 | <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | The name of the deployment. | `string` | n/a | yes |
 | <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
+| <a name="input_karpenter_default_node_class_metadata_options"></a> [karpenter\_default\_node\_class\_metadata\_options](#input\_karpenter\_default\_node\_class\_metadata\_options) | Disruption policy for the default Karpenter node pool | <pre>object({<br>    httpEndpoint            = string<br>    httpPutResponseHopLimit = number<br>  })</pre> | n/a | yes |
 | <a name="input_karpenter_default_node_pool_disruption"></a> [karpenter\_default\_node\_pool\_disruption](#input\_karpenter\_default\_node\_pool\_disruption) | Disruption policy for the default Karpenter node pool | <pre>object({<br>    consolidationPolicy = string<br>    consolidateAfter    = string<br>  })</pre> | n/a | yes |
-| <a name="input_karpenter_default_node_pool_limits"></a> [karpenter\_default\_node\_pool\_limits](#input\_karpenter\_default\_node\_pool\_limits) | Limits for the default Karpenter node pool | <pre>object({<br>    cpu = number<br>  })</pre> | n/a | yes |
+| <a name="input_karpenter_default_node_pool_limits"></a> [karpenter\_default\_node\_pool\_limits](#input\_karpenter\_default\_node\_pool\_limits) | Limits for the default Karpenter node pool | <pre>object({<br>    cpu    = number<br>    memory = string<br>  })</pre> | n/a | yes |
 | <a name="input_karpenter_default_node_pool_requirements"></a> [karpenter\_default\_node\_pool\_requirements](#input\_karpenter\_default\_node\_pool\_requirements) | Requirements for the default Karpenter node pool | <pre>map(object({<br>    key      = string<br>    operator = string<br>    values   = list(string)<br>  }))</pre> | n/a | yes |
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_mcp_al2_eks_optimized_ami"></a> [mcp\_al2\_eks\_optimized\_ami](#input\_mcp\_al2\_eks\_optimized\_ami) | The MCP Amazon Linux 2 (AL2) EKS Optimized AMI | <pre>object({<br>    image_id = string<br>    owner    = string<br>  })</pre> | n/a | yes |
