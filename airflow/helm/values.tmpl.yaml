@@ -43,26 +43,28 @@ images:
     tag: ${airflow_image_tag}
 
 scheduler:
-  replicas: 1
+  replicas: 3
 
 triggerer:
   replicas: 1
+  keda:
+    enabled: true
 
 dagProcessor:
   enabled: true
-  replicas: 1
+  replicas: 3
 
 postgresql:
   enabled: false
 
 pgbouncer:
   enabled: true
-  replicas: 1
+  replicas: 3
 
 webserverSecretKeySecretName: ${webserver_secret_name}
 
 webserver:
-  replicas: 1
+  replicas: 3
 
 workers:
   keda:
@@ -118,7 +120,7 @@ env:
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
   - name: AIRFLOW__API__AUTH_BACKENDS
-    value: "airflow.api.auth.backend.basic_auth"
+    value: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
   - name: AIRFLOW__CORE__PARALLELISM
     value: "128"
   - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG

@@ -56,7 +56,6 @@ resource "kubernetes_secret" "airflow_webserver" {
     name      = "airflow-webserver-secret"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-
   data = {
     "webserver-secret-key" = random_id.airflow_webserver_secret.hex
   }
@@ -67,7 +66,6 @@ resource "kubernetes_role" "airflow_pod_creator" {
     name      = "airflow-pod-creator"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-
   rule {
     api_groups = [""]
     resources  = ["pods"]
@@ -86,13 +84,11 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
     name      = "airflow-pod-creator-binding"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "Role"
     name      = kubernetes_role.airflow_pod_creator.metadata[0].name
   }
-
   subject {
     kind      = "ServiceAccount"
     name      = "airflow-worker"
@@ -141,14 +137,6 @@ resource "aws_security_group" "rds_sg" {
     Component = "airflow"
     Stack     = "airflow"
   })
-}
-
-data "aws_security_group" "default" {
-  vpc_id = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-  filter {
-    name   = "tag:Name"
-    values = ["${format(local.resource_name_prefix, "eks")}-node"]
-  }
 }
 
 # Ingress rule for RDS security group to allow PostgreSQL traffic from EKS nodes security group
@@ -278,7 +266,6 @@ resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {
 
 resource "aws_efs_file_system" "airflow_kpo" {
   creation_token = format(local.resource_name_prefix, "AirflowKpoEfs")
-
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "AirflowKpoEfs")
     Component = "airflow"
@@ -290,7 +277,6 @@ resource "aws_security_group" "airflow_kpo_efs" {
   name        = format(local.resource_name_prefix, "AirflowKpoEfsSg")
   description = "Security group for the EFS used in Airflow Kubernetes Pod Operators"
   vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "AirflowKpoEfsSg")
     Component = "airflow"
@@ -348,7 +334,6 @@ resource "kubernetes_persistent_volume" "efs_pv" {
   metadata {
     name = "kpo-efs"
   }
-
   spec {
     capacity = {
       storage = "5Gi"
@@ -416,7 +401,6 @@ resource "kubernetes_deployment" "ogc_processes_api" {
     name      = "ogc-processes-api"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-
   spec {
     replicas = 2
     selector {
@@ -472,7 +456,6 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
     }
   }
-
   spec {
     ingress_class_name = "alb"
     rule {
@@ -520,7 +503,6 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
     }
   }
-
   spec {
     ingress_class_name = "alb"
     rule {
@@ -591,6 +573,130 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   })
 }
 
+module "karpenter" {
+  source                            = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version                           = "20.8.4"
+  cluster_name                      = data.aws_eks_cluster.cluster.name
+  iam_policy_name                   = format(local.resource_name_prefix, "karpenter")
+  iam_policy_use_name_prefix        = false
+  iam_role_name                     = format(local.resource_name_prefix, "karpenter")
+  iam_role_use_name_prefix          = false
+  create_node_iam_role              = false
+  node_iam_role_arn                 = data.aws_iam_role.cluster_iam_role.arn
+  iam_role_permissions_boundary_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
+  enable_irsa                       = true
+  irsa_oidc_provider_arn            = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
+  # Since the nodegroup role will already have an access entry
+  create_access_entry = false
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "karpenter")
+    Component = "karpenter"
+    Stack     = "karpenter"
+  })
+}
+
+resource "helm_release" "karpenter" {
+  name             = "karpenter"
+  namespace        = "karpenter"
+  create_namespace = true
+  chart            = var.helm_charts.karpenter.chart
+  repository       = var.helm_charts.karpenter.repository
+  version          = var.helm_charts.karpenter.version
+  wait             = false
+  values = [
+    <<-EOT
+    settings:
+      clusterName: ${data.aws_eks_cluster.cluster.name}
+      clusterEndpoint: ${data.aws_eks_cluster.cluster.endpoint}
+      interruptionQueue: ${module.karpenter.queue_name}
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: ${module.karpenter.iam_role_arn}
+    EOT
+  ]
+}
+
+resource "kubectl_manifest" "karpenter_node_class" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.k8s.aws/v1beta1
+    kind: EC2NodeClass
+    metadata:
+      name: default
+    spec:
+      amiFamily: AL2
+      amiSelectorTerms:
+        - id: ${data.aws_ami.al2_eks_optimized.image_id}
+      role: ${data.aws_iam_role.cluster_iam_role.name}
+      subnetSelectorTerms:
+        - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]}"
+        - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][1]}"
+      securityGroupSelectorTerms:
+        - tags:
+            kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}: owned
+      tags:
+        karpenter.sh/discovery: ${data.aws_eks_cluster.cluster.name}
+        Name: ${format(local.resource_name_prefix, "karpenter")}
+        Venue: ${var.venue}
+        Proj: ${var.project}
+        ServiceArea: ${var.service_area}
+        CapVersion: ${var.release}
+        Component: karpenter
+        CreatedBy: ${var.service_area}
+        Env: ${var.venue}
+        mission: ${var.project}
+        Stack: karpenter
+      blockDeviceMappings:
+        - deviceName: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].device_name}
+          ebs:
+            volumeSize: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_size}Gi
+            volumeType: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_type}
+            encrypted: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.encrypted}
+            deleteOnTermination: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.delete_on_termination}
+      metadataOptions:
+        httpEndpoint: ${var.karpenter_default_node_class_metadata_options["httpEndpoint"]}
+        httpPutResponseHopLimit: ${var.karpenter_default_node_class_metadata_options["httpPutResponseHopLimit"]}
+  YAML
+  depends_on = [
+    helm_release.karpenter
+  ]
+}
+
+resource "kubectl_manifest" "karpenter_node_pool" {
+  yaml_body = <<-YAML
+    apiVersion: karpenter.sh/v1beta1
+    kind: NodePool
+    metadata:
+      name: default
+    spec:
+      template:
+        spec:
+          nodeClassRef:
+            name: default
+          requirements:
+            - key: "${var.karpenter_default_node_pool_requirements["instance_category"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_category"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_category"].values)}
+            - key: "${var.karpenter_default_node_pool_requirements["instance_cpu"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_cpu"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_cpu"].values)}
+            - key: "${var.karpenter_default_node_pool_requirements["instance_hypervisor"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_hypervisor"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_hypervisor"].values)}
+            - key: "${var.karpenter_default_node_pool_requirements["instance_generation"].key}"
+              operator: ${var.karpenter_default_node_pool_requirements["instance_generation"].operator}
+              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_generation"].values)}
+      limits:
+        cpu: ${var.karpenter_default_node_pool_limits["cpu"]}
+        memory: ${var.karpenter_default_node_pool_limits["memory"]}
+      disruption:
+        consolidationPolicy: ${var.karpenter_default_node_pool_disruption["consolidationPolicy"]}
+        consolidateAfter: ${var.karpenter_default_node_pool_disruption["consolidateAfter"]}
+  YAML
+  depends_on = [
+    kubectl_manifest.karpenter_node_class
+  ]
+}
+
 resource "null_resource" "build_lambda_packages" {
   triggers = {
     lambda_dir_sha1 = sha1(
@@ -599,7 +705,6 @@ resource "null_resource" "build_lambda_packages" {
       )
     )
   }
-
   provisioner "local-exec" {
     command = <<EOF
       set -ex
@@ -711,12 +816,10 @@ resource "aws_sns_topic_policy" "s3_isl_event_topic_policy" {
 
 resource "aws_s3_bucket_notification" "isl_bucket_notification" {
   bucket = aws_s3_bucket.inbound_staging_location.id
-
   topic {
     topic_arn = aws_sns_topic.s3_isl_event_topic.arn
     events    = ["s3:ObjectCreated:*"]
   }
-
   depends_on = [
     aws_sns_topic_policy.s3_isl_event_topic_policy,
     aws_sqs_queue_policy.s3_isl_event_queue_policy
@@ -735,7 +838,6 @@ resource "aws_sqs_queue" "s3_isl_event_queue" {
 
 resource "aws_sqs_queue_policy" "s3_isl_event_queue_policy" {
   queue_url = aws_sqs_queue.s3_isl_event_queue.id
-
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -775,9 +877,7 @@ resource "aws_s3_object" "lambdas" {
   bucket = aws_s3_bucket.lambdas.id
   key    = format("%s.zip", format(local.resource_name_prefix, "AirflowDAGTrigger"))
   # TODO remove handcoding of lambda file name
-  source = "${abspath(path.module)}/../../../lambda/deployment_packages/airflow-dag-trigger_package.zip"
-  # TODO may have to rely on output from docker build or something... getting inconsistent plan issue
-  # etag   = filemd5("${abspath(path.module)}/../../../../lambda_deployment_packages/airflow_dag_trigger_package.zip")
+  source     = "${abspath(path.module)}/../../../lambda/deployment_packages/airflow-dag-trigger_package.zip"
   depends_on = [null_resource.build_lambda_packages]
 }
 
@@ -795,7 +895,6 @@ resource "aws_ssm_parameter" "airflow_dag_trigger_lambda_package" {
 
 resource "aws_iam_role" "lambda" {
   name = format(local.resource_name_prefix, "LambdaExecutionRole")
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
