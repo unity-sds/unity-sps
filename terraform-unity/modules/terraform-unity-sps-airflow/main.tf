@@ -383,6 +383,7 @@ resource "helm_release" "airflow" {
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
       airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
       workers_pvc_name         = kubernetes_persistent_volume_claim.efs_pvc.metadata[0].name
+      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_dags.metadata[0].name
       webserver_instance_name  = format(local.resource_name_prefix, "airflow")
       webserver_navbar_color   = local.airflow_webserver_navbar_color
       service_area             = upper(var.service_area)
@@ -981,4 +982,135 @@ resource "aws_lambda_event_source_mapping" "lambda_airflow_dag_trigger" {
   event_source_arn = aws_sqs_queue.s3_isl_event_queue.arn
   function_name    = aws_lambda_function.airflow_dag_trigger.arn
   batch_size       = 1
+}
+
+# # https://github.com/awslabs/mountpoint-s3-csi-driver/blob/main/docs/install.md
+# # https://github.com/awslabs/mountpoint-s3-csi-driver/blob/3d8f2c291d255dae8408bb5c3206dc19586e78cf/examples/kubernetes/static_provisioning/non_root.yaml
+resource "aws_iam_role" "csi_s3_role" {
+  name = "csi-s3-role"
+  assume_role_policy = jsonencode({
+    Version : "2012-10-17",
+    Statement : [
+      {
+        Action : "sts:AssumeRoleWithWebIdentity",
+        Effect : "Allow",
+        Principal : {
+          Federated : "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
+        },
+        Condition : {
+          StringEquals : {
+            "${local.oidc_provider_url}:sub" : "system:serviceaccount:kube-system:s3-csi-driver-sa"
+          }
+        }
+      }
+    ]
+  })
+  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
+}
+
+resource "aws_iam_role_policy_attachment" "s3_full_access" {
+  role       = aws_iam_role.csi_s3_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+}
+
+resource "kubernetes_service_account" "csi_s3_service_account" {
+  metadata {
+    name      = "s3-csi-driver-sa"
+    namespace = "kube-system"
+    annotations = {
+      "eks.amazonaws.com/role-arn"     = aws_iam_role.csi_s3_role.arn
+      "meta.helm.sh/release-name"      = "aws-mountpoint-s3-csi-driver"
+      "meta.helm.sh/release-namespace" = "kube-system"
+    }
+    labels = {
+      "app.kubernetes.io/managed-by" = "Helm"
+    }
+  }
+}
+
+# https://github.com/awslabs/mountpoint-s3-csi-driver/issues/169
+resource "helm_release" "csi_s3_driver" {
+  name       = "aws-mountpoint-s3-csi-driver"
+  repository = "https://awslabs.github.io/mountpoint-s3-csi-driver"
+  chart      = "aws-mountpoint-s3-csi-driver"
+  version    = "v1.5.1"
+  namespace  = "kube-system"
+  set {
+    name  = "serviceAccount.create"
+    value = "false"
+  }
+  set {
+    name  = "serviceAccount.name"
+    value = kubernetes_service_account.csi_s3_service_account.metadata[0].name
+  }
+  set {
+    name  = "seLinuxOptions.type"
+    value = "container_t"
+  }
+}
+
+resource "aws_s3_bucket" "airflow_dags" {
+  bucket        = format(local.resource_name_prefix, "airflowdags")
+  force_destroy = true
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "airflowdags")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+locals {
+  airflow_dags_files = fileset("${path.module}/../../../airflow/dags", "*.py")
+}
+
+resource "aws_s3_object" "dags" {
+  for_each = toset(local.airflow_dags_files)
+  bucket   = aws_s3_bucket.airflow_dags.bucket
+  key      = each.value
+  source   = "${path.module}/../../../airflow/dags/${each.value}"
+  etag     = filemd5("${path.module}/../../../airflow/dags/${each.value}")
+}
+
+resource "kubernetes_persistent_volume" "airflow_dags" {
+  metadata {
+    name = "airflow-dags"
+  }
+  spec {
+    capacity = {
+      storage = "1200Gi" # This value is ignored but required
+    }
+    storage_class_name               = "s3-mountpoint"
+    access_modes                     = ["ReadWriteMany"]
+    persistent_volume_reclaim_policy = "Retain"
+    mount_options = [
+      "allow-delete",
+    ]
+    persistent_volume_source {
+      csi {
+        driver        = "s3.csi.aws.com"
+        volume_handle = "s3-csi-driver-volume"
+
+        volume_attributes = {
+          bucketName = aws_s3_bucket.airflow_dags.id
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_persistent_volume_claim" "airflow_dags" {
+  metadata {
+    name      = "airflow-dags"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    access_modes       = ["ReadWriteMany"]
+    storage_class_name = "s3-mountpoint" # Set this for static provisioning
+    resources {
+      requests = {
+        storage = "1200Gi" # This value is ignored but required
+      }
+    }
+    volume_name = kubernetes_persistent_volume.airflow_dags.metadata[0].name
+  }
 }
