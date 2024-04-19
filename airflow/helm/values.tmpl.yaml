@@ -107,7 +107,7 @@ config:
     remote_log_conn_id: "aws_default"
     encrypt_s3_logs: false
   celery:
-    worker_concurrency: 16
+    worker_concurrency: 1
 
 dags:
   persistence:
