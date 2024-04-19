@@ -61,12 +61,9 @@ variable "docker_images" {
   })
 }
 
-variable "mcp_al2_eks_optimized_ami" {
-  description = "The MCP Amazon Linux 2 (AL2) EKS Optimized AMI"
-  type = object({
-    image_id = string
-    owner    = string
-  })
+variable "mcp_ami_owner_id" {
+  description = "The ID of the MCP AMIs"
+  type        = string
 }
 
 variable "karpenter_default_node_pool_requirements" {

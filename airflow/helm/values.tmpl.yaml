@@ -50,10 +50,6 @@ triggerer:
   keda:
     enabled: true
 
-dagProcessor:
-  enabled: true
-  replicas: 3
-
 postgresql:
   enabled: false
 
@@ -111,7 +107,7 @@ config:
     remote_log_conn_id: "aws_default"
     encrypt_s3_logs: false
   celery:
-    worker_concurrency: 1
+    worker_concurrency: 16
 
 dags:
   persistence:
