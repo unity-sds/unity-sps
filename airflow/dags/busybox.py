@@ -85,7 +85,7 @@ echo_message_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,
@@ -114,7 +114,7 @@ cat_file_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,
@@ -139,7 +139,7 @@ echo_xcom_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,

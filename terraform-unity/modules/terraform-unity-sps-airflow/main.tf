@@ -440,7 +440,7 @@ resource "kubernetes_config_map" "airflow_dags" {
   }
 
   data = {
-    for f in fileset("${path.module}/../../../airflow/dags", "*.py") :
+    for f in fileset("${path.module}/../../../airflow/dags", "*.{py,yaml}") :
     f => file(join("/", ["${path.module}/../../../airflow/dags", f]))
   }
 }
