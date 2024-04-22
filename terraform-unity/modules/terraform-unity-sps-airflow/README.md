@@ -12,6 +12,7 @@
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.25.2 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | 3.2.2 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | 3.6.0 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | 0.11.1 |
 
 ## Providers
 
@@ -23,6 +24,7 @@
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.25.2 |
 | <a name="provider_null"></a> [null](#provider\_null) | 3.2.2 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.6.0 |
+| <a name="provider_time"></a> [time](#provider\_time) | 0.11.1 |
 
 ## Modules
 
@@ -37,9 +39,10 @@
 | [aws_cloudwatch_log_group.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/cloudwatch_log_group) | resource |
 | [aws_db_instance.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/db_instance) | resource |
 | [aws_db_subnet_group.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/db_subnet_group) | resource |
+| [aws_efs_access_point.airflow_dags](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_access_point) | resource |
-| [aws_efs_file_system.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_file_system) | resource |
-| [aws_efs_mount_target.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_mount_target) | resource |
+| [aws_efs_file_system.airflow](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_file_system) | resource |
+| [aws_efs_mount_target.airflow](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/efs_mount_target) | resource |
 | [aws_iam_policy.airflow_worker_policy](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_policy) | resource |
 | [aws_iam_policy.lambda_sqs_access](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_policy) | resource |
 | [aws_iam_role.airflow_worker_role](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_role) | resource |
@@ -56,9 +59,9 @@
 | [aws_s3_object.lambdas](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/s3_object) | resource |
 | [aws_secretsmanager_secret.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/secretsmanager_secret) | resource |
 | [aws_secretsmanager_secret_version.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/secretsmanager_secret_version) | resource |
-| [aws_security_group.airflow_kpo_efs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group) | resource |
+| [aws_security_group.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group) | resource |
 | [aws_security_group.rds_sg](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group) | resource |
-| [aws_security_group_rule.airflow_kpo_efs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.eks_egress_to_rds](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.rds_ingress_from_eks](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/security_group_rule) | resource |
 | [aws_sns_topic.s3_isl_event_topic](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/sns_topic) | resource |
@@ -77,13 +80,17 @@
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [kubectl_manifest.karpenter_node_class](https://registry.terraform.io/providers/alekc/kubectl/2.0.4/docs/resources/manifest) | resource |
 | [kubectl_manifest.karpenter_node_pool](https://registry.terraform.io/providers/alekc/kubectl/2.0.4/docs/resources/manifest) | resource |
+| [kubernetes_config_map.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/config_map) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/deployment) | resource |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/ingress_v1) | resource |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/ingress_v1) | resource |
+| [kubernetes_job.copy_airflow_dags_to_pvc](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/job) | resource |
 | [kubernetes_namespace.airflow](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/namespace) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/namespace) | resource |
-| [kubernetes_persistent_volume.efs_pv](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/persistent_volume) | resource |
-| [kubernetes_persistent_volume_claim.efs_pvc](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/persistent_volume_claim) | resource |
+| [kubernetes_persistent_volume.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/persistent_volume) | resource |
+| [kubernetes_persistent_volume.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/persistent_volume) | resource |
+| [kubernetes_persistent_volume_claim.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/persistent_volume_claim) | resource |
+| [kubernetes_persistent_volume_claim.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/persistent_volume_claim) | resource |
 | [kubernetes_role.airflow_pod_creator](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/role) | resource |
 | [kubernetes_role_binding.airflow_pod_creator_binding](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/role_binding) | resource |
 | [kubernetes_secret.airflow_metadata](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/secret) | resource |
@@ -95,12 +102,14 @@
 | [random_id.airflow_webserver_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.0/docs/resources/id) | resource |
 | [random_id.counter](https://registry.terraform.io/providers/hashicorp/random/3.6.0/docs/resources/id) | resource |
 | [random_password.airflow_db](https://registry.terraform.io/providers/hashicorp/random/3.6.0/docs/resources/password) | resource |
+| [time_sleep.wait_for_efs_mount_target_dns_propagation](https://registry.terraform.io/providers/hashicorp/time/0.11.1/docs/resources/sleep) | resource |
 | [aws_ami.al2_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/ami) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/caller_identity) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_cluster) | data source |
 | [aws_eks_cluster_auth.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/eks_cluster_auth) | data source |
 | [aws_iam_role.cluster_iam_role](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/iam_role) | data source |
 | [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/security_group) | data source |
+| [aws_ssm_parameter.al2_eks_optimized_ami](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/data-sources/ingress_v1) | data source |
@@ -120,7 +129,7 @@
 | <a name="input_karpenter_default_node_pool_limits"></a> [karpenter\_default\_node\_pool\_limits](#input\_karpenter\_default\_node\_pool\_limits) | Limits for the default Karpenter node pool | <pre>object({<br>    cpu    = number<br>    memory = string<br>  })</pre> | n/a | yes |
 | <a name="input_karpenter_default_node_pool_requirements"></a> [karpenter\_default\_node\_pool\_requirements](#input\_karpenter\_default\_node\_pool\_requirements) | Requirements for the default Karpenter node pool | <pre>map(object({<br>    key      = string<br>    operator = string<br>    values   = list(string)<br>  }))</pre> | n/a | yes |
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
-| <a name="input_mcp_al2_eks_optimized_ami"></a> [mcp\_al2\_eks\_optimized\_ami](#input\_mcp\_al2\_eks\_optimized\_ami) | The MCP Amazon Linux 2 (AL2) EKS Optimized AMI | <pre>object({<br>    image_id = string<br>    owner    = string<br>  })</pre> | n/a | yes |
+| <a name="input_mcp_ami_owner_id"></a> [mcp\_ami\_owner\_id](#input\_mcp\_ami\_owner\_id) | The ID of the MCP AMIs | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | n/a | yes |
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | n/a | yes |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed | `string` | n/a | yes |

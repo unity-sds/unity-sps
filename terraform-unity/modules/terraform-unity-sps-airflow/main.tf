@@ -264,63 +264,6 @@ resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {
   policy_arn = aws_iam_policy.airflow_worker_policy.arn
 }
 
-resource "aws_efs_file_system" "airflow_kpo" {
-  creation_token = format(local.resource_name_prefix, "AirflowKpoEfs")
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowKpoEfs")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
-resource "aws_security_group" "airflow_kpo_efs" {
-  name        = format(local.resource_name_prefix, "AirflowKpoEfsSg")
-  description = "Security group for the EFS used in Airflow Kubernetes Pod Operators"
-  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowKpoEfsSg")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
-resource "aws_security_group_rule" "airflow_kpo_efs" {
-  type              = "ingress"
-  from_port         = 2049
-  to_port           = 2049
-  protocol          = "tcp"
-  security_group_id = aws_security_group.airflow_kpo_efs.id
-  cidr_blocks       = [data.aws_vpc.cluster_vpc.cidr_block] # VPC CIDR to allow entire VPC. Adjust as necessary.
-}
-
-resource "aws_efs_mount_target" "airflow_kpo" {
-  for_each        = nonsensitive(toset(jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]))
-  file_system_id  = aws_efs_file_system.airflow_kpo.id
-  subnet_id       = each.value
-  security_groups = [aws_security_group.airflow_kpo_efs.id]
-}
-
-resource "aws_efs_access_point" "airflow_kpo" {
-  file_system_id = aws_efs_file_system.airflow_kpo.id
-  posix_user {
-    gid = 0
-    uid = 50000
-  }
-  root_directory {
-    path = "/efs"
-    creation_info {
-      owner_gid   = 0
-      owner_uid   = 50000
-      permissions = "0755"
-    }
-  }
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowKpoEfsAp")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
 # https://github.com/hashicorp/terraform-provider-kubernetes/issues/864
 resource "kubernetes_storage_class" "efs" {
   metadata {
@@ -330,9 +273,95 @@ resource "kubernetes_storage_class" "efs" {
   storage_provisioner = "efs.csi.aws.com"
 }
 
-resource "kubernetes_persistent_volume" "efs_pv" {
+resource "aws_efs_file_system" "airflow" {
+  creation_token = format(local.resource_name_prefix, "AirflowEfs")
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowEfs")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_security_group" "airflow_efs" {
+  name        = format(local.resource_name_prefix, "AirflowEfsSg")
+  description = "Security group for the EFS used in Airflow"
+  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowEfsSg")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_security_group_rule" "airflow_efs" {
+  type              = "ingress"
+  from_port         = 2049
+  to_port           = 2049
+  protocol          = "tcp"
+  security_group_id = aws_security_group.airflow_efs.id
+  cidr_blocks       = [data.aws_vpc.cluster_vpc.cidr_block] # VPC CIDR to allow entire VPC. Adjust as necessary.
+}
+
+resource "aws_efs_mount_target" "airflow" {
+  for_each        = nonsensitive(toset(jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]))
+  file_system_id  = aws_efs_file_system.airflow.id
+  subnet_id       = each.value
+  security_groups = [aws_security_group.airflow_efs.id]
+}
+
+resource "aws_efs_access_point" "airflow_kpo" {
+  file_system_id = aws_efs_file_system.airflow.id
+  posix_user {
+    gid = 0
+    uid = 50000
+  }
+  root_directory {
+    path = "/airflow-kpo"
+    creation_info {
+      owner_gid   = 0
+      owner_uid   = 50000
+      permissions = "0755"
+    }
+  }
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "EfsAirflowKpoAp")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_efs_access_point" "airflow_dags" {
+  file_system_id = aws_efs_file_system.airflow.id
+  posix_user {
+    gid = 0
+    uid = 50000
+  }
+  root_directory {
+    path = "/dags"
+    creation_info {
+      owner_gid   = 0
+      owner_uid   = 50000
+      permissions = "0755"
+    }
+  }
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowDagsAp")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "time_sleep" "wait_for_efs_mount_target_dns_propagation" {
+  # AWS recommends that you wait 90 seconds after creating a mount target before
+  # you mount your file system. This wait lets the DNS records propagate fully
+  # in the AWS Region where the file system is.
+  depends_on      = [aws_efs_mount_target.airflow]
+  create_duration = "120s"
+}
+
+resource "kubernetes_persistent_volume" "airflow_kpo" {
   metadata {
-    name = "kpo-efs"
+    name = "airflow-kpo"
   }
   spec {
     capacity = {
@@ -343,16 +372,16 @@ resource "kubernetes_persistent_volume" "efs_pv" {
     persistent_volume_source {
       csi {
         driver        = "efs.csi.aws.com"
-        volume_handle = "${aws_efs_file_system.airflow_kpo.id}::${aws_efs_access_point.airflow_kpo.id}"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_kpo.id}"
       }
     }
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "efs_pvc" {
+resource "kubernetes_persistent_volume_claim" "airflow_kpo" {
   metadata {
-    name      = "kpo-efs"
+    name      = "airflow-kpo"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   spec {
@@ -362,9 +391,104 @@ resource "kubernetes_persistent_volume_claim" "efs_pvc" {
         storage = "5Gi"
       }
     }
-    volume_name        = "kpo-efs"
+    volume_name        = kubernetes_persistent_volume.airflow_kpo.metadata[0].name
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
+}
+
+resource "kubernetes_persistent_volume" "airflow_dags" {
+  metadata {
+    name = "airflow-dags"
+  }
+  spec {
+    capacity = {
+      storage = "5Gi"
+    }
+    access_modes                     = ["ReadWriteMany"]
+    persistent_volume_reclaim_policy = "Retain"
+    persistent_volume_source {
+      csi {
+        driver        = "efs.csi.aws.com"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_dags.id}"
+      }
+    }
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
+resource "kubernetes_persistent_volume_claim" "airflow_dags" {
+  metadata {
+    name      = "airflow-dags"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    access_modes = ["ReadWriteMany"]
+    resources {
+      requests = {
+        storage = "5Gi"
+      }
+    }
+    volume_name        = kubernetes_persistent_volume.airflow_dags.metadata[0].name
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
+resource "kubernetes_config_map" "airflow_dags" {
+  metadata {
+    name      = "airflow-dags"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+
+  data = {
+    for f in fileset("${path.module}/../../../airflow/dags", "*.py") :
+    f => file(join("/", ["${path.module}/../../../airflow/dags", f]))
+  }
+}
+
+resource "kubernetes_job" "copy_airflow_dags_to_pvc" {
+  metadata {
+    name      = "copy-airflow-dags-to-pvc"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    backoff_limit = 4
+    template {
+      metadata {}
+      spec {
+        container {
+          name    = "copy-airflow-dags-to-pvc"
+          image   = "alpine:3.19.1"
+          command = ["/bin/sh", "-c", "cp /configmap/* /dags/"]
+          volume_mount {
+            name       = "configmap"
+            mount_path = "/configmap"
+          }
+          volume_mount {
+            name       = "airflow-dags"
+            mount_path = "/dags"
+          }
+        }
+        restart_policy = "Never"
+        volume {
+          name = "configmap"
+          config_map {
+            name = kubernetes_config_map.airflow_dags.metadata[0].name
+          }
+        }
+        volume {
+          name = "airflow-dags"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.airflow_dags.metadata[0].name
+          }
+        }
+      }
+    }
+  }
+  wait_for_completion = true
+  timeouts {
+    create = "10m"
+  }
+  depends_on = [time_sleep.wait_for_efs_mount_target_dns_propagation]
 }
 
 resource "helm_release" "airflow" {
@@ -382,7 +506,8 @@ resource "helm_release" "airflow" {
       webserver_secret_name    = "airflow-webserver-secret"
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
       airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
-      workers_pvc_name         = kubernetes_persistent_volume_claim.efs_pvc.metadata[0].name
+      workers_pvc_name         = kubernetes_persistent_volume_claim.airflow_kpo.metadata[0].name
+      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_dags.metadata[0].name
       webserver_instance_name  = format(local.resource_name_prefix, "airflow")
       webserver_navbar_color   = local.airflow_webserver_navbar_color
       service_area             = upper(var.service_area)
@@ -393,7 +518,13 @@ resource "helm_release" "airflow" {
     name  = "webserver.defaultUser.password"
     value = var.airflow_webserver_password
   }
-  depends_on = [aws_db_instance.airflow_db, helm_release.keda, kubernetes_secret.airflow_metadata, kubernetes_secret.airflow_webserver]
+  depends_on = [
+    aws_db_instance.airflow_db,
+    helm_release.keda,
+    kubernetes_secret.airflow_metadata,
+    kubernetes_secret.airflow_webserver,
+    kubernetes_job.copy_airflow_dags_to_pvc
+  ]
 }
 
 resource "kubernetes_deployment" "ogc_processes_api" {
@@ -954,7 +1085,6 @@ resource "aws_lambda_function" "airflow_dag_trigger" {
       AIRFLOW_BASE_API_ENDPOINT = aws_ssm_parameter.airflow_api_url.value
       AIRFLOW_USERNAME          = "admin"
       AIRFLOW_PASSWORD          = var.airflow_webserver_password
-
     }
   }
   tags = merge(local.common_tags, {

@@ -157,6 +157,7 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.25.2 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | 3.2.2 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | 3.6.0 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | 0.11.1 |
 
 ## Providers
 
@@ -186,7 +187,7 @@ No resources.
 | <a name="input_karpenter_default_node_pool_limits"></a> [karpenter\_default\_node\_pool\_limits](#input\_karpenter\_default\_node\_pool\_limits) | Limits for the default Karpenter node pool | <pre>object({<br>    cpu    = number # Total CPU limit across all nodes provisioned by this Provisioner<br>    memory = string # Total memory limit across all nodes<br>  })</pre> | <pre>{<br>  "cpu": 80,<br>  "memory": "320Gi"<br>}</pre> | no |
 | <a name="input_karpenter_default_node_pool_requirements"></a> [karpenter\_default\_node\_pool\_requirements](#input\_karpenter\_default\_node\_pool\_requirements) | Requirements for the default Karpenter node pool | <pre>map(object({<br>    key      = string<br>    operator = string<br>    values   = list(string)<br>  }))</pre> | <pre>{<br>  "instance_category": {<br>    "key": "karpenter.k8s.aws/instance-category",<br>    "operator": "In",<br>    "values": [<br>      "m",<br>      "t",<br>      "c",<br>      "r"<br>    ]<br>  },<br>  "instance_cpu": {<br>    "key": "karpenter.k8s.aws/instance-cpu",<br>    "operator": "In",<br>    "values": [<br>      "2",<br>      "4",<br>      "8",<br>      "16",<br>      "32"<br>    ]<br>  },<br>  "instance_generation": {<br>    "key": "karpenter.k8s.aws/instance-generation",<br>    "operator": "Gt",<br>    "values": [<br>      "2"<br>    ]<br>  },<br>  "instance_hypervisor": {<br>    "key": "karpenter.k8s.aws/instance-hypervisor",<br>    "operator": "In",<br>    "values": [<br>      "nitro"<br>    ]<br>  }<br>}</pre> | no |
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
-| <a name="input_mcp_al2_eks_optimized_ami"></a> [mcp\_al2\_eks\_optimized\_ami](#input\_mcp\_al2\_eks\_optimized\_ami) | The MCP Amazon Linux 2 (AL2) EKS Optimized AMI | <pre>object({<br>    image_id = string<br>    owner    = string<br>  })</pre> | <pre>{<br>  "image_id": "ami-0121a9a72d2b29816",<br>  "owner": "794625662971"<br>}</pre> | no |
+| <a name="input_mcp_ami_owner_id"></a> [mcp\_ami\_owner\_id](#input\_mcp\_ami\_owner\_id) | The owner ID of the MCP AMIs | `string` | `"794625662971"` | no |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS. | `string` | `"unity"` | no |
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | `"2.0.0"` | no |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed. | `string` | `"sps"` | no |

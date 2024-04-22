@@ -10,7 +10,7 @@ module "unity-sps-airflow" {
   airflow_webserver_password                    = var.airflow_webserver_password
   docker_images                                 = var.docker_images
   helm_charts                                   = var.helm_charts
-  mcp_al2_eks_optimized_ami                     = var.mcp_al2_eks_optimized_ami
+  mcp_ami_owner_id                              = var.mcp_ami_owner_id
   karpenter_default_node_pool_requirements      = var.karpenter_default_node_pool_requirements
   karpenter_default_node_pool_limits            = var.karpenter_default_node_pool_limits
   karpenter_default_node_pool_disruption        = var.karpenter_default_node_pool_disruption

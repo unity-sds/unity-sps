@@ -50,10 +50,6 @@ triggerer:
   keda:
     enabled: true
 
-dagProcessor:
-  enabled: true
-  replicas: 3
-
 postgresql:
   enabled: false
 
@@ -112,6 +108,13 @@ config:
     encrypt_s3_logs: false
   celery:
     worker_concurrency: 1
+
+dags:
+  persistence:
+    # Enable persistent volume for storing dags
+    enabled: true
+    # the name of an existing PVC to use
+    existingClaim: ${dags_pvc_name}
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
