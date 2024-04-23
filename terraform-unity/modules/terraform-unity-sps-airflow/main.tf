@@ -798,7 +798,7 @@ resource "kubernetes_manifest" "karpenter_node_class" {
         #!/bin/bash
         echo "Starting pre-bootstrap configurations..."
         # Custom script to enable IP forwarding
-        sudo sed -i 's/^net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/sysctl.conf && sudo sysctl -p | true
+        sudo sed -i 's/^net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/sysctl.conf && sudo sysctl -p |true
         echo "Pre-bootstrap configurations applied."
       EOT
       role     = data.aws_iam_role.cluster_iam_role.name
