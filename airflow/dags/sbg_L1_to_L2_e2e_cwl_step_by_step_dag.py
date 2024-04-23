@@ -121,7 +121,11 @@ def setup(ti=None, **context):
     # retrieve the venue-dependent parameters from SSM
     # FIXME: must coordinate SSM keys with U-CS, U-DS
     ssm_client = boto3.client('ssm', region_name='us-west-2')
-    ssm_response = ssm_client.get_parameters(Names=[UNITY_DAPA_CLIENT_ID, UNITY_DAPA_API_URL, UNITY_OUTPUT_DATA_BUCKET])
+    ssm_response = ssm_client.get_parameters(Names=[UNITY_DAPA_CLIENT_ID,
+                                                    UNITY_DAPA_API_URL,
+                                                    UNITY_OUTPUT_DATA_BUCKET],
+                                             WithDecryption=True)
+    print(ssm_response)
 
     # dictionary containing venue dependent parameters common to all Tasks
     # this dictionary is merged into each Task specific dictionary
