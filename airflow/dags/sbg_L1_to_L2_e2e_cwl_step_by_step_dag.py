@@ -209,7 +209,7 @@ preprocess_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,
@@ -240,7 +240,7 @@ isofit_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,
@@ -275,7 +275,7 @@ resample_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,
@@ -308,7 +308,7 @@ reflect_correct_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,
@@ -344,7 +344,7 @@ frcover_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
     dag=dag,
