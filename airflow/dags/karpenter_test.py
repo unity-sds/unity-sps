@@ -33,6 +33,7 @@ compute_task = KubernetesPodOperator(
     get_logs=True,
     dag=dag,
     is_delete_operator_pod=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -41,7 +42,7 @@ compute_task = KubernetesPodOperator(
                     "preference": {
                         "matchExpressions": [
                             {
-                                "key": "capacity-type",
+                                "key": "karpenter.sh/capacity-type",
                                 "operator": "In",
                                 "values": ["spot"],
                             }
@@ -76,6 +77,7 @@ memory_task = KubernetesPodOperator(
     get_logs=True,
     dag=dag,
     is_delete_operator_pod=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -84,7 +86,7 @@ memory_task = KubernetesPodOperator(
                     "preference": {
                         "matchExpressions": [
                             {
-                                "key": "capacity-type",
+                                "key": "karpenter.sh/capacity-type",
                                 "operator": "In",
                                 "values": ["spot"],
                             }
@@ -119,6 +121,7 @@ general_task = KubernetesPodOperator(
     get_logs=True,
     dag=dag,
     is_delete_operator_pod=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -127,7 +130,7 @@ general_task = KubernetesPodOperator(
                     "preference": {
                         "matchExpressions": [
                             {
-                                "key": "capacity-type",
+                                "key": "karpenter.sh/capacity-type",
                                 "operator": "In",
                                 "values": ["spot"],
                             }

@@ -20,7 +20,6 @@
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 5.43.0 |
 | <a name="provider_helm"></a> [helm](#provider\_helm) | 2.12.1 |
-| <a name="provider_kubectl"></a> [kubectl](#provider\_kubectl) | 2.0.4 |
 | <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.25.2 |
 | <a name="provider_null"></a> [null](#provider\_null) | 3.2.2 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.6.0 |
@@ -78,13 +77,15 @@
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [helm_release.karpenter](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
-| [kubectl_manifest.karpenter_node_class](https://registry.terraform.io/providers/alekc/kubectl/2.0.4/docs/resources/manifest) | resource |
-| [kubectl_manifest.karpenter_node_pool](https://registry.terraform.io/providers/alekc/kubectl/2.0.4/docs/resources/manifest) | resource |
 | [kubernetes_config_map.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/config_map) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/deployment) | resource |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/ingress_v1) | resource |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/ingress_v1) | resource |
 | [kubernetes_job.copy_airflow_dags_to_pvc](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/job) | resource |
+| [kubernetes_manifest.karpenter_node_class](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/manifest) | resource |
+| [kubernetes_manifest.karpenter_node_pool_airflow_celery](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/manifest) | resource |
+| [kubernetes_manifest.karpenter_node_pool_airflow_core_components](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/manifest) | resource |
+| [kubernetes_manifest.karpenter_node_pool_airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/manifest) | resource |
 | [kubernetes_namespace.airflow](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/namespace) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/namespace) | resource |
 | [kubernetes_persistent_volume.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/persistent_volume) | resource |

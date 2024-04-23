@@ -42,11 +42,79 @@ images:
     repository: ${airflow_image_repo}
     tag: ${airflow_image_tag}
 
+# Global default settings for Airflow pods
+nodeSelector:
+  "karpenter.sh/nodepool": "airflow-core-components"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: "karpenter.sh/capacity-type"
+          operator: "In"
+          values: ["on-demand"]
+        - key: "karpenter.k8s.aws/instance-category"
+          operator: "In"
+          values: ["m", "t", "c", "r"]
+        - key: "karpenter.k8s.aws/instance-cpu"
+          operator: "In"
+          values: ["2", "4"]
+
+topologySpreadConstraints:
+- maxSkew: 1
+  topologyKey: "topology.kubernetes.io/zone"
+  whenUnsatisfiable: "ScheduleAnyway"
+  labelSelector:
+    matchLabels:
+      app: airflow # This label should match all Airflow pods
+- maxSkew: 1
+  topologyKey: "kubernetes.io/hostname"
+  whenUnsatisfiable: "ScheduleAnyway"
+  labelSelector:
+    matchLabels:
+      app: airflow
+
+# Add common labels to all objects and pods defined in this chart.
+labels:
+  app: airflow
+
 scheduler:
   replicas: 3
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-core-components"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "karpenter.sh/capacity-type"
+            operator: "In"
+            values: ["on-demand"]
+          - key: "karpenter.k8s.aws/instance-category"
+            operator: "In"
+            values: ["c"] # Choosing compute-optimized instances
+          - key: "karpenter.k8s.aws/instance-cpu"
+            operator: "In"
+            values: ["2", "4"] # Scheduler might benefit from higher CPU
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: "topology.kubernetes.io/zone"
+    whenUnsatisfiable: "ScheduleAnyway"
+    labelSelector:
+      matchLabels:
+        component: scheduler
+  - maxSkew: 1
+    topologyKey: "kubernetes.io/hostname"
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        component: scheduler
+  labels:
+    component: scheduler
 
 triggerer:
-  replicas: 1
+  replicas: 3
   keda:
     enabled: true
 
@@ -62,7 +130,80 @@ webserverSecretKeySecretName: ${webserver_secret_name}
 webserver:
   replicas: 3
 
+  startupProbe:
+    timeoutSeconds: 20
+    failureThreshold: 60     # Number of tries before giving up (10 minutes with periodSeconds of 10)
+    periodSeconds: 10        # How often to perform the probe
+
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-core-components"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "karpenter.sh/capacity-type"
+            operator: "In"
+            values: ["on-demand"]
+          - key: "karpenter.k8s.aws/instance-category"
+            operator: "In"
+            values: ["r"] # Choosing memory-optimized instances
+          - key: "karpenter.k8s.aws/instance-cpu"
+            operator: "In"
+            values: ["2", "4"] # Balancing between CPU and memory
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: "topology.kubernetes.io/zone"
+    whenUnsatisfiable: "ScheduleAnyway"
+    labelSelector:
+      matchLabels:
+        component: webserver
+  - maxSkew: 1
+    topologyKey: "kubernetes.io/hostname"
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        component: webserver
+  labels:
+    component: webserver
+
 workers:
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-celery-workers"
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: "karpenter.sh/capacity-type"
+            operator: "In"
+            values: ["spot"]
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "karpenter.k8s.aws/instance-category"
+            operator: "In"
+            values: ["m"]
+          - key: "karpenter.k8s.aws/instance-cpu"
+            operator: "In"
+            values: ["2", "4"]
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: "topology.kubernetes.io/zone"
+    whenUnsatisfiable: "ScheduleAnyway"
+    labelSelector:
+      matchLabels:
+        component: worker
+  - maxSkew: 1
+    topologyKey: "kubernetes.io/hostname"
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        component: worker
+  labels:
+    component: worker
+
   keda:
     enabled: true
     pollingInterval: 1
@@ -107,7 +248,7 @@ config:
     remote_log_conn_id: "aws_default"
     encrypt_s3_logs: false
   celery:
-    worker_concurrency: 1
+    worker_concurrency: 32
 
 dags:
   persistence:
