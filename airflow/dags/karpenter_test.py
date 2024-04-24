@@ -54,7 +54,11 @@ compute_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["c"]},
+                            {
+                                "key": "karpenter.k8s.aws/instance-family",
+                                "operator": "In",
+                                "values": ["c6i", "c5"],
+                            },
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
@@ -98,7 +102,11 @@ memory_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["r"]},
+                            {
+                                "key": "karpenter.k8s.aws/instance-family",
+                                "operator": "In",
+                                "values": ["r6i", "r5"],
+                            },
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
@@ -142,7 +150,11 @@ general_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["m"]},
+                            {
+                                "key": "karpenter.k8s.aws/instance-family",
+                                "operator": "In",
+                                "values": ["m6i", "m5"],
+                            },
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",

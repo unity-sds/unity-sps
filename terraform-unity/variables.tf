@@ -123,9 +123,9 @@ variable "karpenter_node_pools" {
     "airflow-kubernetes-pod-operator" = {
       requirements = [
         {
-          key      = "karpenter.k8s.aws/instance-category"
+          key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m", "t", "c", "r"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -151,11 +151,6 @@ variable "karpenter_node_pools" {
           key      = "karpenter.k8s.aws/instance-hypervisor",
           operator = "In",
           values   = ["nitro"]
-        },
-        {
-          key      = "karpenter.k8s.aws/instance-generation",
-          operator = "Gt",
-          values   = ["2"]
         }
       ]
       limits = {
@@ -164,15 +159,15 @@ variable "karpenter_node_pools" {
       }
       disruption = {
         consolidationPolicy = "WhenEmpty"
-        consolidateAfter    = "5m"
+        consolidateAfter    = "1m"
       }
     },
     "airflow-celery-workers" = {
       requirements = [
         {
-          key      = "karpenter.k8s.aws/instance-category"
+          key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m", "t", "c", "r"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -198,11 +193,6 @@ variable "karpenter_node_pools" {
           key      = "karpenter.k8s.aws/instance-hypervisor",
           operator = "In",
           values   = ["nitro"]
-        },
-        {
-          key      = "karpenter.k8s.aws/instance-generation",
-          operator = "Gt",
-          values   = ["2"]
         }
       ]
       limits = {
@@ -211,15 +201,15 @@ variable "karpenter_node_pools" {
       }
       disruption = {
         consolidationPolicy = "WhenEmpty"
-        consolidateAfter    = "5m"
+        consolidateAfter    = "1m"
       }
     },
     "airflow-core-components" = {
       requirements = [
         {
-          key      = "karpenter.k8s.aws/instance-category"
+          key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m", "t", "c", "r"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -245,11 +235,6 @@ variable "karpenter_node_pools" {
           key      = "karpenter.k8s.aws/instance-hypervisor",
           operator = "In",
           values   = ["nitro"]
-        },
-        {
-          key      = "karpenter.k8s.aws/instance-generation",
-          operator = "Gt",
-          values   = ["2"]
         }
       ]
       limits = {
@@ -258,7 +243,7 @@ variable "karpenter_node_pools" {
       }
       disruption = {
         consolidationPolicy = "WhenEmpty"
-        consolidateAfter    = "5m"
+        consolidateAfter    = "1m"
       }
     }
   }

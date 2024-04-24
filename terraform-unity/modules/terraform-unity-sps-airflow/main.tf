@@ -16,21 +16,17 @@ resource "helm_release" "keda" {
   namespace  = kubernetes_namespace.keda.metadata[0].name
 }
 
-resource "null_resource" "remove_finalizers" {
+resource "null_resource" "remove_keda_finalizers" {
   # https://keda.sh/docs/deploy/#uninstall
   provisioner "local-exec" {
     when    = destroy
     command = <<EOT
       set -x
-      for i in $(kubectl get scaledobjects -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].kind}{"/"}{.items[*].metadata.name}{"\n"}'); do
-          if [[ "$i" != "/" ]]; then
-              kubectl patch $i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
-          fi
+      for i in $(kubectl get scaledobjects -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].metadata.name}{"\n"}'); do
+          kubectl patch ScaledObject/$i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
       done
-      for i in $(kubectl get scaledjobs -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].kind}{"/"}{.items[*].metadata.name}{"\n"}'); do
-          if [[ "$i" != "/" ]]; then
-              kubectl patch $i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
-          fi
+      for i in $(kubectl get scaledjobs -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].metadata.name}{"\n"}'); do
+          kubectl patch ScaledJob/$i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
       done
     EOT
   }
@@ -563,9 +559,9 @@ resource "kubernetes_deployment" "ogc_processes_api" {
                   values   = ["on-demand"]
                 }
                 match_expressions {
-                  key      = "karpenter.k8s.aws/instance-category"
+                  key      = "karpenter.k8s.aws/instance-family"
                   operator = "In"
-                  values   = ["m", "t"]
+                  values   = ["c6i", "c5"]
                 }
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-cpu"
@@ -778,6 +774,7 @@ resource "helm_release" "karpenter" {
         eks.amazonaws.com/role-arn: ${module.karpenter.iam_role_arn}
     EOT
   ]
+  depends_on = [module.karpenter]
 }
 
 resource "kubernetes_manifest" "karpenter_node_class" {
@@ -835,6 +832,20 @@ resource "kubernetes_manifest" "karpenter_node_class" {
   ]
 }
 
+resource "null_resource" "remove_node_class_finalizers" {
+  # https://github.com/aws/karpenter-provider-aws/issues/5079
+  provisioner "local-exec" {
+    when    = destroy
+    command = "kubectl patch ec2nodeclass ${self.triggers.node_class_name} -p '{\"metadata\":{\"finalizers\":null}}' --type=merge"
+  }
+  triggers = {
+    node_class_name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+  }
+  depends_on = [
+    kubernetes_manifest.karpenter_node_pools
+  ]
+}
+
 resource "kubernetes_manifest" "karpenter_node_pools" {
   for_each = var.karpenter_node_pools
 
@@ -848,7 +859,7 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
       template = {
         spec = {
           nodeClassRef = {
-            name = "default"
+            name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
           }
           requirements = [for req in each.value.requirements : {
             key      = req.key

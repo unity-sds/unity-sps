@@ -54,9 +54,9 @@ affinity:
         - key: "karpenter.sh/capacity-type"
           operator: "In"
           values: ["on-demand"]
-        - key: "karpenter.k8s.aws/instance-category"
+        - key: "karpenter.k8s.aws/instance-family"
           operator: "In"
-          values: ["m", "t"]
+          values: ["c6i", "c5"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: "In"
           values: ["2", "4"]
@@ -91,9 +91,9 @@ scheduler:
           - key: "karpenter.sh/capacity-type"
             operator: "In"
             values: ["on-demand"]
-          - key: "karpenter.k8s.aws/instance-category"
+          - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["m", "t"] # In the future, maybe choose compute-optimized instances
+            values: ["c6i", "c5"] # Choosing compute-optimized instances
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["2", "4"] # Scheduler might benefit from higher CPU
@@ -145,9 +145,9 @@ webserver:
           - key: "karpenter.sh/capacity-type"
             operator: "In"
             values: ["on-demand"]
-          - key: "karpenter.k8s.aws/instance-category"
+          - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["m", "t"] # In the future, maybe choose memory-optimized instances
+            values: ["c6i", "c5"] # Choosing compute-optimized instances
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["2", "4"] # Balancing between CPU and memory
@@ -182,9 +182,9 @@ workers:
       requiredDuringSchedulingIgnoredDuringExecution:
         nodeSelectorTerms:
         - matchExpressions:
-          - key: "karpenter.k8s.aws/instance-category"
+          - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["m", "t"]
+            values: ["t3"]
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["2", "4"]
@@ -249,7 +249,7 @@ config:
     remote_log_conn_id: "aws_default"
     encrypt_s3_logs: false
   celery:
-    worker_concurrency: 32
+    worker_concurrency: 16
 
 dags:
   persistence:
@@ -267,13 +267,13 @@ extraEnv: |
   - name: AIRFLOW__API__AUTH_BACKENDS
     value: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
   - name: AIRFLOW__CORE__PARALLELISM
-    value: "128"
+    value: "32768"
   - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
-    value: "64"
+    value: "1024"
   - name: AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG
-    value: "64"
+    value: "4096"
   - name: AIRFLOW__SCHEDULER__MAX_DAGRUNS_TO_CREATE_PER_LOOP
-    value: "64"
+    value: "256"
   - name: AIRFLOW__SCHEDULER__SCHEDULER_HEARTBEAT_SEC
     value: "1"
   - name: AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE
