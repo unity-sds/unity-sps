@@ -66,35 +66,21 @@ variable "mcp_ami_owner_id" {
   type        = string
 }
 
-variable "karpenter_default_node_pool_requirements" {
-  description = "Requirements for the default Karpenter node pool"
+variable "karpenter_node_pools" {
+  description = "Configuration for Karpenter node pools"
   type = map(object({
-    key      = string
-    operator = string
-    values   = list(string)
+    requirements : list(object({
+      key : string
+      operator : string
+      values : list(string)
+    }))
+    limits : object({
+      cpu : string
+      memory : string
+    })
+    disruption : object({
+      consolidationPolicy : string
+      consolidateAfter : string
+    })
   }))
-}
-
-variable "karpenter_default_node_pool_limits" {
-  description = "Limits for the default Karpenter node pool"
-  type = object({
-    cpu    = number
-    memory = string
-  })
-}
-
-variable "karpenter_default_node_pool_disruption" {
-  description = "Disruption policy for the default Karpenter node pool"
-  type = object({
-    consolidationPolicy = string
-    consolidateAfter    = string
-  })
-}
-
-variable "karpenter_default_node_class_metadata_options" {
-  description = "Disruption policy for the default Karpenter node pool"
-  type = object({
-    httpEndpoint            = string
-    httpPutResponseHopLimit = number
-  })
 }

@@ -56,7 +56,7 @@ affinity:
           values: ["on-demand"]
         - key: "karpenter.k8s.aws/instance-category"
           operator: "In"
-          values: ["m", "t", "c", "r"]
+          values: ["m", "t"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: "In"
           values: ["2", "4"]
@@ -93,7 +93,7 @@ scheduler:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-category"
             operator: "In"
-            values: ["c"] # Choosing compute-optimized instances
+            values: ["m", "t"] # In the future, maybe choose compute-optimized instances
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["2", "4"] # Scheduler might benefit from higher CPU
@@ -132,8 +132,8 @@ webserver:
 
   startupProbe:
     timeoutSeconds: 20
-    failureThreshold: 60     # Number of tries before giving up (10 minutes with periodSeconds of 10)
-    periodSeconds: 10        # How often to perform the probe
+    failureThreshold: 60 # Number of tries before giving up (10 minutes with periodSeconds of 10)
+    periodSeconds: 10    # How often to perform the probe
 
   nodeSelector:
     "karpenter.sh/nodepool": "airflow-core-components"
@@ -147,7 +147,7 @@ webserver:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-category"
             operator: "In"
-            values: ["r"] # Choosing memory-optimized instances
+            values: ["m", "t"] # In the future, maybe choose memory-optimized instances
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["2", "4"] # Balancing between CPU and memory
@@ -184,7 +184,7 @@ workers:
         - matchExpressions:
           - key: "karpenter.k8s.aws/instance-category"
             operator: "In"
-            values: ["m"]
+            values: ["m", "t"]
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["2", "4"]
@@ -207,6 +207,7 @@ workers:
   keda:
     enabled: true
     pollingInterval: 1
+    minReplicaCount: 1
     maxReplicaCount: 128
     # Specify HPA related options
     # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md

@@ -102,69 +102,164 @@ variable "mcp_ami_owner_id" {
   default     = "794625662971"
 }
 
-variable "karpenter_default_node_pool_requirements" {
-  description = "Requirements for the default Karpenter node pool"
+variable "karpenter_node_pools" {
+  description = "Configuration for Karpenter node pools"
   type = map(object({
-    key      = string
-    operator = string
-    values   = list(string)
+    requirements : list(object({
+      key : string
+      operator : string
+      values : list(string)
+    }))
+    limits : object({
+      cpu : string
+      memory : string
+    })
+    disruption : object({
+      consolidationPolicy : string
+      consolidateAfter : string
+    })
   }))
   default = {
-    instance_category = {
-      key      = "karpenter.k8s.aws/instance-category",
-      operator = "In",
-      values   = ["m", "t", "c", "r"]
+    "airflow-kubernetes-pod-operator" = {
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-category"
+          operator = "In"
+          values   = ["m", "t", "c", "r"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["17"] // To 16 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // From 8 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["32769"] // To 32 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-generation",
+          operator = "Gt",
+          values   = ["2"]
+        }
+      ]
+      limits = {
+        cpu    = "100"
+        memory = "400Gi"
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "5m"
+      }
     },
-    instance_cpu = {
-      key      = "karpenter.k8s.aws/instance-cpu",
-      operator = "In",
-      values   = ["2", "4", "8", "16", "32"]
+    "airflow-celery-workers" = {
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-category"
+          operator = "In"
+          values   = ["m", "t", "c", "r"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["9"] // To 8 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // From 8 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["32769"] // To 32 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-generation",
+          operator = "Gt",
+          values   = ["2"]
+        }
+      ]
+      limits = {
+        cpu    = "80"
+        memory = "320Gi"
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "5m"
+      }
     },
-    instance_hypervisor = {
-      key      = "karpenter.k8s.aws/instance-hypervisor",
-      operator = "In",
-      values   = ["nitro"]
-    },
-    instance_generation = {
-      key      = "karpenter.k8s.aws/instance-generation",
-      operator = "Gt",
-      values   = ["2"]
+    "airflow-core-components" = {
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-category"
+          operator = "In"
+          values   = ["m", "t", "c", "r"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["17"] // To 16 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // From 8 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["32769"] // To 32 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-generation",
+          operator = "Gt",
+          values   = ["2"]
+        }
+      ]
+      limits = {
+        cpu    = "40"
+        memory = "160Gi"
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "5m"
+      }
     }
-  }
-}
-
-variable "karpenter_default_node_pool_limits" {
-  description = "Limits for the default Karpenter node pool"
-  type = object({
-    cpu    = number # Total CPU limit across all nodes provisioned by this Provisioner
-    memory = string # Total memory limit across all nodes
-  })
-  default = {
-    cpu    = 80      # 10 instances * 8 vCPU
-    memory = "320Gi" # 10 instances * 32Gi
-  }
-}
-
-variable "karpenter_default_node_pool_disruption" {
-  description = "Disruption policy for the default Karpenter node pool"
-  type = object({
-    consolidationPolicy = string
-    consolidateAfter    = string
-  })
-  default = {
-    consolidationPolicy = "WhenEmpty"
-    consolidateAfter    = "30s"
-  }
-}
-
-variable "karpenter_default_node_class_metadata_options" {
-  description = "Disruption policy for the default Karpenter node pool"
-  type = object({
-    httpEndpoint            = string
-    httpPutResponseHopLimit = number
-  })
-  default = {
-    httpEndpoint            = "enabled"
-    httpPutResponseHopLimit = 3
   }
 }

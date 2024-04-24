@@ -518,16 +518,14 @@ resource "helm_release" "airflow" {
     name  = "webserver.defaultUser.password"
     value = var.airflow_webserver_password
   }
-  timeout = 900
+  timeout = 1200
   depends_on = [
     aws_db_instance.airflow_db,
     helm_release.keda,
     kubernetes_secret.airflow_metadata,
     kubernetes_secret.airflow_webserver,
     kubernetes_job.copy_airflow_dags_to_pvc,
-    kubernetes_manifest.karpenter_node_pool_airflow_kpo,
-    kubernetes_manifest.karpenter_node_pool_airflow_celery,
-    kubernetes_manifest.karpenter_node_pool_airflow_core_components
+    kubernetes_manifest.karpenter_node_pools,
   ]
 }
 
@@ -589,7 +587,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
     }
   }
   depends_on = [
-    kubernetes_manifest.karpenter_node_pool_airflow_core_components
+    kubernetes_manifest.karpenter_node_pools
   ]
 }
 
@@ -808,6 +806,7 @@ resource "kubernetes_manifest" "karpenter_node_class" {
       securityGroupSelectorTerms = [{
         tags = {
           "kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}" = "owned"
+          "Name"                                                       = "${data.aws_eks_cluster.cluster.name}-node"
         }
       }]
       blockDeviceMappings = [for bd in tolist(data.aws_ami.al2_eks_optimized.block_device_mappings) : {
@@ -820,8 +819,8 @@ resource "kubernetes_manifest" "karpenter_node_class" {
         }
       }]
       metadataOptions = {
-        httpEndpoint            = var.karpenter_default_node_class_metadata_options.httpEndpoint
-        httpPutResponseHopLimit = var.karpenter_default_node_class_metadata_options.httpPutResponseHopLimit
+        httpEndpoint            = "enabled"
+        httpPutResponseHopLimit = 3
       }
       tags = merge(local.common_tags, {
         "karpenter.sh/discovery" = data.aws_eks_cluster.cluster.name
@@ -836,12 +835,14 @@ resource "kubernetes_manifest" "karpenter_node_class" {
   ]
 }
 
-resource "kubernetes_manifest" "karpenter_node_pool_airflow_kpo" {
+resource "kubernetes_manifest" "karpenter_node_pools" {
+  for_each = var.karpenter_node_pools
+
   manifest = {
     apiVersion = "karpenter.sh/v1beta1"
     kind       = "NodePool"
     metadata = {
-      name = "airflow-kubernetes-pod-operator"
+      name = each.key
     }
     spec = {
       template = {
@@ -849,7 +850,7 @@ resource "kubernetes_manifest" "karpenter_node_pool_airflow_kpo" {
           nodeClassRef = {
             name = "default"
           }
-          requirements = [for req in var.karpenter_default_node_pool_requirements : {
+          requirements = [for req in each.value.requirements : {
             key      = req.key
             operator = req.operator
             values   = req.values
@@ -857,12 +858,12 @@ resource "kubernetes_manifest" "karpenter_node_pool_airflow_kpo" {
         }
       }
       limits = {
-        cpu    = var.karpenter_default_node_pool_limits.cpu
-        memory = var.karpenter_default_node_pool_limits.memory
+        cpu    = each.value.limits.cpu
+        memory = each.value.limits.memory
       }
       disruption = {
-        consolidationPolicy = var.karpenter_default_node_pool_disruption.consolidationPolicy
-        consolidateAfter    = var.karpenter_default_node_pool_disruption.consolidateAfter
+        consolidationPolicy = each.value.disruption.consolidationPolicy
+        consolidateAfter    = each.value.disruption.consolidateAfter
       }
     }
   }
@@ -871,75 +872,6 @@ resource "kubernetes_manifest" "karpenter_node_pool_airflow_kpo" {
   ]
 }
 
-resource "kubernetes_manifest" "karpenter_node_pool_airflow_celery" {
-  manifest = {
-    apiVersion = "karpenter.sh/v1beta1"
-    kind       = "NodePool"
-    metadata = {
-      name = "airflow-celery-workers"
-    }
-    spec = {
-      template = {
-        spec = {
-          nodeClassRef = {
-            name = "default"
-          }
-          requirements = [for req in var.karpenter_default_node_pool_requirements : {
-            key      = req.key
-            operator = req.operator
-            values   = req.values
-          }]
-        }
-      }
-      limits = {
-        cpu    = var.karpenter_default_node_pool_limits.cpu
-        memory = var.karpenter_default_node_pool_limits.memory
-      }
-      disruption = {
-        consolidationPolicy = var.karpenter_default_node_pool_disruption.consolidationPolicy
-        consolidateAfter    = var.karpenter_default_node_pool_disruption.consolidateAfter
-      }
-    }
-  }
-  depends_on = [
-    kubernetes_manifest.karpenter_node_class
-  ]
-}
-
-resource "kubernetes_manifest" "karpenter_node_pool_airflow_core_components" {
-  manifest = {
-    apiVersion = "karpenter.sh/v1beta1"
-    kind       = "NodePool"
-    metadata = {
-      name = "airflow-core-components"
-    }
-    spec = {
-      template = {
-        spec = {
-          nodeClassRef = {
-            name = "default"
-          }
-          requirements = [for req in var.karpenter_default_node_pool_requirements : {
-            key      = req.key
-            operator = req.operator
-            values   = req.values
-          }]
-        }
-      }
-      limits = {
-        cpu    = var.karpenter_default_node_pool_limits.cpu
-        memory = var.karpenter_default_node_pool_limits.memory
-      }
-      disruption = {
-        consolidationPolicy = var.karpenter_default_node_pool_disruption.consolidationPolicy
-        consolidateAfter    = var.karpenter_default_node_pool_disruption.consolidateAfter
-      }
-    }
-  }
-  depends_on = [
-    kubernetes_manifest.karpenter_node_class
-  ]
-}
 
 resource "null_resource" "build_lambda_packages" {
   triggers = {
