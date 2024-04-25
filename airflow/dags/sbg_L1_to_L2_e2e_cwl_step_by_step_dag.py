@@ -11,13 +11,13 @@ import uuid
 from datetime import datetime
 
 import boto3
-from kubernetes.client import models as k8s
 from airflow import DAG
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
+from kubernetes.client import models as k8s
 
 # The Kubernetes Pod that executes the CWL-Docker container
 # Must use elevated privileges to start/stop the Docker engine
