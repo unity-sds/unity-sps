@@ -50,10 +50,10 @@ variable "nodegroups" {
   }))
   default = {
     defaultGroup = {
-      instance_types = ["r6a.xlarge"]
+      instance_types = ["t3.large"]
       min_size       = 1
-      max_size       = 3
-      desired_size   = 2
+      max_size       = 1
+      desired_size   = 1
       metadata_options = {
         "http_endpoint" : "enabled",
         "http_put_response_hop_limit" : 3,
