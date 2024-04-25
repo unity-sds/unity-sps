@@ -11,6 +11,9 @@ on:
       MCP_VENUE_TEST_AIRFLOW_ENDPOINT:
         description: "Base URL for the Airflow endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
         type: string
+      MCP_VENUE_OPS_AIRFLOW_ENDPOINT:
+        description: "Base URL for the Airflow endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
+        type: string
       MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT:
         description: "Base URL for the Airflow endpoint in MCP Venue SBG Dev (i.e. http://abc.def.ghi:port-number)"
         type: string
@@ -50,6 +53,16 @@ jobs:
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
+
+    - name: MCP Venue Ops - Smoke tests
+      id: mcp_venue_ops_smoke_tests
+      env:
+        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_OPS_AIRFLOW_WEBSERVER_PASSWORD }}
+      continue-on-error: true
+      run: |
+        pytest -vv --gherkin-terminal-reporter \
+        unity-test/system/smoke \
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_ENDPOINT }}
 
     - name: MCP Venue SBG Dev - Smoke tests
       id: mcp_sbg_dev_smoke_tests
