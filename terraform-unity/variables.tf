@@ -86,7 +86,7 @@ variable "docker_images" {
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.0"
+      tag  = "2.0.1"
     }
   }
 }
