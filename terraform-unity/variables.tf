@@ -8,7 +8,7 @@ variable "venue" {
   description = "The MCP venue in which the resources will be deployed."
   type        = string
   validation {
-    condition     = can(regex("^(dev|test|prod|sbg-dev)$", var.venue))
+    condition     = can(regex("^(dev|test|prod|ops|sbg-dev)$", var.venue))
     error_message = "Invalid deployment type."
   }
 }
@@ -33,7 +33,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "2.0.0"
+  default     = "2.0.1"
 }
 
 variable "kubeconfig_filepath" {
@@ -87,11 +87,11 @@ variable "docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.0.0"
+      tag  = "2.0.1"
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.0"
+      tag  = "2.0.1"
     }
   }
 }
