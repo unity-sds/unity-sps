@@ -36,6 +36,11 @@ variable "release" {
   default     = "2.0.1"
 }
 
+variable "kubeconfig_filepath" {
+  description = "The path to the kubeconfig file for the Kubernetes cluster."
+  type        = string
+}
+
 variable "airflow_webserver_password" {
   description = "The password for the Airflow webserver and UI."
   type        = string

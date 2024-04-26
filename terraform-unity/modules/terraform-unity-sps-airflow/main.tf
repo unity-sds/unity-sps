@@ -22,6 +22,7 @@ resource "null_resource" "remove_keda_finalizers" {
     when    = destroy
     command = <<EOT
       set -x
+      export KUBECONFIG=${self.triggers.kubeconfig_filepath}
       for i in $(kubectl get scaledobjects -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].metadata.name}{"\n"}'); do
           kubectl patch ScaledObject/$i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
       done
@@ -31,8 +32,9 @@ resource "null_resource" "remove_keda_finalizers" {
     EOT
   }
   triggers = {
-    always_run        = timestamp()
-    airflow_namespace = kubernetes_namespace.airflow.metadata[0].name
+    always_run          = timestamp()
+    kubeconfig_filepath = var.kubeconfig_filepath
+    airflow_namespace   = kubernetes_namespace.airflow.metadata[0].name
   }
   depends_on = [helm_release.keda, helm_release.airflow]
 }
@@ -789,10 +791,15 @@ resource "null_resource" "remove_node_class_finalizers" {
   # https://github.com/aws/karpenter-provider-aws/issues/5079
   provisioner "local-exec" {
     when    = destroy
-    command = "kubectl patch ec2nodeclass ${self.triggers.node_class_name} -p '{\"metadata\":{\"finalizers\":null}}' --type=merge"
+    command = <<EOT
+      set -x
+      export KUBECONFIG=${self.triggers.kubeconfig_filepath}
+      kubectl patch ec2nodeclass ${self.triggers.node_class_name} -p '{"metadata":{"finalizers":null}}' --type=merge
+    EOT
   }
   triggers = {
-    node_class_name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+    kubeconfig_filepath = var.kubeconfig_filepath
+    node_class_name     = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
   }
   depends_on = [
     kubernetes_manifest.karpenter_node_pools

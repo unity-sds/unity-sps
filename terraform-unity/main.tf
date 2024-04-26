@@ -6,6 +6,7 @@ module "unity-sps-airflow" {
   deployment_name            = var.deployment_name
   counter                    = var.counter
   release                    = var.release
+  kubeconfig_filepath        = var.kubeconfig_filepath
   airflow_webserver_password = var.airflow_webserver_password
   docker_images              = var.docker_images
   helm_charts                = var.helm_charts
