@@ -57,7 +57,7 @@ variable "helm_charts" {
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.13.2"
+      version    = "v2.14.0"
     }
   }
 }
