@@ -1,6 +1,7 @@
 variable "project" {
   description = "The project or mission deploying Unity SPS"
   type        = string
+  default     = "unity"
 }
 
 variable "venue" {
@@ -11,6 +12,7 @@ variable "venue" {
 variable "service_area" {
   description = "The service area owner of the resources being deployed"
   type        = string
+  default     = "sps"
 }
 
 variable "deployment_name" {
@@ -26,11 +28,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-}
-
-variable "airflow_webserver_password" {
-  description = "The password for the Airflow webserver and UI."
-  type        = string
+  default     = "2.0.1"
 }
 
 variable "helm_charts" {
@@ -40,42 +38,11 @@ variable "helm_charts" {
     chart      = string
     version    = string
   }))
-}
-
-variable "docker_images" {
-  description = "Docker images for the associated services."
-  type = object({
-    airflow = object({
-      name = string
-      tag  = string
-    }),
-    ogc_processes_api = object({
-      name = string
-      tag  = string
-    })
-  })
-}
-
-variable "mcp_ami_owner_id" {
-  description = "The ID of the MCP AMIs"
-  type        = string
-}
-
-variable "karpenter_node_pools" {
-  description = "Configuration for Karpenter node pools"
-  type = map(object({
-    requirements : list(object({
-      key : string
-      operator : string
-      values : list(string)
-    }))
-    limits : object({
-      cpu : string
-      memory : string
-    })
-    disruption : object({
-      consolidationPolicy : string
-      consolidateAfter : string
-    })
-  }))
+  default = {
+    karpenter = {
+      repository = "oci://public.ecr.aws/karpenter"
+      chart      = "karpenter"
+      version    = "0.36.0"
+    }
+  }
 }

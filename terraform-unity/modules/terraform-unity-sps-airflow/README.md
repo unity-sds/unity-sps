@@ -26,9 +26,7 @@
 
 ## Modules
 
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_karpenter"></a> [karpenter](#module\_karpenter) | terraform-aws-modules/eks/aws//modules/karpenter | 20.8.4 |
+No modules.
 
 ## Resources
 
@@ -74,7 +72,6 @@
 | [aws_ssm_parameter.isl_bucket](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
-| [helm_release.karpenter](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.12.1/docs/resources/release) | resource |
 | [kubernetes_config_map.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/config_map) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.25.2/docs/resources/deployment) | resource |
@@ -124,7 +121,6 @@
 | <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
 | <a name="input_karpenter_node_pools"></a> [karpenter\_node\_pools](#input\_karpenter\_node\_pools) | Configuration for Karpenter node pools | <pre>map(object({<br>    requirements : list(object({<br>      key : string<br>      operator : string<br>      values : list(string)<br>    }))<br>    limits : object({<br>      cpu : string<br>      memory : string<br>    })<br>    disruption : object({<br>      consolidationPolicy : string<br>      consolidateAfter : string<br>    })<br>  }))</pre> | n/a | yes |
-| <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_mcp_ami_owner_id"></a> [mcp\_ami\_owner\_id](#input\_mcp\_ami\_owner\_id) | The ID of the MCP AMIs | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | n/a | yes |
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | n/a | yes |

@@ -6,15 +6,14 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.7.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.35.0 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.25.2 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.43.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | 3.6.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.35.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.43.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.6.0 |
 
 ## Modules
@@ -27,11 +26,9 @@
 
 | Name | Type |
 |------|------|
-| [aws_iam_role_policy.sps_airflow_eks_inline_policy](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/resources/iam_role_policy) | resource |
+| [aws_iam_role_policy.sps_airflow_eks_inline_policy](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/resources/iam_role_policy) | resource |
 | [random_id.counter](https://registry.terraform.io/providers/hashicorp/random/3.6.0/docs/resources/id) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/data-sources/caller_identity) | data source |
-| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/data-sources/eks_cluster) | data source |
-| [aws_eks_cluster_auth.auth](https://registry.terraform.io/providers/hashicorp/aws/5.35.0/docs/data-sources/eks_cluster_auth) | data source |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.43.0/docs/data-sources/caller_identity) | data source |
 
 ## Inputs
 

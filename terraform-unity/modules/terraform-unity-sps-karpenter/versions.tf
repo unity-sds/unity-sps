@@ -5,9 +5,13 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "2.25.2"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "2.12.1"
+    }
     aws = {
       source  = "hashicorp/aws"
-      version = "5.35.0"
+      version = "5.43.0"
     }
     random = {
       source  = "hashicorp/random"
