@@ -24,7 +24,7 @@ def api_up_and_running():
 def trigger_dag(airflow_api_url, airflow_api_auth):
     # leaving out dag_run_id to avoid conflicts with previous runs- we can always fetch it from the response
     # unsure about contents of the conf argument, though
-    response = requests.post(f"{airflow_api_url}/api/v1/dags/sbg-l1-to-l2-e2e-cwl-step-by-step-dag/dagRuns", 
+    response = requests.post(f"{airflow_api_url}/api/v1/dags/sbg-l1-to-l2-e2e-cwl-step-by-step-dag/dagRuns",
                              auth = airflow_api_auth, json={ "note":"Triggered by unity-test suite"})
     return response
 
@@ -51,7 +51,7 @@ def check_failed(e):
 )
 def poll_dag_run(response, airflow_api_url, airflow_api_auth):
     dag_json = response.json()
-    dag_run_response = requests.get(f"""{airflow_api_url}/api/v1/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""", 
+    dag_run_response = requests.get(f"""{airflow_api_url}/api/v1/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
                                     auth = airflow_api_auth)
     assert dag_run_response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
     json = dag_run_response.json()
