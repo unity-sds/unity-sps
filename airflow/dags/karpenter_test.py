@@ -33,6 +33,7 @@ compute_task = KubernetesPodOperator(
     get_logs=True,
     dag=dag,
     is_delete_operator_pod=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -41,7 +42,7 @@ compute_task = KubernetesPodOperator(
                     "preference": {
                         "matchExpressions": [
                             {
-                                "key": "capacity-type",
+                                "key": "karpenter.sh/capacity-type",
                                 "operator": "In",
                                 "values": ["spot"],
                             }
@@ -53,7 +54,11 @@ compute_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["c"]},
+                            {
+                                "key": "karpenter.k8s.aws/instance-family",
+                                "operator": "In",
+                                "values": ["c6i", "c5"],
+                            },
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
@@ -76,6 +81,7 @@ memory_task = KubernetesPodOperator(
     get_logs=True,
     dag=dag,
     is_delete_operator_pod=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -84,7 +90,7 @@ memory_task = KubernetesPodOperator(
                     "preference": {
                         "matchExpressions": [
                             {
-                                "key": "capacity-type",
+                                "key": "karpenter.sh/capacity-type",
                                 "operator": "In",
                                 "values": ["spot"],
                             }
@@ -96,7 +102,11 @@ memory_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["r"]},
+                            {
+                                "key": "karpenter.k8s.aws/instance-family",
+                                "operator": "In",
+                                "values": ["r6i", "r5"],
+                            },
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
@@ -119,6 +129,7 @@ general_task = KubernetesPodOperator(
     get_logs=True,
     dag=dag,
     is_delete_operator_pod=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -127,7 +138,7 @@ general_task = KubernetesPodOperator(
                     "preference": {
                         "matchExpressions": [
                             {
-                                "key": "capacity-type",
+                                "key": "karpenter.sh/capacity-type",
                                 "operator": "In",
                                 "values": ["spot"],
                             }
@@ -139,7 +150,11 @@ general_task = KubernetesPodOperator(
                 "nodeSelectorTerms": [
                     {
                         "matchExpressions": [
-                            {"key": "karpenter.k8s.aws/instance-category", "operator": "In", "values": ["m"]},
+                            {
+                                "key": "karpenter.k8s.aws/instance-family",
+                                "operator": "In",
+                                "values": ["m6i", "m5"],
+                            },
                             {
                                 "key": "karpenter.k8s.aws/instance-cpu",
                                 "operator": "In",
