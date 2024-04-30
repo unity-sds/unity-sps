@@ -31,6 +31,8 @@ jobs:
 
     - name: MCP Venue Dev - Integration tests
       continue-on-error: true
+      env:
+        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/integration \
