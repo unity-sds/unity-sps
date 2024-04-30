@@ -35,6 +35,8 @@ jobs:
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/integration \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
+      env:
+        AIRFLOW_WEBSERVER_PASSWORD: ${{ github.secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
 
     # - name: MCP Venue Test - Integration tests
     #   continue-on-error: true
