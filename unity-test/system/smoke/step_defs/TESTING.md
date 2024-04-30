@@ -1,5 +1,3 @@
-Sure, here's a test plan in Github README format based on the provided system test code:  
-   
 # Test Plan for Airflow API Health Check  
    
 ## Objective  
