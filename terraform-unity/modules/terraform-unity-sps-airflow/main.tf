@@ -510,6 +510,11 @@ resource "helm_release" "airflow" {
       webserver_navbar_color   = local.airflow_webserver_navbar_color
       service_area             = upper(var.service_area)
       service_area_version     = var.release
+      unity_project            = var.project
+      unity_venue              = var.venue
+      unity_deployment_name    = var.deployment_name
+      unity_counter            = var.counter
+      unity_cluster_name       = data.aws_eks_cluster.cluster.name
     })
   ]
   set_sensitive {
