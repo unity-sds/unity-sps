@@ -33,8 +33,8 @@ No modules.
 | Name | Type |
 |------|------|
 | [aws_cloudwatch_log_group.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/cloudwatch_log_group) | resource |
-| [aws_db_instance.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_instance) | resource |
-| [aws_db_subnet_group.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_subnet_group) | resource |
+| [aws_db_instance.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_instance) | resource |
+| [aws_db_subnet_group.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_subnet_group) | resource |
 | [aws_efs_access_point.airflow_dags](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_file_system.airflow](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_file_system) | resource |
@@ -53,8 +53,8 @@ No modules.
 | [aws_s3_bucket.lambdas](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_notification.isl_bucket_notification](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/s3_bucket_notification) | resource |
 | [aws_s3_object.lambdas](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/s3_object) | resource |
-| [aws_secretsmanager_secret.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/secretsmanager_secret) | resource |
-| [aws_secretsmanager_secret_version.airflow_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/secretsmanager_secret_version) | resource |
+| [aws_secretsmanager_secret.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/secretsmanager_secret) | resource |
+| [aws_secretsmanager_secret_version.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/secretsmanager_secret_version) | resource |
 | [aws_security_group.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/security_group) | resource |
 | [aws_security_group.rds_sg](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/security_group) | resource |
 | [aws_security_group_rule.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/security_group_rule) | resource |
@@ -98,7 +98,7 @@ No modules.
 | [null_resource.remove_node_class_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.2/docs/resources/resource) | resource |
 | [random_id.airflow_webserver_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/id) | resource |
 | [random_id.counter](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/id) | resource |
-| [random_password.airflow_db](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/password) | resource |
+| [random_password.sps_db](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/password) | resource |
 | [time_sleep.wait_for_efs_mount_target_dns_propagation](https://registry.terraform.io/providers/hashicorp/time/0.11.1/docs/resources/sleep) | resource |
 | [aws_ami.al2_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/ami) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/caller_identity) | data source |
