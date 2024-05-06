@@ -14,7 +14,8 @@ locals {
     mission     = var.project
     Stack       = ""
   }
-  oidc_provider_url = replace(data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")
+  oidc_provider_url          = replace(data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")
+  airflow_webserver_username = "admin"
   airflow_webserver_navbar_color = {
     "ops"     = "#bf4f4f"
     "prod"    = "#bf4f4f"

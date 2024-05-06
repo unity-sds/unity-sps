@@ -590,7 +590,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
           env {
             name  = "ems_api_auth_username"
-            value = "admin"
+            value = local.airflow_webserver_username
           }
           env {
             name  = "ems_api_auth_password"
