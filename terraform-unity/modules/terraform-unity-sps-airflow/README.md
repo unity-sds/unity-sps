@@ -35,8 +35,9 @@ No modules.
 | [aws_cloudwatch_log_group.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/cloudwatch_log_group) | resource |
 | [aws_db_instance.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_instance) | resource |
 | [aws_db_subnet_group.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_subnet_group) | resource |
-| [aws_efs_access_point.airflow_dags](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
+| [aws_efs_access_point.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
+| [aws_efs_access_point.airflow_registered_dags](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_file_system.airflow](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_file_system) | resource |
 | [aws_efs_mount_target.airflow](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_mount_target) | resource |
 | [aws_iam_policy.airflow_worker_policy](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/iam_policy) | resource |
@@ -74,7 +75,7 @@ No modules.
 | [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
-| [kubernetes_config_map.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/config_map) | resource |
+| [kubernetes_config_map.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/config_map) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
@@ -83,10 +84,12 @@ No modules.
 | [kubernetes_manifest.karpenter_node_pools](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
 | [kubernetes_namespace.airflow](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/namespace) | resource |
-| [kubernetes_persistent_volume.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume) | resource |
+| [kubernetes_persistent_volume.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume) | resource |
 | [kubernetes_persistent_volume.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume) | resource |
-| [kubernetes_persistent_volume_claim.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume_claim) | resource |
+| [kubernetes_persistent_volume.airflow_registered_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume) | resource |
+| [kubernetes_persistent_volume_claim.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume_claim) | resource |
 | [kubernetes_persistent_volume_claim.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume_claim) | resource |
+| [kubernetes_persistent_volume_claim.airflow_registered_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume_claim) | resource |
 | [kubernetes_role.airflow_pod_creator](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/role) | resource |
 | [kubernetes_role_binding.airflow_pod_creator_binding](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/role_binding) | resource |
 | [kubernetes_secret.airflow_metadata](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/secret) | resource |

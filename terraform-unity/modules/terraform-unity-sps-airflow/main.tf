@@ -328,14 +328,14 @@ resource "aws_efs_access_point" "airflow_kpo" {
   })
 }
 
-resource "aws_efs_access_point" "airflow_dags" {
+resource "aws_efs_access_point" "airflow_registered_dags" {
   file_system_id = aws_efs_file_system.airflow.id
   posix_user {
     gid = 0
     uid = 50000
   }
   root_directory {
-    path = "/dags"
+    path = "/registered-dags"
     creation_info {
       owner_gid   = 0
       owner_uid   = 50000
@@ -343,7 +343,29 @@ resource "aws_efs_access_point" "airflow_dags" {
     }
   }
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowDagsAp")
+    Name      = format(local.resource_name_prefix, "AirflowRegisteredDagsAp")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+
+resource "aws_efs_access_point" "airflow_dag_catalog" {
+  file_system_id = aws_efs_file_system.airflow.id
+  posix_user {
+    gid = 0
+    uid = 50000
+  }
+  root_directory {
+    path = "/dag-catalog"
+    creation_info {
+      owner_gid   = 0
+      owner_uid   = 50000
+      permissions = "0755"
+    }
+  }
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowDagCatalogAp")
     Component = "airflow"
     Stack     = "airflow"
   })
@@ -394,9 +416,9 @@ resource "kubernetes_persistent_volume_claim" "airflow_kpo" {
   }
 }
 
-resource "kubernetes_persistent_volume" "airflow_dags" {
+resource "kubernetes_persistent_volume" "airflow_registered_dags" {
   metadata {
-    name = "airflow-dags"
+    name = "airflow-registered-dags"
   }
   spec {
     capacity = {
@@ -407,16 +429,16 @@ resource "kubernetes_persistent_volume" "airflow_dags" {
     persistent_volume_source {
       csi {
         driver        = "efs.csi.aws.com"
-        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_dags.id}"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_registered_dags.id}"
       }
     }
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "airflow_dags" {
+resource "kubernetes_persistent_volume_claim" "airflow_registered_dags" {
   metadata {
-    name      = "airflow-dags"
+    name      = "airflow-registered-dags"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   spec {
@@ -426,14 +448,51 @@ resource "kubernetes_persistent_volume_claim" "airflow_dags" {
         storage = "5Gi"
       }
     }
-    volume_name        = kubernetes_persistent_volume.airflow_dags.metadata[0].name
+    volume_name        = kubernetes_persistent_volume.airflow_registered_dags.metadata[0].name
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
-resource "kubernetes_config_map" "airflow_dags" {
+resource "kubernetes_persistent_volume" "airflow_dag_catalog" {
   metadata {
-    name      = "airflow-dags"
+    name = "airflow-dag-catalog"
+  }
+  spec {
+    capacity = {
+      storage = "5Gi"
+    }
+    access_modes                     = ["ReadWriteMany"]
+    persistent_volume_reclaim_policy = "Retain"
+    persistent_volume_source {
+      csi {
+        driver        = "efs.csi.aws.com"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_dag_catalog.id}"
+      }
+    }
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
+resource "kubernetes_persistent_volume_claim" "airflow_dag_catalog" {
+  metadata {
+    name      = "airflow-dag-catalog"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    access_modes = ["ReadWriteMany"]
+    resources {
+      requests = {
+        storage = "5Gi"
+      }
+    }
+    volume_name        = kubernetes_persistent_volume.airflow_dag_catalog.metadata[0].name
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
+resource "kubernetes_config_map" "airflow_dag_catalog" {
+  metadata {
+    name      = "airflow-dag-catalog"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
 
@@ -455,28 +514,28 @@ resource "kubernetes_job" "copy_airflow_dags_to_pvc" {
       spec {
         container {
           name    = "copy-airflow-dags-to-pvc"
-          image   = "alpine:3.19.1"
-          command = ["/bin/sh", "-c", "cp /configmap/* /dags/"]
+          image   = "alpine:3.19.1" # TODO parameterize
+          command = ["/bin/sh", "-c", "cp /configmap/* /dag-catalog/"]
           volume_mount {
             name       = "configmap"
             mount_path = "/configmap"
           }
           volume_mount {
-            name       = "airflow-dags"
-            mount_path = "/dags"
+            name       = "airflow-dag-catalog"
+            mount_path = "/dag-catalog"
           }
         }
         restart_policy = "Never"
         volume {
           name = "configmap"
           config_map {
-            name = kubernetes_config_map.airflow_dags.metadata[0].name
+            name = kubernetes_config_map.airflow_dag_catalog.metadata[0].name
           }
         }
         volume {
-          name = "airflow-dags"
+          name = "airflow-dag-catalog"
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.airflow_dags.metadata[0].name
+            claim_name = kubernetes_persistent_volume_claim.airflow_dag_catalog.metadata[0].name
           }
         }
       }
@@ -505,7 +564,7 @@ resource "helm_release" "airflow" {
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
       airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
       workers_pvc_name         = kubernetes_persistent_volume_claim.airflow_kpo.metadata[0].name
-      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_dags.metadata[0].name
+      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_registered_dags.metadata[0].name
       webserver_instance_name  = format(local.resource_name_prefix, "airflow")
       webserver_navbar_color   = local.airflow_webserver_navbar_color
       service_area             = upper(var.service_area)
@@ -595,6 +654,34 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           env {
             name  = "ems_api_auth_password"
             value = var.airflow_webserver_password
+          }
+          env {
+            name  = "dag_catalog_directory"
+            value = "/dag-catalog"
+          }
+          env {
+            name  = "registered_dags_directory"
+            value = "/registered-dags"
+          }
+          volume_mount {
+            name       = "dag-catalog"
+            mount_path = "/dag-catalog"
+          }
+          volume_mount {
+            name       = "registered-dags"
+            mount_path = "/registered-dags"
+          }
+        }
+        volume {
+          name = "dag-catalog"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.airflow_dag_catalog.metadata[0].name
+          }
+        }
+        volume {
+          name = "registered-dags"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.airflow_registered_dags.metadata[0].name
           }
         }
       }
