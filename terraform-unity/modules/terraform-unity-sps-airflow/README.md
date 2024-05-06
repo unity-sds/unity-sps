@@ -71,6 +71,7 @@ No modules.
 | [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.isl_bucket](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
 | [kubernetes_config_map.airflow_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/config_map) | resource |
@@ -133,6 +134,6 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_airflow_urls"></a> [airflow\_urls](#output\_airflow\_urls) | SSM parameter IDs and URLs for the various Airflow endpoints. |
-| <a name="output_ogc_processes_api_url"></a> [ogc\_processes\_api\_url](#output\_ogc\_processes\_api\_url) | SSM parameter IDs and URLs for the OGC Processes API endpoint. |
+| <a name="output_ogc_processes_urls"></a> [ogc\_processes\_urls](#output\_ogc\_processes\_urls) | SSM parameter IDs and URLs for the various OGC Processes endpoints. |
 | <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | SSM parameter IDs and bucket names for the various buckets used in the pipeline. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

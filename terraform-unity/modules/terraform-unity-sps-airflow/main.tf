@@ -580,6 +580,22 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           port {
             container_port = 80
           }
+          env {
+            name  = "db_url"
+            value = "postgresql://${aws_db_instance.airflow_db.username}:${urlencode(aws_secretsmanager_secret_version.airflow_db.secret_string)}@${aws_db_instance.airflow_db.endpoint}/${aws_db_instance.airflow_db.db_name}"
+          }
+          env {
+            name  = "ems_api_url"
+            value = aws_ssm_parameter.airflow_api_url.value
+          }
+          env {
+            name  = "ems_api_auth_username"
+            value = "admin"
+          }
+          env {
+            name  = "ems_api_auth_password"
+            value = var.airflow_webserver_password
+          }
         }
       }
     }
@@ -718,6 +734,18 @@ resource "aws_ssm_parameter" "airflow_logs" {
   value       = aws_s3_bucket.airflow_logs.id
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "S3-airflow_logs")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
+resource "aws_ssm_parameter" "ogc_processes_ui_url" {
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "ui_url"])))
+  description = "The URL of the OGC Proccesses API Docs UI."
+  type        = "String"
+  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
     Component = "SSM"
     Stack     = "SSM"
   })
