@@ -25,6 +25,12 @@ variable "counter" {
   type        = string
 }
 
+variable "release" {
+  description = "The software release version."
+  type        = string
+  default     = "2.0.1"
+}
+
 variable "nodegroups" {
   description = "A map of node group configurations"
   type = map(object({

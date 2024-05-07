@@ -11,7 +11,11 @@ module "unity-eks" {
     username = "admin"
     groups   = ["system:masters"]
   }]
-
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "eks")
+    Component = "eks"
+    Stack     = "eks"
+  })
   cluster_version = "1.27"
 }
 
