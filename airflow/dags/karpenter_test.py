@@ -1,8 +1,9 @@
 from datetime import datetime
 
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from unity_sps_utils import get_node_affinity
 
 from airflow import DAG
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 
 POD_NAMESPACE = "airflow"
 
@@ -34,42 +35,9 @@ compute_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-family",
-                                "operator": "In",
-                                "values": ["c6i", "c5"],
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": ["2", "4"],
-                            },
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    affinity=get_node_affinity(
+        capacity_type=["spot"], instance_family=["c6i", "c5"], instance_cpu=["4", "2"]
+    ),
     startup_timeout_seconds=900,
 )
 
@@ -82,42 +50,9 @@ memory_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-family",
-                                "operator": "In",
-                                "values": ["r6i", "r5"],
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": ["2", "4"],
-                            },
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    affinity=get_node_affinity(
+        capacity_type=["spot"], instance_family=["r6i", "r5"], instance_cpu=["4", "2"]
+    ),
     startup_timeout_seconds=900,
 )
 
@@ -130,42 +65,9 @@ general_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-family",
-                                "operator": "In",
-                                "values": ["m6i", "m5"],
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": ["2", "4"],
-                            },
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    affinity=get_node_affinity(
+        capacity_type=["spot"], instance_family=["m6i", "m5"], instance_cpu=["4", "2"]
+    ),
     startup_timeout_seconds=900,
 )
 
