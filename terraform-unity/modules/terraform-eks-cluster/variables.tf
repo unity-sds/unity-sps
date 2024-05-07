@@ -25,6 +25,20 @@ variable "counter" {
   type        = string
 }
 
+# tflint-ignore: terraform_unused_declarations
+variable "tags" {
+  description = "Tags for the deployment (unused)"
+  type        = list(string)
+  default     = [""]
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "installprefix" {
+  description = "The install prefix for the service area (unused)"
+  type        = string
+  default     = ""
+}
+
 variable "nodegroups" {
   description = "A map of node group configurations"
   type = map(object({
