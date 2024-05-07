@@ -33,7 +33,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "2.0.1"
+  default     = "2.0.2-beta.0"
 }
 
 variable "kubeconfig_filepath" {
@@ -62,7 +62,7 @@ variable "helm_charts" {
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.14.0"
+      version    = "v2.14.2"
     }
   }
 }
@@ -82,11 +82,11 @@ variable "docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.0.1"
+      tag  = "2.0.2-beta.0"
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.1"
+      tag  = "2.0.2-beta.0"
     }
   }
 }

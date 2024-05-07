@@ -114,9 +114,9 @@ scheduler:
     component: scheduler
 
 triggerer:
-  replicas: 3
   keda:
     enabled: true
+    minReplicaCount: 1
 
 postgresql:
   enabled: false
@@ -257,6 +257,10 @@ dags:
     enabled: true
     # the name of an existing PVC to use
     existingClaim: ${dags_pvc_name}
+
+dagProcessor:
+  enabled: true
+  replicas: 3
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
