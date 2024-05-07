@@ -28,8 +28,8 @@ variable "counter" {
 # tflint-ignore: terraform_unused_declarations
 variable "tags" {
   description = "Tags for the deployment (unused)"
-  type        = list(string)
-  default     = [""]
+  type        = map(string)
+  default     = { empty = "" }
 }
 
 # tflint-ignore: terraform_unused_declarations
