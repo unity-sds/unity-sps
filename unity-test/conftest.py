@@ -46,6 +46,11 @@ def pytest_addoption(parser):
         action="store",
         help="Base URL for the Airflow service endpoint",
     )
+    parser.addoption(
+        "--ogc-processes-endpoint",
+        action="store",
+        help="Base URL for the OGC Processes API endpoint",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -65,6 +70,12 @@ def resource_name_template(request):
 @pytest.fixture(scope="session")
 def airflow_api_url(request):
     url = request.config.getoption("--airflow-endpoint")
+    return url
+
+
+@pytest.fixture(scope="session")
+def ogc_processes_api_url(request):
+    url = request.config.getoption("--ogc-processes-endpoint")
     return url
 
 

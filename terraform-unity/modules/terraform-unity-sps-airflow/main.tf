@@ -94,34 +94,34 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
   }
 }
 
-resource "random_password" "airflow_db" {
+resource "random_password" "sps_db" {
   length           = 16
   special          = true
   override_special = "_!%^"
 }
 
-resource "aws_secretsmanager_secret" "airflow_db" {
-  name                    = format(local.resource_name_prefix, "AirflowDb")
+resource "aws_secretsmanager_secret" "sps_db" {
+  name                    = format(local.resource_name_prefix, "db")
   recovery_window_in_days = 0
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowDb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
-resource "aws_secretsmanager_secret_version" "airflow_db" {
-  secret_id     = aws_secretsmanager_secret.airflow_db.id
-  secret_string = random_password.airflow_db.result
+resource "aws_secretsmanager_secret_version" "sps_db" {
+  secret_id     = aws_secretsmanager_secret.sps_db.id
+  secret_string = random_password.sps_db.result
 }
 
-resource "aws_db_subnet_group" "airflow_db" {
-  name       = format(local.resource_name_prefix, "airflowdb")
+resource "aws_db_subnet_group" "sps_db" {
+  name       = format(local.resource_name_prefix, "db")
   subnet_ids = jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "airflowdb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
@@ -157,25 +157,25 @@ resource "aws_security_group_rule" "eks_egress_to_rds" {
   source_security_group_id = aws_security_group.rds_sg.id
 }
 
-resource "aws_db_instance" "airflow_db" {
-  identifier             = format(local.resource_name_prefix, "airflowdb")
+resource "aws_db_instance" "sps_db" {
+  identifier             = format(local.resource_name_prefix, "spsdb")
   allocated_storage      = 100
   storage_type           = "gp3"
   engine                 = "postgres"
   engine_version         = "13.13"
   instance_class         = "db.m5d.large"
-  db_name                = "airflow_db"
-  username               = "airflow_db_user"
-  password               = aws_secretsmanager_secret_version.airflow_db.secret_string
+  db_name                = "sps_db"
+  username               = "sps_db_user"
+  password               = aws_secretsmanager_secret_version.sps_db.secret_string
   parameter_group_name   = "default.postgres13"
   skip_final_snapshot    = true
   publicly_accessible    = false
-  db_subnet_group_name   = aws_db_subnet_group.airflow_db.name
+  db_subnet_group_name   = aws_db_subnet_group.sps_db.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "airflowdb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
@@ -185,8 +185,8 @@ resource "kubernetes_secret" "airflow_metadata" {
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   data = {
-    kedaConnection = "postgresql://${aws_db_instance.airflow_db.username}:${urlencode(aws_secretsmanager_secret_version.airflow_db.secret_string)}@${aws_db_instance.airflow_db.endpoint}/${aws_db_instance.airflow_db.db_name}"
-    connection     = "postgresql://${aws_db_instance.airflow_db.username}:${urlencode(aws_secretsmanager_secret_version.airflow_db.secret_string)}@${aws_db_instance.airflow_db.endpoint}/${aws_db_instance.airflow_db.db_name}"
+    kedaConnection = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
+    connection     = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
   }
 }
 
@@ -518,7 +518,7 @@ resource "helm_release" "airflow" {
   }
   timeout = 1200
   depends_on = [
-    aws_db_instance.airflow_db,
+    aws_db_instance.sps_db,
     helm_release.keda,
     kubernetes_secret.airflow_metadata,
     kubernetes_secret.airflow_webserver,
@@ -579,6 +579,22 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           name  = "ogc-processes-api"
           port {
             container_port = 80
+          }
+          env {
+            name  = "db_url"
+            value = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
+          }
+          env {
+            name  = "ems_api_url"
+            value = aws_ssm_parameter.airflow_api_url.value
+          }
+          env {
+            name  = "ems_api_auth_username"
+            value = local.airflow_webserver_username
+          }
+          env {
+            name  = "ems_api_auth_password"
+            value = var.airflow_webserver_password
           }
         }
       }
@@ -718,6 +734,18 @@ resource "aws_ssm_parameter" "airflow_logs" {
   value       = aws_s3_bucket.airflow_logs.id
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "S3-airflow_logs")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
+resource "aws_ssm_parameter" "ogc_processes_ui_url" {
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "ui_url"])))
+  description = "The URL of the OGC Proccesses API Docs UI."
+  type        = "String"
+  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
     Component = "SSM"
     Stack     = "SSM"
   })
