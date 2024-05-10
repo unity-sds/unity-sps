@@ -37,6 +37,7 @@ with DAG(
             Variable.get("unity_venue"),
             Variable.get("unity_deployment_name"),
             Variable.get("unity_counter"),
-            Variable.get("unity_cluster_name")),
+            Variable.get("unity_cluster_name"),
+        ),
     )
     dump_env >> check_vars
