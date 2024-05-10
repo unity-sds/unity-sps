@@ -29,10 +29,10 @@ check_vars = BashOperator(
     bash_command=format(
         "echo %s %s %s %s %s",
         Variable.get("unity_project"),
-        Variable.get("venue"),
-        Variable.get("deployment_name"),
-        Variable.get("counter"),
-        Variable.get("cluster_name"),
+        Variable.get("unity_venue"),
+        Variable.get("unity_deployment_name"),
+        Variable.get("unity_counter"),
+        Variable.get("unity_cluster_name"),
     ),
 )
 
