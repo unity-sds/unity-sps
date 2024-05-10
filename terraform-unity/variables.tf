@@ -254,9 +254,14 @@ variable "karpenter_node_pools" {
 
 variable "dag_catalog_repo" {
   description = "Git repository that stores the catalog of Airflow DAGs."
-  type        = map(string)
+  type = object({
+    url                 = string
+    ref                 = string
+    dags_directory_path = string
+  })
   default = {
-    url = "https://github.com/unity-sds/unity-sps.git"
-    ref = "2.0.2-beta.0"
+    url                 = "https://github.com/unity-sds/unity-sps.git"
+    ref                 = "2.0.2-beta.0"
+    dags_directory_path = "airflow/dags"
   }
 }

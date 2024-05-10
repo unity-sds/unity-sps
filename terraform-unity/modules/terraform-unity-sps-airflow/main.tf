@@ -539,7 +539,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
           env {
             name  = "dag_catalog_directory"
-            value = "/dag-catalog/current/airflow/dags/"
+            value = "/dag-catalog/current/${var.dag_catalog_repo.dags_directory_path}"
           }
           env {
             name  = "registered_dags_directory"
