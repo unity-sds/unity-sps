@@ -26,14 +26,12 @@ dump_env = BashOperator(
 
 check_vars = BashOperator(
     task_id="check",
-    bash_command=format(
-        "echo %s %s %s %s %s",
+    bash_command="echo {} {} {} {} {}".format(
         Variable.get("unity_project"),
         Variable.get("unity_venue"),
         Variable.get("unity_deployment_name"),
         Variable.get("unity_counter"),
-        Variable.get("unity_cluster_name"),
-    ),
+        Variable.get("unity_cluster_name")),
 )
 
 
