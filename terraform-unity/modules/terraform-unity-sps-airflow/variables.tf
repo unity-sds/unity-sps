@@ -58,6 +58,10 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+    git_sync = object({
+      name = string
+      tag  = string
+    })
   })
 }
 
@@ -83,4 +87,9 @@ variable "karpenter_node_pools" {
       consolidateAfter : string
     })
   }))
+}
+
+variable "dag_catalog_repo" {
+  description = "Git repository that stores the catalog of Airflow DAGs."
+  type        = map(string)
 }

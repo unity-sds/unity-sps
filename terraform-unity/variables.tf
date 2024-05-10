@@ -78,6 +78,10 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+    git_sync = object({
+      name = string
+      tag  = string
+    })
   })
   default = {
     airflow = {
@@ -87,6 +91,10 @@ variable "docker_images" {
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
       tag  = "2.0.2-beta.0"
+    }
+    git_sync = {
+      name = "registry.k8s.io/git-sync/git-sync"
+      tag  = "v4.2.3"
     }
   }
 }
@@ -241,5 +249,14 @@ variable "karpenter_node_pools" {
         consolidateAfter    = "1m"
       }
     }
+  }
+}
+
+variable "dag_catalog_repo" {
+  description = "Git repository that stores the catalog of Airflow DAGs."
+  type        = map(string)
+  default = {
+    url = "https://github.com/unity-sds/unity-sps.git"
+    ref = "2.0.2-beta.0"
   }
 }

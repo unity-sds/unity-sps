@@ -35,7 +35,6 @@ No modules.
 | [aws_cloudwatch_log_group.airflow_dag_trigger](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/cloudwatch_log_group) | resource |
 | [aws_db_instance.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_instance) | resource |
 | [aws_db_subnet_group.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/db_subnet_group) | resource |
-| [aws_efs_access_point.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_registered_dags](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_file_system.airflow](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/efs_file_system) | resource |
@@ -75,19 +74,15 @@ No modules.
 | [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
-| [kubernetes_config_map.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/config_map) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
-| [kubernetes_job.copy_airflow_dags_to_pvc](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/job) | resource |
 | [kubernetes_manifest.karpenter_node_class](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
 | [kubernetes_manifest.karpenter_node_pools](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
 | [kubernetes_namespace.airflow](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/namespace) | resource |
-| [kubernetes_persistent_volume.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume) | resource |
 | [kubernetes_persistent_volume.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume) | resource |
 | [kubernetes_persistent_volume.airflow_registered_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume) | resource |
-| [kubernetes_persistent_volume_claim.airflow_dag_catalog](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume_claim) | resource |
 | [kubernetes_persistent_volume_claim.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume_claim) | resource |
 | [kubernetes_persistent_volume_claim.airflow_registered_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/persistent_volume_claim) | resource |
 | [kubernetes_role.airflow_pod_creator](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/role) | resource |
@@ -121,8 +116,9 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | The password for the Airflow webserver and UI. | `string` | n/a | yes |
 | <a name="input_counter"></a> [counter](#input\_counter) | Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead. | `string` | n/a | yes |
+| <a name="input_dag_catalog_repo"></a> [dag\_catalog\_repo](#input\_dag\_catalog\_repo) | Git repository that stores the catalog of Airflow DAGs. | `map(string)` | n/a | yes |
 | <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | The name of the deployment. | `string` | n/a | yes |
-| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
+| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>    git_sync = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
 | <a name="input_karpenter_node_pools"></a> [karpenter\_node\_pools](#input\_karpenter\_node\_pools) | Configuration for Karpenter node pools | <pre>map(object({<br>    requirements : list(object({<br>      key : string<br>      operator : string<br>      values : list(string)<br>    }))<br>    limits : object({<br>      cpu : string<br>      memory : string<br>    })<br>    disruption : object({<br>      consolidationPolicy : string<br>      consolidateAfter : string<br>    })<br>  }))</pre> | n/a | yes |
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |

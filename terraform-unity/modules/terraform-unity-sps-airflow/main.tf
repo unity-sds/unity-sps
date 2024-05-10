@@ -349,28 +349,6 @@ resource "aws_efs_access_point" "airflow_registered_dags" {
   })
 }
 
-
-resource "aws_efs_access_point" "airflow_dag_catalog" {
-  file_system_id = aws_efs_file_system.airflow.id
-  posix_user {
-    gid = 0
-    uid = 50000
-  }
-  root_directory {
-    path = "/dag-catalog"
-    creation_info {
-      owner_gid   = 0
-      owner_uid   = 50000
-      permissions = "0755"
-    }
-  }
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowDagCatalogAp")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
 resource "time_sleep" "wait_for_efs_mount_target_dns_propagation" {
   # AWS recommends that you wait 90 seconds after creating a mount target before
   # you mount your file system. This wait lets the DNS records propagate fully
@@ -453,101 +431,6 @@ resource "kubernetes_persistent_volume_claim" "airflow_registered_dags" {
   }
 }
 
-resource "kubernetes_persistent_volume" "airflow_dag_catalog" {
-  metadata {
-    name = "airflow-dag-catalog"
-  }
-  spec {
-    capacity = {
-      storage = "5Gi"
-    }
-    access_modes                     = ["ReadWriteMany"]
-    persistent_volume_reclaim_policy = "Retain"
-    persistent_volume_source {
-      csi {
-        driver        = "efs.csi.aws.com"
-        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_dag_catalog.id}"
-      }
-    }
-    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
-  }
-}
-
-resource "kubernetes_persistent_volume_claim" "airflow_dag_catalog" {
-  metadata {
-    name      = "airflow-dag-catalog"
-    namespace = kubernetes_namespace.airflow.metadata[0].name
-  }
-  spec {
-    access_modes = ["ReadWriteMany"]
-    resources {
-      requests = {
-        storage = "5Gi"
-      }
-    }
-    volume_name        = kubernetes_persistent_volume.airflow_dag_catalog.metadata[0].name
-    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
-  }
-}
-
-resource "kubernetes_config_map" "airflow_dag_catalog" {
-  metadata {
-    name      = "airflow-dag-catalog"
-    namespace = kubernetes_namespace.airflow.metadata[0].name
-  }
-
-  data = {
-    for f in fileset("${path.module}/../../../airflow/dags", "*.{py,yaml}") :
-    f => file(join("/", ["${path.module}/../../../airflow/dags", f]))
-  }
-}
-
-resource "kubernetes_job" "copy_airflow_dags_to_pvc" {
-  metadata {
-    name      = "copy-airflow-dags-to-pvc"
-    namespace = kubernetes_namespace.airflow.metadata[0].name
-  }
-  spec {
-    backoff_limit = 4
-    template {
-      metadata {}
-      spec {
-        container {
-          name    = "copy-airflow-dags-to-pvc"
-          image   = "alpine:3.19.1" # TODO parameterize
-          command = ["/bin/sh", "-c", "cp /configmap/* /dag-catalog/"]
-          volume_mount {
-            name       = "configmap"
-            mount_path = "/configmap"
-          }
-          volume_mount {
-            name       = "airflow-dag-catalog"
-            mount_path = "/dag-catalog"
-          }
-        }
-        restart_policy = "Never"
-        volume {
-          name = "configmap"
-          config_map {
-            name = kubernetes_config_map.airflow_dag_catalog.metadata[0].name
-          }
-        }
-        volume {
-          name = "airflow-dag-catalog"
-          persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.airflow_dag_catalog.metadata[0].name
-          }
-        }
-      }
-    }
-  }
-  wait_for_completion = true
-  timeouts {
-    create = "10m"
-  }
-  depends_on = [time_sleep.wait_for_efs_mount_target_dns_propagation]
-}
-
 resource "helm_release" "airflow" {
   name       = "airflow"
   repository = var.helm_charts.airflow.repository
@@ -581,7 +464,6 @@ resource "helm_release" "airflow" {
     helm_release.keda,
     kubernetes_secret.airflow_metadata,
     kubernetes_secret.airflow_webserver,
-    kubernetes_job.copy_airflow_dags_to_pvc,
     kubernetes_manifest.karpenter_node_pools,
   ]
 }
@@ -657,7 +539,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
           env {
             name  = "dag_catalog_directory"
-            value = "/dag-catalog"
+            value = "/dag-catalog/current/airflow/dags/"
           }
           env {
             name  = "registered_dags_directory"
@@ -672,10 +554,36 @@ resource "kubernetes_deployment" "ogc_processes_api" {
             mount_path = "/registered-dags"
           }
         }
-        volume {
-          name = "dag-catalog"
-          persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.airflow_dag_catalog.metadata[0].name
+        container {
+          name  = "git-sync"
+          image = "${var.docker_images.git_sync.name}:${var.docker_images.git_sync.tag}"
+          env {
+            name  = "GITSYNC_REPO"
+            value = var.dag_catalog_repo.url
+          }
+          env {
+            name  = "GITSYNC_REF"
+            value = var.dag_catalog_repo.ref
+          }
+          env {
+            name  = "GITSYNC_ROOT"
+            value = "/dag-catalog"
+          }
+          env {
+            name  = "GITSYNC_LINK"
+            value = "current"
+          }
+          env {
+            name  = "GITSYNC_PERIOD"
+            value = "3s"
+          }
+          env {
+            name  = "GITSYNC_ONE_TIME"
+            value = "false"
+          }
+          volume_mount {
+            name       = "dag-catalog"
+            mount_path = "/dag-catalog"
           }
         }
         volume {
@@ -683,6 +591,10 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           persistent_volume_claim {
             claim_name = kubernetes_persistent_volume_claim.airflow_registered_dags.metadata[0].name
           }
+        }
+        volume {
+          name = "dag-catalog"
+          empty_dir {}
         }
       }
     }
