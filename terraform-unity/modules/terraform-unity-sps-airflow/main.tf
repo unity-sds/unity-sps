@@ -328,14 +328,14 @@ resource "aws_efs_access_point" "airflow_kpo" {
   })
 }
 
-resource "aws_efs_access_point" "airflow_registered_dags" {
+resource "aws_efs_access_point" "airflow_deployed_dags" {
   file_system_id = aws_efs_file_system.airflow.id
   posix_user {
     gid = 0
     uid = 50000
   }
   root_directory {
-    path = "/registered-dags"
+    path = "/deployed-dags"
     creation_info {
       owner_gid   = 0
       owner_uid   = 50000
@@ -343,7 +343,7 @@ resource "aws_efs_access_point" "airflow_registered_dags" {
     }
   }
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowRegisteredDagsAp")
+    Name      = format(local.resource_name_prefix, "AirflowDeployedDagsAp")
     Component = "airflow"
     Stack     = "airflow"
   })
@@ -394,9 +394,9 @@ resource "kubernetes_persistent_volume_claim" "airflow_kpo" {
   }
 }
 
-resource "kubernetes_persistent_volume" "airflow_registered_dags" {
+resource "kubernetes_persistent_volume" "airflow_deployed_dags" {
   metadata {
-    name = "airflow-registered-dags"
+    name = "airflow-deployed-dags"
   }
   spec {
     capacity = {
@@ -407,16 +407,16 @@ resource "kubernetes_persistent_volume" "airflow_registered_dags" {
     persistent_volume_source {
       csi {
         driver        = "efs.csi.aws.com"
-        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_registered_dags.id}"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_deployed_dags.id}"
       }
     }
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "airflow_registered_dags" {
+resource "kubernetes_persistent_volume_claim" "airflow_deployed_dags" {
   metadata {
-    name      = "airflow-registered-dags"
+    name      = "airflow-deployed-dags"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   spec {
@@ -426,7 +426,7 @@ resource "kubernetes_persistent_volume_claim" "airflow_registered_dags" {
         storage = "5Gi"
       }
     }
-    volume_name        = kubernetes_persistent_volume.airflow_registered_dags.metadata[0].name
+    volume_name        = kubernetes_persistent_volume.airflow_deployed_dags.metadata[0].name
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
@@ -447,7 +447,7 @@ resource "helm_release" "airflow" {
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
       airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
       workers_pvc_name         = kubernetes_persistent_volume_claim.airflow_kpo.metadata[0].name
-      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_registered_dags.metadata[0].name
+      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_deployed_dags.metadata[0].name
       webserver_instance_name  = format(local.resource_name_prefix, "airflow")
       webserver_navbar_color   = local.airflow_webserver_navbar_color
       service_area             = upper(var.service_area)
@@ -542,16 +542,16 @@ resource "kubernetes_deployment" "ogc_processes_api" {
             value = "/dag-catalog/current/${var.dag_catalog_repo.dags_directory_path}"
           }
           env {
-            name  = "registered_dags_directory"
-            value = "/registered-dags"
+            name  = "deployed_dags_directory"
+            value = "/deployed-dags"
           }
           volume_mount {
             name       = "dag-catalog"
             mount_path = "/dag-catalog"
           }
           volume_mount {
-            name       = "registered-dags"
-            mount_path = "/registered-dags"
+            name       = "deployed-dags"
+            mount_path = "/deployed-dags"
           }
         }
         container {
@@ -587,9 +587,9 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
         }
         volume {
-          name = "registered-dags"
+          name = "deployed-dags"
           persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.airflow_registered_dags.metadata[0].name
+            claim_name = kubernetes_persistent_volume_claim.airflow_deployed_dags.metadata[0].name
           }
         }
         volume {
