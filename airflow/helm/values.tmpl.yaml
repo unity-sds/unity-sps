@@ -261,6 +261,16 @@ dags:
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
     value: "${kubernetes_namespace}"
+  - name: "AIRFLOW_VAR_UNITY_PROJECT"
+    value: "${unity_project}"
+  - name: "AIRFLOW_VAR_UNITY_VENUE"
+    value: "${unity_venue}"
+  - name: "AIRFLOW_VAR_UNITY_DEPLOYMENT_NAME"
+    value: "${unity_deployment_name}"
+  - name: "AIRFLOW_VAR_UNITY_COUNTER"
+    value: "${unity_counter}"
+  - name: "AIRFLOW_VAR_UNITY_CLUSTER_NAME"
+    value: "${unity_cluster_name}"
 
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
