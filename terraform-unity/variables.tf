@@ -82,6 +82,10 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+    redis = object({
+      name = string
+      tag  = string
+    })
   })
   default = {
     airflow = {
@@ -95,6 +99,10 @@ variable "docker_images" {
     git_sync = {
       name = "registry.k8s.io/git-sync/git-sync"
       tag  = "v4.2.3"
+    },
+    redis = {
+      name = "redis"
+      tag  = "7.2.4"
     }
   }
 }

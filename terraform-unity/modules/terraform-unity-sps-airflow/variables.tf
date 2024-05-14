@@ -62,6 +62,10 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+    redis = object({
+      name = string
+      tag  = string
+    })
   })
 }
 
