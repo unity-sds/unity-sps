@@ -586,7 +586,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
           env {
             name  = "REDIS_PORT"
-            value = "6379"
+            value = 6379
           }
           env {
             name  = "EMS_API_URL"
