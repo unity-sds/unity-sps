@@ -33,7 +33,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "2.0.1"
+  default     = "2.0.2-beta.0"
 }
 
 variable "kubeconfig_filepath" {
@@ -62,7 +62,7 @@ variable "helm_charts" {
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.14.0"
+      version    = "v2.14.2"
     }
   }
 }
@@ -78,15 +78,31 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+    git_sync = object({
+      name = string
+      tag  = string
+    })
+    redis = object({
+      name = string
+      tag  = string
+    })
   })
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.0.1"
+      tag  = "2.0.2-beta.0"
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.1"
+      tag  = "2.0.2-beta.0"
+    }
+    git_sync = {
+      name = "registry.k8s.io/git-sync/git-sync"
+      tag  = "v4.2.3"
+    },
+    redis = {
+      name = "redis"
+      tag  = "7.2.4"
     }
   }
 }
@@ -241,5 +257,19 @@ variable "karpenter_node_pools" {
         consolidateAfter    = "1m"
       }
     }
+  }
+}
+
+variable "dag_catalog_repo" {
+  description = "Git repository that stores the catalog of Airflow DAGs."
+  type = object({
+    url                 = string
+    ref                 = string
+    dags_directory_path = string
+  })
+  default = {
+    url                 = "https://github.com/unity-sds/unity-sps.git"
+    ref                 = "2.0.2-beta.0"
+    dags_directory_path = "airflow/dags"
   }
 }

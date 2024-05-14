@@ -114,9 +114,9 @@ scheduler:
     component: scheduler
 
 triggerer:
-  replicas: 3
   keda:
     enabled: true
+    minReplicaCount: 1
 
 postgresql:
   enabled: false
@@ -258,6 +258,10 @@ dags:
     # the name of an existing PVC to use
     existingClaim: ${dags_pvc_name}
 
+dagProcessor:
+  enabled: true
+  replicas: 3
+
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
     value: "${kubernetes_namespace}"
@@ -292,3 +296,7 @@ extraEnv: |
     value: "${webserver_navbar_color}"
   - name: AIRFLOW__WEBSERVER__INSTANCE_NAME
     value: "Deployment: ${webserver_instance_name}, ${service_area} Version: ${service_area_version}"
+  - name: AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL
+    value: "10"
+  - name: AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL
+    value: "5"
