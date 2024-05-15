@@ -8,7 +8,7 @@ variable "venue" {
   description = "The MCP venue in which the resources will be deployed."
   type        = string
   validation {
-    condition     = can(regex("^(dev|test|prod|sbg-dev)$", var.venue))
+    condition     = can(regex("^(dev|test|prod|ops|sbg-dev)$", var.venue))
     error_message = "Invalid deployment type."
   }
 }
@@ -33,7 +33,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "2.0.0"
+  default     = "2.0.2-beta.0"
 }
 
 variable "kubeconfig_filepath" {
@@ -62,12 +62,7 @@ variable "helm_charts" {
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.13.2"
-    }
-    karpenter = {
-      repository = "oci://public.ecr.aws/karpenter"
-      chart      = "karpenter"
-      version    = "0.36.0"
+      version    = "v2.14.2"
     }
   }
 }
@@ -83,15 +78,31 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+    git_sync = object({
+      name = string
+      tag  = string
+    })
+    redis = object({
+      name = string
+      tag  = string
+    })
   })
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.0.0"
+      tag  = "2.0.2-beta.0"
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.0"
+      tag  = "2.0.2-beta.0"
+    }
+    git_sync = {
+      name = "registry.k8s.io/git-sync/git-sync"
+      tag  = "v4.2.3"
+    },
+    redis = {
+      name = "redis"
+      tag  = "7.2.4"
     }
   }
 }
@@ -102,69 +113,163 @@ variable "mcp_ami_owner_id" {
   default     = "794625662971"
 }
 
-variable "karpenter_default_node_pool_requirements" {
-  description = "Requirements for the default Karpenter node pool"
+variable "karpenter_node_pools" {
+  description = "Configuration for Karpenter node pools"
   type = map(object({
-    key      = string
-    operator = string
-    values   = list(string)
+    requirements : list(object({
+      key : string
+      operator : string
+      values : list(string)
+    }))
+    limits : object({
+      cpu : string
+      memory : string
+    })
+    disruption : object({
+      consolidationPolicy : string
+      consolidateAfter : string
+    })
   }))
   default = {
-    instance_category = {
-      key      = "karpenter.k8s.aws/instance-category",
-      operator = "In",
-      values   = ["m", "t", "c", "r"]
+    "airflow-kubernetes-pod-operator" = {
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-family"
+          operator = "In"
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["17"] // To 16 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // From 8 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["32769"] // To 32 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        }
+      ]
+      limits = {
+        cpu    = "100"
+        memory = "400Gi"
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "1m"
+      }
     },
-    instance_cpu = {
-      key      = "karpenter.k8s.aws/instance-cpu",
-      operator = "In",
-      values   = ["2", "4", "8", "16", "32"]
+    "airflow-celery-workers" = {
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-family"
+          operator = "In"
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["9"] // To 8 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // From 8 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["32769"] // To 32 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        }
+      ]
+      limits = {
+        cpu    = "80"
+        memory = "320Gi"
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "1m"
+      }
     },
-    instance_hypervisor = {
-      key      = "karpenter.k8s.aws/instance-hypervisor",
-      operator = "In",
-      values   = ["nitro"]
-    },
-    instance_generation = {
-      key      = "karpenter.k8s.aws/instance-generation",
-      operator = "Gt",
-      values   = ["2"]
+    "airflow-core-components" = {
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-family"
+          operator = "In"
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["17"] // To 16 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // From 8 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["32769"] // To 32 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        }
+      ]
+      limits = {
+        cpu    = "40"
+        memory = "160Gi"
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "1m"
+      }
     }
   }
 }
 
-variable "karpenter_default_node_pool_limits" {
-  description = "Limits for the default Karpenter node pool"
+variable "dag_catalog_repo" {
+  description = "Git repository that stores the catalog of Airflow DAGs."
   type = object({
-    cpu    = number # Total CPU limit across all nodes provisioned by this Provisioner
-    memory = string # Total memory limit across all nodes
+    url                 = string
+    ref                 = string
+    dags_directory_path = string
   })
   default = {
-    cpu    = 80      # 10 instances * 8 vCPU
-    memory = "320Gi" # 10 instances * 32Gi
-  }
-}
-
-variable "karpenter_default_node_pool_disruption" {
-  description = "Disruption policy for the default Karpenter node pool"
-  type = object({
-    consolidationPolicy = string
-    consolidateAfter    = string
-  })
-  default = {
-    consolidationPolicy = "WhenEmpty"
-    consolidateAfter    = "30s"
-  }
-}
-
-variable "karpenter_default_node_class_metadata_options" {
-  description = "Disruption policy for the default Karpenter node pool"
-  type = object({
-    httpEndpoint            = string
-    httpPutResponseHopLimit = number
-  })
-  default = {
-    httpEndpoint            = "enabled"
-    httpPutResponseHopLimit = 3
+    url                 = "https://github.com/unity-sds/unity-sps.git"
+    ref                 = "2.0.2-beta.0"
+    dags_directory_path = "airflow/dags"
   }
 }

@@ -42,13 +42,81 @@ images:
     repository: ${airflow_image_repo}
     tag: ${airflow_image_tag}
 
+# Global default settings for Airflow pods
+nodeSelector:
+  "karpenter.sh/nodepool": "airflow-core-components"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: "karpenter.sh/capacity-type"
+          operator: "In"
+          values: ["on-demand"]
+        - key: "karpenter.k8s.aws/instance-family"
+          operator: "In"
+          values: ["c6i", "c5"]
+        - key: "karpenter.k8s.aws/instance-cpu"
+          operator: "In"
+          values: ["2", "4"]
+
+topologySpreadConstraints:
+- maxSkew: 1
+  topologyKey: "topology.kubernetes.io/zone"
+  whenUnsatisfiable: "ScheduleAnyway"
+  labelSelector:
+    matchLabels:
+      app: airflow # This label should match all Airflow pods
+- maxSkew: 1
+  topologyKey: "kubernetes.io/hostname"
+  whenUnsatisfiable: "ScheduleAnyway"
+  labelSelector:
+    matchLabels:
+      app: airflow
+
+# Add common labels to all objects and pods defined in this chart.
+labels:
+  app: airflow
+
 scheduler:
   replicas: 3
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-core-components"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "karpenter.sh/capacity-type"
+            operator: "In"
+            values: ["on-demand"]
+          - key: "karpenter.k8s.aws/instance-family"
+            operator: "In"
+            values: ["c6i", "c5"] # Choosing compute-optimized instances
+          - key: "karpenter.k8s.aws/instance-cpu"
+            operator: "In"
+            values: ["2", "4"] # Scheduler might benefit from higher CPU
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: "topology.kubernetes.io/zone"
+    whenUnsatisfiable: "ScheduleAnyway"
+    labelSelector:
+      matchLabels:
+        component: scheduler
+  - maxSkew: 1
+    topologyKey: "kubernetes.io/hostname"
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        component: scheduler
+  labels:
+    component: scheduler
 
 triggerer:
-  replicas: 1
   keda:
     enabled: true
+    minReplicaCount: 1
 
 postgresql:
   enabled: false
@@ -62,10 +130,84 @@ webserverSecretKeySecretName: ${webserver_secret_name}
 webserver:
   replicas: 3
 
+  startupProbe:
+    timeoutSeconds: 20
+    failureThreshold: 60 # Number of tries before giving up (10 minutes with periodSeconds of 10)
+    periodSeconds: 10    # How often to perform the probe
+
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-core-components"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "karpenter.sh/capacity-type"
+            operator: "In"
+            values: ["on-demand"]
+          - key: "karpenter.k8s.aws/instance-family"
+            operator: "In"
+            values: ["c6i", "c5"] # Choosing compute-optimized instances
+          - key: "karpenter.k8s.aws/instance-cpu"
+            operator: "In"
+            values: ["2", "4"] # Balancing between CPU and memory
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: "topology.kubernetes.io/zone"
+    whenUnsatisfiable: "ScheduleAnyway"
+    labelSelector:
+      matchLabels:
+        component: webserver
+  - maxSkew: 1
+    topologyKey: "kubernetes.io/hostname"
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        component: webserver
+  labels:
+    component: webserver
+
 workers:
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-celery-workers"
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 1
+        preference:
+          matchExpressions:
+          - key: "karpenter.sh/capacity-type"
+            operator: "In"
+            values: ["spot"]
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: "karpenter.k8s.aws/instance-family"
+            operator: "In"
+            values: ["t3"]
+          - key: "karpenter.k8s.aws/instance-cpu"
+            operator: "In"
+            values: ["2", "4"]
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: "topology.kubernetes.io/zone"
+    whenUnsatisfiable: "ScheduleAnyway"
+    labelSelector:
+      matchLabels:
+        component: worker
+  - maxSkew: 1
+    topologyKey: "kubernetes.io/hostname"
+    whenUnsatisfiable: ScheduleAnyway
+    labelSelector:
+      matchLabels:
+        component: worker
+  labels:
+    component: worker
+
   keda:
     enabled: true
     pollingInterval: 1
+    minReplicaCount: 1
     maxReplicaCount: 128
     # Specify HPA related options
     # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md
@@ -107,7 +249,7 @@ config:
     remote_log_conn_id: "aws_default"
     encrypt_s3_logs: false
   celery:
-    worker_concurrency: 1
+    worker_concurrency: 16
 
 dags:
   persistence:
@@ -116,22 +258,36 @@ dags:
     # the name of an existing PVC to use
     existingClaim: ${dags_pvc_name}
 
+dagProcessor:
+  enabled: true
+  replicas: 3
+
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
     value: "${kubernetes_namespace}"
+  - name: "AIRFLOW_VAR_UNITY_PROJECT"
+    value: "${unity_project}"
+  - name: "AIRFLOW_VAR_UNITY_VENUE"
+    value: "${unity_venue}"
+  - name: "AIRFLOW_VAR_UNITY_DEPLOYMENT_NAME"
+    value: "${unity_deployment_name}"
+  - name: "AIRFLOW_VAR_UNITY_COUNTER"
+    value: "${unity_counter}"
+  - name: "AIRFLOW_VAR_UNITY_CLUSTER_NAME"
+    value: "${unity_cluster_name}"
 
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
   - name: AIRFLOW__API__AUTH_BACKENDS
     value: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
   - name: AIRFLOW__CORE__PARALLELISM
-    value: "128"
+    value: "32768"
   - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
-    value: "64"
+    value: "1024"
   - name: AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG
-    value: "64"
+    value: "4096"
   - name: AIRFLOW__SCHEDULER__MAX_DAGRUNS_TO_CREATE_PER_LOOP
-    value: "64"
+    value: "256"
   - name: AIRFLOW__SCHEDULER__SCHEDULER_HEARTBEAT_SEC
     value: "1"
   - name: AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE
@@ -140,3 +296,7 @@ extraEnv: |
     value: "${webserver_navbar_color}"
   - name: AIRFLOW__WEBSERVER__INSTANCE_NAME
     value: "Deployment: ${webserver_instance_name}, ${service_area} Version: ${service_area_version}"
+  - name: AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL
+    value: "10"
+  - name: AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL
+    value: "5"

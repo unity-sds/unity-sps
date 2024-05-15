@@ -16,27 +16,25 @@ resource "helm_release" "keda" {
   namespace  = kubernetes_namespace.keda.metadata[0].name
 }
 
-resource "null_resource" "remove_finalizers" {
+resource "null_resource" "remove_keda_finalizers" {
   # https://keda.sh/docs/deploy/#uninstall
   provisioner "local-exec" {
     when    = destroy
     command = <<EOT
       set -x
-      for i in $(kubectl get scaledobjects -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].kind}{"/"}{.items[*].metadata.name}{"\n"}'); do
-          if [[ "$i" != "/" ]]; then
-              kubectl patch $i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
-          fi
+      export KUBECONFIG=${self.triggers.kubeconfig_filepath}
+      for i in $(kubectl get scaledobjects -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].metadata.name}{"\n"}'); do
+          kubectl patch ScaledObject/$i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
       done
-      for i in $(kubectl get scaledjobs -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].kind}{"/"}{.items[*].metadata.name}{"\n"}'); do
-          if [[ "$i" != "/" ]]; then
-              kubectl patch $i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
-          fi
+      for i in $(kubectl get scaledjobs -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].metadata.name}{"\n"}'); do
+          kubectl patch ScaledJob/$i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
       done
     EOT
   }
   triggers = {
-    always_run        = timestamp()
-    airflow_namespace = kubernetes_namespace.airflow.metadata[0].name
+    always_run          = timestamp()
+    kubeconfig_filepath = var.kubeconfig_filepath
+    airflow_namespace   = kubernetes_namespace.airflow.metadata[0].name
   }
   depends_on = [helm_release.keda, helm_release.airflow]
 }
@@ -96,34 +94,34 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
   }
 }
 
-resource "random_password" "airflow_db" {
+resource "random_password" "sps_db" {
   length           = 16
   special          = true
   override_special = "_!%^"
 }
 
-resource "aws_secretsmanager_secret" "airflow_db" {
-  name                    = format(local.resource_name_prefix, "AirflowDb")
+resource "aws_secretsmanager_secret" "sps_db" {
+  name                    = format(local.resource_name_prefix, "db")
   recovery_window_in_days = 0
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowDb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
-resource "aws_secretsmanager_secret_version" "airflow_db" {
-  secret_id     = aws_secretsmanager_secret.airflow_db.id
-  secret_string = random_password.airflow_db.result
+resource "aws_secretsmanager_secret_version" "sps_db" {
+  secret_id     = aws_secretsmanager_secret.sps_db.id
+  secret_string = random_password.sps_db.result
 }
 
-resource "aws_db_subnet_group" "airflow_db" {
-  name       = format(local.resource_name_prefix, "airflowdb")
+resource "aws_db_subnet_group" "sps_db" {
+  name       = format(local.resource_name_prefix, "db")
   subnet_ids = jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "airflowdb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
@@ -159,25 +157,25 @@ resource "aws_security_group_rule" "eks_egress_to_rds" {
   source_security_group_id = aws_security_group.rds_sg.id
 }
 
-resource "aws_db_instance" "airflow_db" {
-  identifier             = format(local.resource_name_prefix, "airflowdb")
+resource "aws_db_instance" "sps_db" {
+  identifier             = format(local.resource_name_prefix, "spsdb")
   allocated_storage      = 100
   storage_type           = "gp3"
   engine                 = "postgres"
   engine_version         = "13.13"
   instance_class         = "db.m5d.large"
-  db_name                = "airflow_db"
-  username               = "airflow_db_user"
-  password               = aws_secretsmanager_secret_version.airflow_db.secret_string
+  db_name                = "sps_db"
+  username               = "sps_db_user"
+  password               = aws_secretsmanager_secret_version.sps_db.secret_string
   parameter_group_name   = "default.postgres13"
   skip_final_snapshot    = true
   publicly_accessible    = false
-  db_subnet_group_name   = aws_db_subnet_group.airflow_db.name
+  db_subnet_group_name   = aws_db_subnet_group.sps_db.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "airflowdb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
@@ -187,8 +185,8 @@ resource "kubernetes_secret" "airflow_metadata" {
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   data = {
-    kedaConnection = "postgresql://${aws_db_instance.airflow_db.username}:${urlencode(aws_secretsmanager_secret_version.airflow_db.secret_string)}@${aws_db_instance.airflow_db.endpoint}/${aws_db_instance.airflow_db.db_name}"
-    connection     = "postgresql://${aws_db_instance.airflow_db.username}:${urlencode(aws_secretsmanager_secret_version.airflow_db.secret_string)}@${aws_db_instance.airflow_db.endpoint}/${aws_db_instance.airflow_db.db_name}"
+    kedaConnection = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
+    connection     = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
   }
 }
 
@@ -330,14 +328,14 @@ resource "aws_efs_access_point" "airflow_kpo" {
   })
 }
 
-resource "aws_efs_access_point" "airflow_dags" {
+resource "aws_efs_access_point" "airflow_deployed_dags" {
   file_system_id = aws_efs_file_system.airflow.id
   posix_user {
     gid = 0
     uid = 50000
   }
   root_directory {
-    path = "/dags"
+    path = "/deployed-dags"
     creation_info {
       owner_gid   = 0
       owner_uid   = 50000
@@ -345,7 +343,7 @@ resource "aws_efs_access_point" "airflow_dags" {
     }
   }
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowDagsAp")
+    Name      = format(local.resource_name_prefix, "AirflowDeployedDagsAp")
     Component = "airflow"
     Stack     = "airflow"
   })
@@ -396,9 +394,9 @@ resource "kubernetes_persistent_volume_claim" "airflow_kpo" {
   }
 }
 
-resource "kubernetes_persistent_volume" "airflow_dags" {
+resource "kubernetes_persistent_volume" "airflow_deployed_dags" {
   metadata {
-    name = "airflow-dags"
+    name = "airflow-deployed-dags"
   }
   spec {
     capacity = {
@@ -409,16 +407,16 @@ resource "kubernetes_persistent_volume" "airflow_dags" {
     persistent_volume_source {
       csi {
         driver        = "efs.csi.aws.com"
-        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_dags.id}"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_deployed_dags.id}"
       }
     }
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "airflow_dags" {
+resource "kubernetes_persistent_volume_claim" "airflow_deployed_dags" {
   metadata {
-    name      = "airflow-dags"
+    name      = "airflow-deployed-dags"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   spec {
@@ -428,67 +426,9 @@ resource "kubernetes_persistent_volume_claim" "airflow_dags" {
         storage = "5Gi"
       }
     }
-    volume_name        = kubernetes_persistent_volume.airflow_dags.metadata[0].name
+    volume_name        = kubernetes_persistent_volume.airflow_deployed_dags.metadata[0].name
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
-}
-
-resource "kubernetes_config_map" "airflow_dags" {
-  metadata {
-    name      = "airflow-dags"
-    namespace = kubernetes_namespace.airflow.metadata[0].name
-  }
-
-  data = {
-    for f in fileset("${path.module}/../../../airflow/dags", "*.{py,yaml}") :
-    f => file(join("/", ["${path.module}/../../../airflow/dags", f]))
-  }
-}
-
-resource "kubernetes_job" "copy_airflow_dags_to_pvc" {
-  metadata {
-    name      = "copy-airflow-dags-to-pvc"
-    namespace = kubernetes_namespace.airflow.metadata[0].name
-  }
-  spec {
-    backoff_limit = 4
-    template {
-      metadata {}
-      spec {
-        container {
-          name    = "copy-airflow-dags-to-pvc"
-          image   = "alpine:3.19.1"
-          command = ["/bin/sh", "-c", "cp /configmap/* /dags/"]
-          volume_mount {
-            name       = "configmap"
-            mount_path = "/configmap"
-          }
-          volume_mount {
-            name       = "airflow-dags"
-            mount_path = "/dags"
-          }
-        }
-        restart_policy = "Never"
-        volume {
-          name = "configmap"
-          config_map {
-            name = kubernetes_config_map.airflow_dags.metadata[0].name
-          }
-        }
-        volume {
-          name = "airflow-dags"
-          persistent_volume_claim {
-            claim_name = kubernetes_persistent_volume_claim.airflow_dags.metadata[0].name
-          }
-        }
-      }
-    }
-  }
-  wait_for_completion = true
-  timeouts {
-    create = "10m"
-  }
-  depends_on = [time_sleep.wait_for_efs_mount_target_dns_propagation]
 }
 
 resource "helm_release" "airflow" {
@@ -507,24 +447,79 @@ resource "helm_release" "airflow" {
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
       airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
       workers_pvc_name         = kubernetes_persistent_volume_claim.airflow_kpo.metadata[0].name
-      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_dags.metadata[0].name
+      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_deployed_dags.metadata[0].name
       webserver_instance_name  = format(local.resource_name_prefix, "airflow")
       webserver_navbar_color   = local.airflow_webserver_navbar_color
       service_area             = upper(var.service_area)
       service_area_version     = var.release
+      unity_project            = var.project
+      unity_venue              = var.venue
+      unity_deployment_name    = var.deployment_name
+      unity_counter            = var.counter
+      unity_cluster_name       = data.aws_eks_cluster.cluster.name
     })
   ]
   set_sensitive {
     name  = "webserver.defaultUser.password"
     value = var.airflow_webserver_password
   }
+  timeout = 1200
   depends_on = [
-    aws_db_instance.airflow_db,
+    aws_db_instance.sps_db,
     helm_release.keda,
     kubernetes_secret.airflow_metadata,
     kubernetes_secret.airflow_webserver,
-    kubernetes_job.copy_airflow_dags_to_pvc
+    kubernetes_manifest.karpenter_node_pools,
   ]
+}
+
+resource "kubernetes_deployment" "redis" {
+  metadata {
+    name      = "ogc-processes-api-redis-lock"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "redis"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app = "redis"
+        }
+      }
+      spec {
+        container {
+          name  = "redis"
+          image = "${var.docker_images.redis.name}:${var.docker_images.redis.tag}"
+          port {
+            container_port = 6379
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "redis" {
+  metadata {
+    name      = "ogc-processes-api-redis-lock"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    selector = {
+      app = "redis"
+    }
+    port {
+      name        = "redis"
+      port        = 6379
+      target_port = 6379
+    }
+    type = "ClusterIP"
+  }
 }
 
 resource "kubernetes_deployment" "ogc_processes_api" {
@@ -546,16 +541,130 @@ resource "kubernetes_deployment" "ogc_processes_api" {
         }
       }
       spec {
+        affinity {
+          node_affinity {
+            required_during_scheduling_ignored_during_execution {
+              node_selector_term {
+                match_expressions {
+                  key      = "karpenter.sh/nodepool"
+                  operator = "In"
+                  values   = ["airflow-core-components"]
+                }
+                match_expressions {
+                  key      = "karpenter.sh/capacity-type"
+                  operator = "In"
+                  values   = ["on-demand"]
+                }
+                match_expressions {
+                  key      = "karpenter.k8s.aws/instance-family"
+                  operator = "In"
+                  values   = ["c6i", "c5"]
+                }
+                match_expressions {
+                  key      = "karpenter.k8s.aws/instance-cpu"
+                  operator = "In"
+                  values   = ["2", "4"]
+                }
+              }
+            }
+          }
+        }
         container {
-          image = "${var.docker_images.ogc_processes_api.name}:${var.docker_images.ogc_processes_api.tag}"
           name  = "ogc-processes-api"
+          image = "${var.docker_images.ogc_processes_api.name}:${var.docker_images.ogc_processes_api.tag}"
           port {
             container_port = 80
           }
+          env {
+            name  = "DB_URL"
+            value = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
+          }
+          env {
+            name  = "REDIS_HOST"
+            value = "${kubernetes_service.redis.metadata[0].name}.${kubernetes_namespace.airflow.metadata[0].name}.svc.cluster.local"
+
+          }
+          env {
+            name  = "REDIS_PORT"
+            value = 6379
+          }
+          env {
+            name  = "EMS_API_URL"
+            value = aws_ssm_parameter.airflow_api_url.value
+          }
+          env {
+            name  = "EMS_API_AUTH_USERNAME"
+            value = local.airflow_webserver_username
+          }
+          env {
+            name  = "EMS_API_AUTH_PASSWORD"
+            value = var.airflow_webserver_password
+          }
+          env {
+            name  = "DAG_CATALOG_DIRECTORY"
+            value = "/dag-catalog/current/${var.dag_catalog_repo.dags_directory_path}"
+          }
+          env {
+            name  = "DEPLOYED_DAGS_DIRECTORY"
+            value = "/deployed-dags"
+          }
+          volume_mount {
+            name       = "dag-catalog"
+            mount_path = "/dag-catalog"
+          }
+          volume_mount {
+            name       = "deployed-dags"
+            mount_path = "/deployed-dags"
+          }
+        }
+        container {
+          name  = "git-sync"
+          image = "${var.docker_images.git_sync.name}:${var.docker_images.git_sync.tag}"
+          env {
+            name  = "GITSYNC_REPO"
+            value = var.dag_catalog_repo.url
+          }
+          env {
+            name  = "GITSYNC_REF"
+            value = var.dag_catalog_repo.ref
+          }
+          env {
+            name  = "GITSYNC_ROOT"
+            value = "/dag-catalog"
+          }
+          env {
+            name  = "GITSYNC_LINK"
+            value = "current"
+          }
+          env {
+            name  = "GITSYNC_PERIOD"
+            value = "3s"
+          }
+          env {
+            name  = "GITSYNC_ONE_TIME"
+            value = "false"
+          }
+          volume_mount {
+            name       = "dag-catalog"
+            mount_path = "/dag-catalog"
+          }
+        }
+        volume {
+          name = "deployed-dags"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.airflow_deployed_dags.metadata[0].name
+          }
+        }
+        volume {
+          name = "dag-catalog"
+          empty_dir {}
         }
       }
     }
   }
+  depends_on = [
+    kubernetes_manifest.karpenter_node_pools
+  ]
 }
 
 resource "kubernetes_service" "ogc_processes_api" {
@@ -692,6 +801,18 @@ resource "aws_ssm_parameter" "airflow_logs" {
   })
 }
 
+resource "aws_ssm_parameter" "ogc_processes_ui_url" {
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "ui_url"])))
+  description = "The URL of the OGC Proccesses API Docs UI."
+  type        = "String"
+  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
 resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
@@ -704,129 +825,114 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   })
 }
 
-module "karpenter" {
-  source                            = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version                           = "20.8.4"
-  cluster_name                      = data.aws_eks_cluster.cluster.name
-  iam_policy_name                   = format(local.resource_name_prefix, "karpenter")
-  iam_policy_use_name_prefix        = false
-  iam_role_name                     = format(local.resource_name_prefix, "karpenter")
-  iam_role_use_name_prefix          = false
-  create_node_iam_role              = false
-  node_iam_role_arn                 = data.aws_iam_role.cluster_iam_role.arn
-  iam_role_permissions_boundary_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
-  enable_irsa                       = true
-  irsa_oidc_provider_arn            = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
-  # Since the nodegroup role will already have an access entry
-  create_access_entry = false
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "karpenter")
-    Component = "karpenter"
-    Stack     = "karpenter"
-  })
+resource "kubernetes_manifest" "karpenter_node_class" {
+  manifest = {
+    apiVersion = "karpenter.k8s.aws/v1beta1"
+    kind       = "EC2NodeClass"
+    metadata = {
+      name = "default"
+    }
+    spec = {
+      amiFamily = "AL2"
+      amiSelectorTerms = [{
+        id = data.aws_ami.al2_eks_optimized.image_id
+      }]
+      userData = <<-EOT
+        #!/bin/bash
+        echo "Starting pre-bootstrap configurations..."
+        # Custom script to enable IP forwarding
+        sudo sed -i 's/^net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/sysctl.conf && sudo sysctl -p |true
+        echo "Pre-bootstrap configurations applied."
+      EOT
+      role     = data.aws_iam_role.cluster_iam_role.name
+      subnetSelectorTerms = [for subnet_id in jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"] : {
+        id = subnet_id
+      }]
+      securityGroupSelectorTerms = [{
+        tags = {
+          "kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}" = "owned"
+          "Name"                                                       = "${data.aws_eks_cluster.cluster.name}-node"
+        }
+      }]
+      blockDeviceMappings = [for bd in tolist(data.aws_ami.al2_eks_optimized.block_device_mappings) : {
+        deviceName = bd.device_name
+        ebs = {
+          volumeSize          = "${bd.ebs.volume_size}Gi"
+          volumeType          = bd.ebs.volume_type
+          encrypted           = bd.ebs.encrypted
+          deleteOnTermination = bd.ebs.delete_on_termination
+        }
+      }]
+      metadataOptions = {
+        httpEndpoint            = "enabled"
+        httpPutResponseHopLimit = 3
+      }
+      tags = merge(local.common_tags, {
+        "karpenter.sh/discovery" = data.aws_eks_cluster.cluster.name
+        Name                     = format(local.resource_name_prefix, "karpenter")
+        Component                = "karpenter"
+        Stack                    = "karpenter"
+      })
+    }
+  }
 }
 
-resource "helm_release" "karpenter" {
-  name             = "karpenter"
-  namespace        = "karpenter"
-  create_namespace = true
-  chart            = var.helm_charts.karpenter.chart
-  repository       = var.helm_charts.karpenter.repository
-  version          = var.helm_charts.karpenter.version
-  wait             = false
-  values = [
-    <<-EOT
-    settings:
-      clusterName: ${data.aws_eks_cluster.cluster.name}
-      clusterEndpoint: ${data.aws_eks_cluster.cluster.endpoint}
-      interruptionQueue: ${module.karpenter.queue_name}
-    serviceAccount:
-      annotations:
-        eks.amazonaws.com/role-arn: ${module.karpenter.iam_role_arn}
+resource "null_resource" "remove_node_class_finalizers" {
+  # https://github.com/aws/karpenter-provider-aws/issues/5079
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOT
+      set -x
+      export KUBECONFIG=${self.triggers.kubeconfig_filepath}
+      kubectl patch ec2nodeclass ${self.triggers.node_class_name} -p '{"metadata":{"finalizers":null}}' --type=merge
     EOT
+  }
+  triggers = {
+    kubeconfig_filepath = var.kubeconfig_filepath
+    node_class_name     = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+  }
+  depends_on = [
+    kubernetes_manifest.karpenter_node_pools
   ]
 }
 
-resource "kubectl_manifest" "karpenter_node_class" {
-  yaml_body = <<-YAML
-    apiVersion: karpenter.k8s.aws/v1beta1
-    kind: EC2NodeClass
-    metadata:
-      name: default
-    spec:
-      amiFamily: AL2
-      amiSelectorTerms:
-        - id: ${data.aws_ami.al2_eks_optimized.image_id}
-      role: ${data.aws_iam_role.cluster_iam_role.name}
-      subnetSelectorTerms:
-        - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]}"
-        - id: "${jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][1]}"
-      securityGroupSelectorTerms:
-        - tags:
-            kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}: owned
-      tags:
-        karpenter.sh/discovery: ${data.aws_eks_cluster.cluster.name}
-        Name: ${format(local.resource_name_prefix, "karpenter")}
-        Venue: ${var.venue}
-        Proj: ${var.project}
-        ServiceArea: ${var.service_area}
-        CapVersion: ${var.release}
-        Component: karpenter
-        CreatedBy: ${var.service_area}
-        Env: ${var.venue}
-        mission: ${var.project}
-        Stack: karpenter
-      blockDeviceMappings:
-        - deviceName: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].device_name}
-          ebs:
-            volumeSize: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_size}Gi
-            volumeType: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.volume_type}
-            encrypted: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.encrypted}
-            deleteOnTermination: ${tolist(data.aws_ami.al2_eks_optimized.block_device_mappings)[0].ebs.delete_on_termination}
-      metadataOptions:
-        httpEndpoint: ${var.karpenter_default_node_class_metadata_options["httpEndpoint"]}
-        httpPutResponseHopLimit: ${var.karpenter_default_node_class_metadata_options["httpPutResponseHopLimit"]}
-  YAML
+resource "kubernetes_manifest" "karpenter_node_pools" {
+  for_each = var.karpenter_node_pools
+
+  manifest = {
+    apiVersion = "karpenter.sh/v1beta1"
+    kind       = "NodePool"
+    metadata = {
+      name = each.key
+    }
+    spec = {
+      template = {
+        spec = {
+          nodeClassRef = {
+            name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+          }
+          requirements = [for req in each.value.requirements : {
+            key      = req.key
+            operator = req.operator
+            values   = req.values
+          }]
+        }
+      }
+      limits = {
+        cpu    = each.value.limits.cpu
+        memory = each.value.limits.memory
+      }
+      disruption = {
+        consolidationPolicy = each.value.disruption.consolidationPolicy
+        consolidateAfter    = each.value.disruption.consolidateAfter
+      }
+    }
+  }
   depends_on = [
-    helm_release.karpenter
+    kubernetes_manifest.karpenter_node_class
   ]
 }
 
-resource "kubectl_manifest" "karpenter_node_pool" {
-  yaml_body = <<-YAML
-    apiVersion: karpenter.sh/v1beta1
-    kind: NodePool
-    metadata:
-      name: default
-    spec:
-      template:
-        spec:
-          nodeClassRef:
-            name: default
-          requirements:
-            - key: "${var.karpenter_default_node_pool_requirements["instance_category"].key}"
-              operator: ${var.karpenter_default_node_pool_requirements["instance_category"].operator}
-              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_category"].values)}
-            - key: "${var.karpenter_default_node_pool_requirements["instance_cpu"].key}"
-              operator: ${var.karpenter_default_node_pool_requirements["instance_cpu"].operator}
-              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_cpu"].values)}
-            - key: "${var.karpenter_default_node_pool_requirements["instance_hypervisor"].key}"
-              operator: ${var.karpenter_default_node_pool_requirements["instance_hypervisor"].operator}
-              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_hypervisor"].values)}
-            - key: "${var.karpenter_default_node_pool_requirements["instance_generation"].key}"
-              operator: ${var.karpenter_default_node_pool_requirements["instance_generation"].operator}
-              values: ${jsonencode(var.karpenter_default_node_pool_requirements["instance_generation"].values)}
-      limits:
-        cpu: ${var.karpenter_default_node_pool_limits["cpu"]}
-        memory: ${var.karpenter_default_node_pool_limits["memory"]}
-      disruption:
-        consolidationPolicy: ${var.karpenter_default_node_pool_disruption["consolidationPolicy"]}
-        consolidateAfter: ${var.karpenter_default_node_pool_disruption["consolidateAfter"]}
-  YAML
-  depends_on = [
-    kubectl_manifest.karpenter_node_class
-  ]
-}
 
 resource "null_resource" "build_lambda_packages" {
   triggers = {

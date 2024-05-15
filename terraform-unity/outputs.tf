@@ -3,7 +3,7 @@ output "resources" {
   value = {
     "endpoints" = {
       "airflow"       = module.unity-sps-airflow.airflow_urls
-      "ogc_processes" = module.unity-sps-airflow.ogc_processes_api_url
+      "ogc_processes" = module.unity-sps-airflow.ogc_processes_urls
     }
     "buckets" = module.unity-sps-airflow.s3_buckets
   }
