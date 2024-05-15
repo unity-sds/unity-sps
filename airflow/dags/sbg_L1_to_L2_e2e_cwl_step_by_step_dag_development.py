@@ -564,7 +564,7 @@ cleanup_task = PythonOperator(
 chain(
     setup_task,
     preprocess_task,
-    [isofit_task, reflect_correct_task],
-    [resample_task, frcover_task],
+    # [isofit_task, reflect_correct_task],
+    # [resample_task, frcover_task],
     cleanup_task,
 )
