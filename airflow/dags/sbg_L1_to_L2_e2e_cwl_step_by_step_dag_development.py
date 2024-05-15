@@ -39,13 +39,12 @@ UNITY_OUTPUT_DATA_BUCKET = "/unity/ds/data/bucket/primary-data-bucket"
 
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
-CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
+CONTAINER_RESOURCES = {
     # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
     # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
-    limits={"ephemeral-storage": "50G"},
-    requests={"ephemeral-storage": "50G"},
-)
-
+    "limits": {"ephemeral-storage": "20Gi"},
+    "requests": {"ephemeral-storage": "20Gi"},
+}
 # Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
@@ -377,10 +376,8 @@ preprocess_task = KubernetesPodOperator(
     get_logs=True,
     image_pull_policy="Always",
     service_account_name="airflow-worker",
-    restart_policy="Never",
-    is_delete_operator_pod=True,  # mapped from on_finish_action to delete succeeded pods
+    on_finish_action="delete_pod",
     in_cluster=True,  # Set this if Airflow is running inside a Kubernetes cluster
-    host_network=False,
     startup_timeout_seconds=14400,
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     pod_template_file=POD_TEMPLATE_FILE,
@@ -421,7 +418,7 @@ preprocess_task = KubernetesPodOperator(
             },
         }
     },
-    resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
     priority_weight=1,
     weight_rule="upstream",
     volume_mounts=[
