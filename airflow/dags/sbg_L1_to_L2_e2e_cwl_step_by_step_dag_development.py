@@ -369,18 +369,61 @@ SBG_PREPROCESS_CWL = (
 )
 preprocess_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
-    name="SBG_Preprocess",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
+    name="sbg-preprocess-pod-" + uuid.uuid4().hex,  # unique name for the pod
     task_id="SBG_Preprocess",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-preprocess-pod-" + uuid.uuid4().hex)),
+    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    cmds=["/usr/share/cwl/docker_cwl_entrypoint.sh"],
+    labels={"task-type": "sbg-task"},
+    get_logs=True,
+    image_pull_policy="Always",
+    service_account_name="airflow-worker",
+    restart_policy="Never",
+    is_delete_operator_pod=True,  # mapped from on_finish_action to delete succeeded pods
+    in_cluster=True,  # Set this if Airflow is running inside a Kubernetes cluster
+    host_network=False,
+    startup_timeout_seconds=14400,
+    arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
+    security_context={"privileged": True},
+    affinity={
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.sh/capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                    {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.k8s.aws/instance-family",
+                                "operator": "In",
+                                "values": ["c7i", "m7i", "r7i"],
+                            },
+                            {
+                                "key": "karpenter.k8s.aws/instance-cpu",
+                                "operator": "In",
+                                "values": ["8", "16"],
+                            },
+                        ]
+                    }
+                ]
+            },
+        }
+    },
+    resources=CONTAINER_RESOURCES,
     priority_weight=1,
     weight_rule="upstream",
-    arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
