@@ -15,9 +15,7 @@ The below list of test categories are included in our testing setup. Further det
 - [ ] **Build Tests:** checks if the code builds into binaries or packages successfully  
 - [ ] **Acceptance Tests:** validates against end-user & stakeholder requirements  
 - [ ] **Integration Tests:** ensure software components interact correctly  
-- [X] **System Tests:** intended to test the overall software application in an integrated form 
-- [ ] **Performance Tests:** ensures scalability and resource management  
-- [ ] **User Interface (UI) Tests:** for usability and compliance  
+- [X] **System Tests:** intended to test the overall software application in an integrated form
    
 ### Static Code Analysis 
 #### Python Code Analysis  
