@@ -135,10 +135,6 @@ The below list of test categories are included in our testing setup. Further det
  
 
 ### Unit Tests  
-
-Here is a possible unit test plan for the given scripts:  
-   
-### DAG Validation Tests  
    
 #### DagBag fixture  
    
