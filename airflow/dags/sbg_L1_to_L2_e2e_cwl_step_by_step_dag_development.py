@@ -378,7 +378,8 @@ preprocess_task = KubernetesPodOperator(
     in_cluster=True,
     startup_timeout_seconds=14400,
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
-    security_context={"privileged": True},
+    container_security_context={"privileged": True},
+    container_resources=CONTAINER_RESOURCES,
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -415,7 +416,6 @@ preprocess_task = KubernetesPodOperator(
             },
         }
     },
-    container_resources=CONTAINER_RESOURCES,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
