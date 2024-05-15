@@ -59,7 +59,6 @@ dag = DAG(
     dag_id="sbg_L1_to_L2_e2e_cwl_step_by_step_dag_development",
     description="SBG L1 to L2 End-To-End Workflow as step-by-step CWL DAGs",
     tags=["SBG", "Unity", "SPS", "NASA", "JPL"],
-    is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
     max_active_runs=2,
@@ -362,18 +361,15 @@ def setup(ti=None, **context):
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
-# Step: PREPROCESS
 SBG_PREPROCESS_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 )
 preprocess_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
-    name="sbg-preprocess-pod-" + uuid.uuid4().hex,  # unique name for the pod
+    name="sbg-preprocess-pod-" + uuid.uuid4().hex,
     task_id="SBG_Preprocess",
     image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
-    cmds=["/usr/share/cwl/docker_cwl_entrypoint.sh"],
     labels={"task-type": "sbg-task"},
-    image_pull_policy="Always",
     service_account_name="airflow-worker",
     in_cluster=True,
     startup_timeout_seconds=14400,
@@ -401,15 +397,10 @@ preprocess_task = KubernetesPodOperator(
                     {
                         "matchExpressions": [
                             {
-                                "key": "karpenter.k8s.aws/instance-family",
+                                "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["c7i", "m7i", "r7i"],
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": ["8", "16"],
-                            },
+                                "values": ["r7i.xlarge"],
+                            }
                         ]
                     }
                 ]
@@ -428,7 +419,6 @@ preprocess_task = KubernetesPodOperator(
     dag=dag,
 )
 
-# # Step: ISOFIT
 # SBG_ISOFIT_CWL = (
 #     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
 # )
@@ -460,7 +450,6 @@ preprocess_task = KubernetesPodOperator(
 #     dag=dag,
 # )
 
-# # Step: RESAMPLE
 # SBG_RESAMPLE_CWL = (
 #     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample" "-workflow.cwl"
 # )
@@ -497,7 +486,6 @@ preprocess_task = KubernetesPodOperator(
 #     dag=dag,
 # )
 
-# # Step: REFLECT-CORRECT
 # SBG_REFLECT_CORRECT_CWL = (
 #     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect"
 #     "-correct-workflow.cwl"
@@ -532,7 +520,6 @@ preprocess_task = KubernetesPodOperator(
 #     dag=dag,
 # )
 
-# # Step: FRCOVER
 # SBG_FRCOVER_CWL = (
 #     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow" ".cwl"
 # )
