@@ -1,132 +1,216 @@
-# Unity Project Testing Plan  
+# unity-sps Testing
    
 ## Introduction  
-   
-This document provides an overview of the testing architecture for the Unity Project. It encompasses continuous testing concepts such as testing across the software development lifecycle as well as automated execution of tests through automation.  
+This document provides an overview of the testing architecture for the Unity Project. It encompasses continuous testing concepts such as testing across the software development lifecycle as well as automated execution of tests through automation.
    
 ---  
    
-## Types of Testing  
+## Testing Categories  
    
-The below list of tests are included in our testing setup. Further details are provided below.  
+The below list of test categories are included in our testing setup. Further details are provided below.  
    
-- [ ] Unit Tests  
-- [ ] System Tests  
-  - [ ] Integration Tests  
-  - [ ] Security Tests  
-  - [ ] Performance Tests  
-  - [ ] User Interfaces Tests  
+- [X] **Static Code Analysis:** checks code for syntax, style, vulnerabilities, and bugs  
+- [X] **Unit Tests:** tests functions or components to verify that they perform as intended  
+- [X] **Security Tests:** identifies potential security vulnerabilities  
+- [ ] **Build Tests:** checks if the code builds into binaries or packages successfully  
+- [ ] **Acceptance Tests:** validates against end-user & stakeholder requirements  
+- [ ] **Integration Tests:** ensure software components interact correctly  
+- [X] **System Tests:** intended to test the overall software application in an integrated form 
+- [ ] **Performance Tests:** ensures scalability and resource management  
+- [ ] **User Interface (UI) Tests:** for usability and compliance  
    
+### Static Code Analysis 
+#### Python Code Analysis  
+- Location: `/.pre-commit-config.yaml`
+- Purpose: Perform static code analysis on Python files in the project.  
+- Running Tests:  
+  - Manually:  
+    1. Install `Flake8` by running `pip install flake8`.  
+    2. Navigate to the project directory and run `flake8 .` to analyze all Python files.  
+    3. View the results in the terminal.  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `Flake8`  
+  - Tips:  
+    - Ensure your code follows PEP 8 style guidelines.  
+   
+#### Markdown Code Analysis  
+- Location: `/.pre-commit-config.yaml`  
+- Purpose: Lint markdown files for syntax errors.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `markdownlint-cli`  
+  - Tips: N/A  
+   
+#### Python Import Sorting  
+- Location: `/.pre-commit-config.yaml`  
+- Purpose: Sort Python imports.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `isort`  
+  - Tips: N/A  
+   
+#### Python Code Formatting  
+- Location: `/.pre-commit-config.yaml`  
+- Purpose: Format Python code using the Black formatter.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `black`  
+  - Tips: N/A  
+   
+#### Ruby Code Analysis  
+- Location: `/.pre-commit-config.yaml`  
+- Purpose: Lint Ruby files for syntax errors.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `ruff`  
+  - Tips: N/A  
+   
+#### Python Code Security Analysis  
+- Location: `/.pre-commit-config.yaml`  
+- Purpose: Check Python code for security vulnerabilities.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `bandit`  
+  - Tips: N/A  
+   
+#### Dockerfile Linting  
+- Location: `/.pre-commit-config.yaml`  
+- Purpose: Lint Dockerfiles for syntax errors.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `hadolint`  
+  - Tips: N/A  
+   
+#### Terraform Configuration Analysis  
+- Location: `/.pre-commit-config.yaml`  
+- Purpose: Validate, format, and lint Terraform configuration files.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run nightly on all active branches.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `pre
+ 
+
 ### Unit Tests  
+
+Here is a possible unit test plan for the given scripts:  
    
-Our unit tests ensure code is tested at a function, method, or sub-module level.  
+### DAG Validation Tests  
    
-**Location(s):**  
+#### DagBag fixture  
    
-- `/unity/tests/unit`  
-- `/unity/components/*/tests`  
+- Location: `/unity-test/unit/conftest.py`  
+- Purpose: Provides a `DagBag` object for testing DAGs.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency: N/A  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: pytest  
+  - Tips:  
+    - This fixture can be used in other test functions to get access to the loaded DAGs.  
    
-**Testing Frequency:**  
+#### test_dags_validation.py  
    
-- Triggered by code commits to the `main` branch.  
-- Run nightly on all active branches.  
+- Location: `/unity-test/unit/step_defs/test_dags_validation.py`  
+- Purpose: Tests the DAG validation features using pytest-bdd.  
+- Running Tests:  
+  - Manually:  
+    1. Install the required Python packages: `pip install pytest pytest-bdd apache-airflow`  
+    2. Run the tests: `pytest test_dags_validation.py`  
+    3. View the test results in the console output.  
+  - Automatically:  
+    - Frequency: On code changes  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: pytest-bdd  
+  - Tips:  
+    - The test functions use the `given` and `then` decorators from pytest-bdd to define the test scenarios.  
+    - Each scenario is defined in the `/unity-test/unit/features/dags_validation.feature` file.  
+    - The `the_dags_are_loaded` fixture is used to provide the `DagBag` object to the test functions.  
+    - The test functions assert various properties of the loaded DAGs, such as the absence of import errors, the validity of task owners, the presence of tags, and the absence of DAG cycles.
+
    
-#### Contributing Unit Tests  
+### Security Tests  
    
-To contribute unit tests, we recommend:  
-   
-- Leveraging the `pytest` framework  
-  - [Directions for using pytest](https://docs.pytest.org/en/stable/getting-started.html)  
-- Ensuring your unit tests:  
-  - Test every non-trivial function or method in your code  
-  - Test conditions including malformed arguments and null conditions  
-  - Cover expected exceptions and edge cases  
+- Location: `/unity`  
+- Purpose: Identify potential security vulnerabilities.  
+- Running Tests:  
+  - Manually: N/A  
+  - Automatically:  
+    - Frequency:  
+      - Triggered by code commits to the `main` branch.  
+      - Run weekly, every Monday at 2:00 AM UTC.  
+    - Results Location: N/A  
+- Contributing:  
+  - Framework Used: `OWASP ZAP` for web application vulnerabilities, `Synk` for dependency checks  
+  - Tips:  
+    - Use `Bandit` for Python code static analysis.  
+    - Follow the [OWASP Top 10 Vulnerabilities](https://owasp.org/www-project-top-ten/).  
+
    
 ### System Tests  
    
-Our system tests are intended to test the overall software application in an integrated form.  
-   
-#### Integration Tests  
-   
-Our integration tests ensure software components interact correctly.  
-   
-**Location(s):**  
-   
-- `/unity/tests/integration`  
-- `/unity/components/*/integration`  
-   
-**Testing Frequency:**  
-   
-- Triggered after successful unit test completion on the `main` branch.  
-- Run after each significant merge to `main`.  
-   
-##### Contributing Integration Tests  
-   
-To contribute integration tests, we recommend:  
-   
-- Leveraging the `TestCafe` framework for end-to-end scenarios  
-  - [Directions for using TestCafe](https://devexpress.github.io/testcafe/documentation/getting-started/)  
-- Ensuring your integration tests:  
-  - Build your software from components to a whole  
-  - Test the interaction between software components and external systems  
-   
-#### Security Tests  
-   
-Our security tests aim to keep the software secure against threats.  
-   
-**Security Testing Frameworks(s):**  
-   
-- `OWASP ZAP` for web application vulnerabilities  
-- `Synk` for dependency checks  
-   
-**Testing Frequency:**  
-   
-- Triggered by code commits to the `main` branch.  
-- Run weekly, every Monday at 2:00 AM UTC.  
-   
-##### Adhering to Security Best Practices  
-   
-- Use `Bandit` for Python code static analysis  
-  - [Directions for using Bandit](https://bandit.readthedocs.io/en/latest/)  
-- Follow the [OWASP Top 10 Vulnerabilities](https://owasp.org/www-project-top-ten/)  
-   
-#### Performance Tests  
-   
-To ensure scalability and resource management.  
-   
-**Location(s):**  
-   
-- `/unity/tests/performance`  
-- `/unity/components/*/performance`  
-   
-**Testing Frequency:**  
-   
-- Triggered monthly and upon significant releases.  
-- Run monthly, the first Monday of every month at 4:00 AM UTC.  
-   
-##### Contributing Performance Tests  
-   
-- Use `Locust` for simulating user behavior  
-  - [Directions for using Locust](https://docs.locust.io/en/stable/quickstart.html)  
-- Tests should:  
-  - Mimic 2X expected user or resource demand  
-  - Handle out-of-memory and disk errors, compute capacity loss, and surges in requests  
-   
-#### User Interface (UI) Tests  
-   
-For usability and compliance.  
-   
-**Location(s):**  
-   
-- `/unity/tests/ui`  
-- `/unity/components/*/ui`  
-   
-**Testing Frequency:**  
-   
-- Scheduled quarterly and before release candidates.  
-- Next scheduled run: [Insert Date]  
-   
-##### Contributing UI Tests  
-   
-- Use `Selenium` for automated UI testing  
-  - [Directions for using Selenium](https://selenium-python.readthedocs.io
+#### Airflow  
+- Location: `/unity-test/system/smoke`  
+- Purpose: Ensure that the Airflow API is up and running and each Airflow component is reported as healthy.  
+- Running Tests:  
+  - Manually:  
+    1. Navigate to `/unity-test/system/smoke` folder.  
+    2. Run `pytest`.  
+    3. View test results in the terminal.  
+  - Automatically:  
+    - Trigger: Code changes.  
+    - Timing: On every push to the main branch.  
+    - Results Location: Test results will be displayed in the CI/CD pipeline logs.  
+- Contributing:  
+  - Framework Used: `pytest` and `pytest-bdd`  
+  - Tips:  
+    - Ensure that all Airflow components are included in the `airflow_components` list.  
+    - Ensure that the `airflow_api_url` fixture is properly set up.
