@@ -393,146 +393,146 @@ preprocess_task = KubernetesPodOperator(
     dag=dag,
 )
 
-# Step: ISOFIT
-SBG_ISOFIT_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
-)
-# SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/isofit/sbg
-# -isofit-workflow.cwl"
-isofit_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Isofit",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
-    task_id="SBG_Isofit",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-isofit-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
-    arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
-    volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
-        )
-    ],
-    dag=dag,
-)
+# # Step: ISOFIT
+# SBG_ISOFIT_CWL = (
+#     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
+# )
+# # SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/isofit/sbg
+# # -isofit-workflow.cwl"
+# isofit_task = KubernetesPodOperator(
+#     namespace=POD_NAMESPACE,
+#     name="SBG_Isofit",
+#     on_finish_action="delete_succeeded_pod",
+#     hostnetwork=False,
+#     startup_timeout_seconds=14400,
+#     get_logs=True,
+#     task_id="SBG_Isofit",
+#     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-isofit-pod-" + uuid.uuid4().hex)),
+#     pod_template_file=POD_TEMPLATE_FILE,
+#     container_resources=CONTAINER_RESOURCES,
+#     priority_weight=1,
+#     weight_rule="upstream",
+#     arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
+#     volume_mounts=[
+#         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+#     ],
+#     volumes=[
+#         k8s.V1Volume(
+#             name="workers-volume",
+#             persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
+#         )
+#     ],
+#     dag=dag,
+# )
 
-# Step: RESAMPLE
-SBG_RESAMPLE_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample" "-workflow.cwl"
-)
-# SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample
-# /sbg-resample-workflow
-# .dev.yml"
-resample_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Resample",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
-    task_id="SBG_Resample",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-resample-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
-    arguments=[
-        SBG_RESAMPLE_CWL,
-        # SBG_RESAMPLE_ARGS
-        "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}",
-    ],
-    volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
-        )
-    ],
-    dag=dag,
-)
+# # Step: RESAMPLE
+# SBG_RESAMPLE_CWL = (
+#     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample" "-workflow.cwl"
+# )
+# # SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample
+# # /sbg-resample-workflow
+# # .dev.yml"
+# resample_task = KubernetesPodOperator(
+#     namespace=POD_NAMESPACE,
+#     name="SBG_Resample",
+#     on_finish_action="delete_succeeded_pod",
+#     hostnetwork=False,
+#     startup_timeout_seconds=14400,
+#     get_logs=True,
+#     task_id="SBG_Resample",
+#     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-resample-pod-" + uuid.uuid4().hex)),
+#     pod_template_file=POD_TEMPLATE_FILE,
+#     container_resources=CONTAINER_RESOURCES,
+#     priority_weight=1,
+#     weight_rule="upstream",
+#     arguments=[
+#         SBG_RESAMPLE_CWL,
+#         # SBG_RESAMPLE_ARGS
+#         "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}",
+#     ],
+#     volume_mounts=[
+#         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+#     ],
+#     volumes=[
+#         k8s.V1Volume(
+#             name="workers-volume",
+#             persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
+#         )
+#     ],
+#     dag=dag,
+# )
 
-# Step: REFLECT-CORRECT
-SBG_REFLECT_CORRECT_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect"
-    "-correct-workflow.cwl"
-)
-reflect_correct_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Reflect_Correct",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
-    task_id="SBG_Reflect_Correct",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-reflect-correct-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
-    arguments=[
-        SBG_REFLECT_CORRECT_CWL,
-        # SBG_REFLECT_CORRECT_ARGS
-        "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}",
-    ],
-    volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
-        )
-    ],
-    dag=dag,
-)
+# # Step: REFLECT-CORRECT
+# SBG_REFLECT_CORRECT_CWL = (
+#     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect"
+#     "-correct-workflow.cwl"
+# )
+# reflect_correct_task = KubernetesPodOperator(
+#     namespace=POD_NAMESPACE,
+#     name="SBG_Reflect_Correct",
+#     on_finish_action="delete_succeeded_pod",
+#     hostnetwork=False,
+#     startup_timeout_seconds=14400,
+#     get_logs=True,
+#     task_id="SBG_Reflect_Correct",
+#     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-reflect-correct-pod-" + uuid.uuid4().hex)),
+#     pod_template_file=POD_TEMPLATE_FILE,
+#     container_resources=CONTAINER_RESOURCES,
+#     priority_weight=1,
+#     weight_rule="upstream",
+#     arguments=[
+#         SBG_REFLECT_CORRECT_CWL,
+#         # SBG_REFLECT_CORRECT_ARGS
+#         "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}",
+#     ],
+#     volume_mounts=[
+#         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+#     ],
+#     volumes=[
+#         k8s.V1Volume(
+#             name="workers-volume",
+#             persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
+#         )
+#     ],
+#     dag=dag,
+# )
 
-# Step: FRCOVER
-SBG_FRCOVER_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow" ".cwl"
-)
-# SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg
-# -frcover-workflow.dev
-# .yml"
-frcover_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Frcover",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
-    task_id="SBG_Frcover",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-frcover-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
-    arguments=[
-        SBG_FRCOVER_CWL,
-        # SBG_FRCOVER_ARGS
-        "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}",
-    ],
-    volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
-        )
-    ],
-    dag=dag,
-)
+# # Step: FRCOVER
+# SBG_FRCOVER_CWL = (
+#     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow" ".cwl"
+# )
+# # SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg
+# # -frcover-workflow.dev
+# # .yml"
+# frcover_task = KubernetesPodOperator(
+#     namespace=POD_NAMESPACE,
+#     name="SBG_Frcover",
+#     on_finish_action="delete_succeeded_pod",
+#     hostnetwork=False,
+#     startup_timeout_seconds=14400,
+#     get_logs=True,
+#     task_id="SBG_Frcover",
+#     full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-frcover-pod-" + uuid.uuid4().hex)),
+#     pod_template_file=POD_TEMPLATE_FILE,
+#     container_resources=CONTAINER_RESOURCES,
+#     priority_weight=1,
+#     weight_rule="upstream",
+#     arguments=[
+#         SBG_FRCOVER_CWL,
+#         # SBG_FRCOVER_ARGS
+#         "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}",
+#     ],
+#     volume_mounts=[
+#         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+#     ],
+#     volumes=[
+#         k8s.V1Volume(
+#             name="workers-volume",
+#             persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
+#         )
+#     ],
+#     dag=dag,
+# )
 
 
 def cleanup(**context):
