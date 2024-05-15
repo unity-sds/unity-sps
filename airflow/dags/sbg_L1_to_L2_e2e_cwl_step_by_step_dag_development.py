@@ -364,7 +364,7 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
 # Step: PREPROCESS
 SBG_PREPROCESS_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess" "-workflow.cwl"
+    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 )
 preprocess_task = KubernetesPodOperator(
     namespace=POD_NAMESPACE,
@@ -373,14 +373,11 @@ preprocess_task = KubernetesPodOperator(
     image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
     cmds=["/usr/share/cwl/docker_cwl_entrypoint.sh"],
     labels={"task-type": "sbg-task"},
-    get_logs=True,
     image_pull_policy="Always",
     service_account_name="airflow-worker",
-    on_finish_action="delete_pod",
-    in_cluster=True,  # Set this if Airflow is running inside a Kubernetes cluster
+    in_cluster=True,
     startup_timeout_seconds=14400,
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
-    pod_template_file=POD_TEMPLATE_FILE,
     security_context={"privileged": True},
     affinity={
         "nodeAffinity": {
@@ -419,8 +416,6 @@ preprocess_task = KubernetesPodOperator(
         }
     },
     container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
