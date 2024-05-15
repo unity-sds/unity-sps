@@ -14,7 +14,7 @@ The below list of test categories are included in our testing setup. Further det
 - [X] **Security Tests:** identifies potential security vulnerabilities  
 - [ ] **Build Tests:** checks if the code builds into binaries or packages successfully  
 - [ ] **Acceptance Tests:** validates against end-user & stakeholder requirements  
-- [ ] **Integration Tests:** ensure software components interact correctly  
+- [X] **Integration Tests:** ensure software components interact correctly  
 - [X] **System Tests:** intended to test the overall software application in an integrated form
    
 ### Static Code Analysis 
@@ -192,6 +192,27 @@ Here is a possible unit test plan for the given scripts:
     - Use `Bandit` for Python code static analysis.  
     - Follow the [OWASP Top 10 Vulnerabilities](https://owasp.org/www-project-top-ten/).  
 
+### Integration Tests  
+   
+#### airflow_sbg_e2e  
+- Location: `/unity-test/system/integration`
+- Purpose: To ensure that SBG E2E processing does not fail and data can be retrieved from it.  
+- Running Tests:  
+  - Manually:  
+    1. Ensure the Airflow API is up and running.  
+    2. Trigger a dag run for the SBG E2E dag.  
+    3. Check the response status code is 200.  
+    4. Poll the dag run until a successful state is reached.  
+  - Automatically:  
+    - Trigger: Code changes.  
+    - Timing: Nightly.  
+    - Results Location: `[INSERT PATH OR LOCATION WHERE RESULTS WILL RESIDE]`  
+- Contributing:  
+  - Framework Used: pytest-bdd.  
+  - Tips:  
+    - Ensure that the Airflow API is up and running before running the tests.  
+    - Check that the response status code is 200.  
+    - Poll the dag run until a successful state is reached.
    
 ### System Tests  
    
