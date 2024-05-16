@@ -59,6 +59,7 @@ resource "kubernetes_secret" "airflow_webserver" {
   }
 }
 
+# TODO evaluate if this role is still necessary
 resource "kubernetes_role" "airflow_pod_creator" {
   metadata {
     name      = "airflow-job-launcher-and-reader-role"
