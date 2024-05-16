@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from airflow.providers.cncf.kubernetes.operators.job import KubernetesJobOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 
 from airflow import DAG
 
@@ -25,16 +25,17 @@ dag = DAG(
 )
 
 # Define KubernetesPodOperator tasks with default affinity
-compute_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
-    retries=3,
+compute_task = KubernetesPodOperator(
+    dag=dag,
     task_id="compute_task",
     namespace=POD_NAMESPACE,
     name="compute-task",
     image="hello-world",
+    retries=3,
     in_cluster=True,
-    startup_timeout_seconds=900,
+    get_logs=True,
     container_logs=True,
+    startup_timeout_seconds=900,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     labels={"app": "kubernetes_tasks_with_affinity"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
@@ -90,18 +91,19 @@ compute_task = KubernetesJobOperator(
             ]
         },
     },
-    dag=dag,
 )
 
-memory_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
-    namespace=POD_NAMESPACE,
-    image="hello-world",
-    name="memory-task",
-    task_id="memory_task",
-    get_logs=True,
+memory_task = KubernetesPodOperator(
     dag=dag,
-    is_delete_operator_pod=True,
+    task_id="memory_task",
+    namespace=POD_NAMESPACE,
+    name="memory-task",
+    image="hello-world",
+    retries=3,
+    in_cluster=True,
+    get_logs=True,
+    container_logs=True,
+    startup_timeout_seconds=900,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     labels={"app": "kubernetes_tasks_with_affinity"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
@@ -157,18 +159,20 @@ memory_task = KubernetesJobOperator(
             ]
         },
     },
-    startup_timeout_seconds=900,
 )
 
-general_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
-    namespace=POD_NAMESPACE,
-    image="hello-world",
-    name="general-task",
-    task_id="general_task",
-    get_logs=True,
+
+general_task = KubernetesPodOperator(
     dag=dag,
-    is_delete_operator_pod=True,
+    task_id="general_task",
+    namespace=POD_NAMESPACE,
+    name="general-task",
+    image="hello-world",
+    retries=3,
+    in_cluster=True,
+    get_logs=True,
+    container_logs=True,
+    startup_timeout_seconds=900,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     labels={"app": "kubernetes_tasks_with_affinity"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
@@ -224,7 +228,6 @@ general_task = KubernetesJobOperator(
             ]
         },
     },
-    startup_timeout_seconds=900,
 )
 
 # Task sequence
