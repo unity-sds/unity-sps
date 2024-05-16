@@ -14,7 +14,7 @@ import boto3
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator
-from airflow.providers.cncf.kubernetes.operators.job import KubernetesJobOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 
@@ -35,12 +35,25 @@ UNITY_OUTPUT_DATA_BUCKET = "/unity/ds/data/bucket/primary-data-bucket"
 
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
-CONTAINER_RESOURCES = {
-    # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
-    # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
-    "limits": {"ephemeral-storage": "20Gi"},
-    "requests": {"ephemeral-storage": "20Gi"},
-}
+# CONTAINER_RESOURCES = {
+#     # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
+#     # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
+#     "limits": {"ephemeral-storage": "20Gi"},
+#     "requests": {"ephemeral-storage": "20Gi"},
+# }
+CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
+    requests={
+        # "cpu": "2660m",  # 2.67 vCPUs, specified in milliCPUs
+        # "memory": "22Gi",  # Rounded to 22 GiB for easier specification
+        "ephemeral-storage": "20Gi"
+    },
+    limits={
+        # "cpu": "2660m",  # Optional: set the same as requests if you want a fixed allocation
+        # "memory": "22Gi",
+        "ephemeral-storage": "20Gi"
+    },
+)
+
 # Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
@@ -349,8 +362,7 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 SBG_PREPROCESS_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 )
-preprocess_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
+preprocess_task = KubernetesPodOperator(
     retries=3,
     task_id="SBG_Preprocess",
     namespace=POD_NAMESPACE,
@@ -389,7 +401,7 @@ preprocess_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.2xlarge"],
+                                "values": ["r7i.xlarge"],
                             }
                         ]
                     }
@@ -412,8 +424,8 @@ preprocess_task = KubernetesJobOperator(
 SBG_ISOFIT_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
 )
-isofit_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
+isofit_task = KubernetesPodOperator(
+    # wait_until_job_complete=True,
     retries=3,
     task_id="SBG_Isofit",
     namespace=POD_NAMESPACE,
@@ -452,7 +464,7 @@ isofit_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.2xlarge"],
+                                "values": ["r7i.xlarge"],
                             }
                         ]
                     }
@@ -475,8 +487,8 @@ isofit_task = KubernetesJobOperator(
 SBG_RESAMPLE_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
 )
-resample_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
+resample_task = KubernetesPodOperator(
+    # wait_until_job_complete=True,=True,
     retries=3,
     task_id="SBG_Resample",
     namespace=POD_NAMESPACE,
@@ -515,7 +527,7 @@ resample_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.2xlarge"],
+                                "values": ["r7i.xlarge"],
                             }
                         ]
                     }
@@ -536,8 +548,8 @@ resample_task = KubernetesJobOperator(
 )
 
 SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
-reflect_correct_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
+reflect_correct_task = KubernetesPodOperator(
+    # wait_until_job_complete=True,=True,
     retries=3,
     task_id="SBG_Reflect",
     namespace=POD_NAMESPACE,
@@ -576,7 +588,7 @@ reflect_correct_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.2xlarge"],
+                                "values": ["r7i.xlarge"],
                             }
                         ]
                     }
@@ -599,8 +611,8 @@ reflect_correct_task = KubernetesJobOperator(
 SBG_FRCOVER_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.cwl"
 )
-frcover_task = KubernetesJobOperator(
-    wait_until_job_complete=True,
+frcover_task = KubernetesPodOperator(
+    # wait_until_job_complete=True,=True,
     retries=3,
     task_id="SBG_Frcover",
     namespace=POD_NAMESPACE,
@@ -639,7 +651,7 @@ frcover_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.2xlarge"],
+                                "values": ["r7i.xlarge"],
                             }
                         ]
                     }

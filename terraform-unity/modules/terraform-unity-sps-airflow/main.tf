@@ -61,21 +61,21 @@ resource "kubernetes_secret" "airflow_webserver" {
 
 resource "kubernetes_role" "airflow_pod_creator" {
   metadata {
-    name      = "airflow-pod-creator"
+    name      = "airflow-job-launcher-and-reader-role"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
 
-  rule {
-    api_groups = [""]
-    resources  = ["pods"]
-    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
-  }
+  # rule {
+  #   api_groups = [""]
+  #   resources  = ["pods"]
+  #   verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # }
 
-  rule {
-    api_groups = [""]
-    resources  = ["pods/log"]
-    verbs      = ["get", "list", "watch"]
-  }
+  # rule {
+  #   api_groups = [""]
+  #   resources  = ["pods/log"]
+  #   verbs      = ["get", "list", "watch"]
+  # }
 
   rule {
     api_groups = ["batch"]
@@ -86,7 +86,12 @@ resource "kubernetes_role" "airflow_pod_creator" {
   # Adding permissions to access job status
   rule {
     api_groups = ["batch"]
-    resources  = ["jobs/status"]
+    resources  = ["jobs/log", "jobs/status"]
+    verbs      = ["get", "list", "watch"]
+  }
+  rule {
+    api_groups = [""]
+    resources  = ["jobs/log"]
     verbs      = ["get", "list", "watch"]
   }
 }
@@ -104,6 +109,16 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
   subject {
     kind      = "ServiceAccount"
     name      = "airflow-worker"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "airflow-webserver"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "airflow-triggerer"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
 }
