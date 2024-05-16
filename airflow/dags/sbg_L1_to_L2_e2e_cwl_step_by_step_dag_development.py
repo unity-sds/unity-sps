@@ -7,7 +7,6 @@ import json
 import logging
 import os
 import shutil
-import uuid
 from datetime import datetime
 
 import boto3
@@ -363,15 +362,15 @@ SBG_PREPROCESS_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 )
 preprocess_task = KubernetesPodOperator(
-    retries=3,
+    retries=5,
     task_id="SBG_Preprocess",
     namespace=POD_NAMESPACE,
-    name="sbg-preprocess-pod-" + uuid.uuid4().hex[:12],
+    name="sbg-preprocess-pod",
     image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=14400,
+    startup_timeout_seconds=1200,
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -426,15 +425,15 @@ SBG_ISOFIT_CWL = (
 )
 isofit_task = KubernetesPodOperator(
     # wait_until_job_complete=True,
-    retries=3,
+    retries=5,
     task_id="SBG_Isofit",
     namespace=POD_NAMESPACE,
-    name="sbg-isofit-" + uuid.uuid4().hex[:12],
+    name="sbg-isofit",
     image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=14400,
+    startup_timeout_seconds=1200,
     arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -489,15 +488,15 @@ SBG_RESAMPLE_CWL = (
 )
 resample_task = KubernetesPodOperator(
     # wait_until_job_complete=True,=True,
-    retries=3,
+    retries=5,
     task_id="SBG_Resample",
     namespace=POD_NAMESPACE,
-    name="sbg-resample-pod-" + uuid.uuid4().hex[:12],
+    name="sbg-resample-pod",
     image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=14400,
+    startup_timeout_seconds=1200,
     arguments=[SBG_RESAMPLE_CWL, "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -550,15 +549,15 @@ resample_task = KubernetesPodOperator(
 SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
 reflect_correct_task = KubernetesPodOperator(
     # wait_until_job_complete=True,=True,
-    retries=3,
+    retries=5,
     task_id="SBG_Reflect",
     namespace=POD_NAMESPACE,
-    name="sbg-reflect-pod-" + uuid.uuid4().hex[:12],
+    name="sbg-reflect-pod",
     image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=14400,
+    startup_timeout_seconds=1200,
     arguments=[SBG_REFLECT_CORRECT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -613,15 +612,15 @@ SBG_FRCOVER_CWL = (
 )
 frcover_task = KubernetesPodOperator(
     # wait_until_job_complete=True,=True,
-    retries=3,
+    retries=5,
     task_id="SBG_Frcover",
     namespace=POD_NAMESPACE,
-    name="sbg-frcover-pod-" + uuid.uuid4().hex[:12],
+    name="sbg-frcover-pod",
     image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=14400,
+    startup_timeout_seconds=1200,
     arguments=[SBG_FRCOVER_CWL, "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -694,9 +693,6 @@ cleanup_task = PythonOperator(
     # weight_rule="upstream",
     dag=dag,
 )
-
-# setup_task >> preprocess_task >> isofit_task >> resample_task >> reflect_correct_task >>
-# frcover_task >> cleanup_task
 
 chain(
     setup_task,
