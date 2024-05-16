@@ -14,7 +14,7 @@ import boto3
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.job import KubernetesJobOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 
@@ -349,7 +349,8 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 SBG_PREPROCESS_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 )
-preprocess_task = KubernetesPodOperator(
+preprocess_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     task_id="SBG_Preprocess",
     namespace=POD_NAMESPACE,
     name="sbg-preprocess-pod-" + uuid.uuid4().hex,
@@ -360,6 +361,7 @@ preprocess_task = KubernetesPodOperator(
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
@@ -407,7 +409,8 @@ preprocess_task = KubernetesPodOperator(
 SBG_ISOFIT_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
 )
-isofit_task = KubernetesPodOperator(
+isofit_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     task_id="SBG_Isofit",
     namespace=POD_NAMESPACE,
     name="sbg-isofit-" + uuid.uuid4().hex,
@@ -418,6 +421,7 @@ isofit_task = KubernetesPodOperator(
     arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
@@ -465,7 +469,8 @@ isofit_task = KubernetesPodOperator(
 SBG_RESAMPLE_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
 )
-resample_task = KubernetesPodOperator(
+resample_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     task_id="SBG_Resample",
     namespace=POD_NAMESPACE,
     name="sbg-resample-pod-" + uuid.uuid4().hex,
@@ -476,6 +481,7 @@ resample_task = KubernetesPodOperator(
     arguments=[SBG_RESAMPLE_CWL, "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
@@ -521,7 +527,8 @@ resample_task = KubernetesPodOperator(
 )
 
 SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
-reflect_correct_task = KubernetesPodOperator(
+reflect_correct_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     task_id="SBG_Reflect",
     namespace=POD_NAMESPACE,
     name="sbg-reflect-pod-" + uuid.uuid4().hex,
@@ -532,6 +539,7 @@ reflect_correct_task = KubernetesPodOperator(
     arguments=[SBG_REFLECT_CORRECT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
@@ -579,7 +587,8 @@ reflect_correct_task = KubernetesPodOperator(
 SBG_FRCOVER_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.cwl"
 )
-frcover_task = KubernetesPodOperator(
+frcover_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     task_id="SBG_Frcover",
     namespace=POD_NAMESPACE,
     name="sbg-frcover-pod-" + uuid.uuid4().hex,
@@ -590,6 +599,7 @@ frcover_task = KubernetesPodOperator(
     arguments=[SBG_FRCOVER_CWL, "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {

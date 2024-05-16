@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.job import KubernetesJobOperator
 
 from airflow import DAG
 
@@ -25,7 +25,8 @@ dag = DAG(
 )
 
 # Define KubernetesPodOperator tasks with default affinity
-compute_task = KubernetesPodOperator(
+compute_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     namespace=POD_NAMESPACE,
     image="hello-world",
     name="compute-task",
@@ -34,6 +35,7 @@ compute_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -73,7 +75,8 @@ compute_task = KubernetesPodOperator(
     startup_timeout_seconds=900,
 )
 
-memory_task = KubernetesPodOperator(
+memory_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     namespace=POD_NAMESPACE,
     image="hello-world",
     name="memory-task",
@@ -82,6 +85,7 @@ memory_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -121,7 +125,8 @@ memory_task = KubernetesPodOperator(
     startup_timeout_seconds=900,
 )
 
-general_task = KubernetesPodOperator(
+general_task = KubernetesJobOperator(
+    wait_until_job_complete=True,
     namespace=POD_NAMESPACE,
     image="hello-world",
     name="general-task",
@@ -130,6 +135,7 @@ general_task = KubernetesPodOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
