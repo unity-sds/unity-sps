@@ -27,13 +27,14 @@ dag = DAG(
 # Define KubernetesPodOperator tasks with default affinity
 compute_task = KubernetesJobOperator(
     wait_until_job_complete=True,
-    namespace=POD_NAMESPACE,
-    image="hello-world",
-    name="compute-task",
+    retries=3,
     task_id="compute_task",
-    get_logs=True,
-    dag=dag,
-    is_delete_operator_pod=True,
+    namespace=POD_NAMESPACE,
+    name="compute-task",
+    image="hello-world",
+    in_cluster=True,
+    startup_timeout_seconds=900,
+    container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
@@ -72,7 +73,7 @@ compute_task = KubernetesJobOperator(
             },
         }
     },
-    startup_timeout_seconds=900,
+    dag=dag,
 )
 
 memory_task = KubernetesJobOperator(
