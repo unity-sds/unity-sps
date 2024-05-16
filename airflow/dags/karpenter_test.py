@@ -36,6 +36,7 @@ compute_task = KubernetesJobOperator(
     startup_timeout_seconds=900,
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    labels={"app": "kubernetes_tasks_with_affinity"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
@@ -71,7 +72,23 @@ compute_task = KubernetesJobOperator(
                     }
                 ]
             },
-        }
+        },
+        "podAntiAffinity": {
+            "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "labelSelector": {
+                        "matchExpressions": [
+                            {
+                                "key": "app",
+                                "operator": "In",
+                                "values": ["kubernetes_tasks_with_affinity"],
+                            },
+                        ]
+                    },
+                    "topologyKey": "kubernetes.io/hostname",
+                }
+            ]
+        },
     },
     dag=dag,
 )
@@ -86,6 +103,7 @@ memory_task = KubernetesJobOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    labels={"app": "kubernetes_tasks_with_affinity"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
@@ -121,7 +139,23 @@ memory_task = KubernetesJobOperator(
                     }
                 ]
             },
-        }
+        },
+        "podAntiAffinity": {
+            "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "labelSelector": {
+                        "matchExpressions": [
+                            {
+                                "key": "app",
+                                "operator": "In",
+                                "values": ["kubernetes_tasks_with_affinity"],
+                            },
+                        ]
+                    },
+                    "topologyKey": "kubernetes.io/hostname",
+                }
+            ]
+        },
     },
     startup_timeout_seconds=900,
 )
@@ -136,6 +170,7 @@ general_task = KubernetesJobOperator(
     dag=dag,
     is_delete_operator_pod=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    labels={"app": "kubernetes_tasks_with_affinity"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
@@ -171,7 +206,23 @@ general_task = KubernetesJobOperator(
                     }
                 ]
             },
-        }
+        },
+        "podAntiAffinity": {
+            "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "labelSelector": {
+                        "matchExpressions": [
+                            {
+                                "key": "app",
+                                "operator": "In",
+                                "values": ["kubernetes_tasks_with_affinity"],
+                            },
+                        ]
+                    },
+                    "topologyKey": "kubernetes.io/hostname",
+                }
+            ]
+        },
     },
     startup_timeout_seconds=900,
 )
