@@ -351,6 +351,7 @@ SBG_PREPROCESS_CWL = (
 )
 preprocess_task = KubernetesJobOperator(
     wait_until_job_complete=True,
+    retries=3,
     task_id="SBG_Preprocess",
     namespace=POD_NAMESPACE,
     name="sbg-preprocess-pod-" + uuid.uuid4().hex[:12],
@@ -361,6 +362,7 @@ preprocess_task = KubernetesJobOperator(
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
@@ -411,6 +413,7 @@ SBG_ISOFIT_CWL = (
 )
 isofit_task = KubernetesJobOperator(
     wait_until_job_complete=True,
+    retries=3,
     task_id="SBG_Isofit",
     namespace=POD_NAMESPACE,
     name="sbg-isofit-" + uuid.uuid4().hex[:12],
@@ -421,6 +424,7 @@ isofit_task = KubernetesJobOperator(
     arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
@@ -471,6 +475,7 @@ SBG_RESAMPLE_CWL = (
 )
 resample_task = KubernetesJobOperator(
     wait_until_job_complete=True,
+    retries=3,
     task_id="SBG_Resample",
     namespace=POD_NAMESPACE,
     name="sbg-resample-pod-" + uuid.uuid4().hex[:12],
@@ -481,6 +486,7 @@ resample_task = KubernetesJobOperator(
     arguments=[SBG_RESAMPLE_CWL, "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
@@ -529,6 +535,7 @@ resample_task = KubernetesJobOperator(
 SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
 reflect_correct_task = KubernetesJobOperator(
     wait_until_job_complete=True,
+    retries=3,
     task_id="SBG_Reflect",
     namespace=POD_NAMESPACE,
     name="sbg-reflect-pod-" + uuid.uuid4().hex[:12],
@@ -539,6 +546,7 @@ reflect_correct_task = KubernetesJobOperator(
     arguments=[SBG_REFLECT_CORRECT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
@@ -589,6 +597,7 @@ SBG_FRCOVER_CWL = (
 )
 frcover_task = KubernetesJobOperator(
     wait_until_job_complete=True,
+    retries=3,
     task_id="SBG_Frcover",
     namespace=POD_NAMESPACE,
     name="sbg-frcover-pod-" + uuid.uuid4().hex[:12],
@@ -599,6 +608,7 @@ frcover_task = KubernetesJobOperator(
     arguments=[SBG_FRCOVER_CWL, "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
