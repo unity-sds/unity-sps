@@ -360,6 +360,7 @@ preprocess_task = KubernetesPodOperator(
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -417,6 +418,7 @@ isofit_task = KubernetesPodOperator(
     arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -474,6 +476,7 @@ resample_task = KubernetesPodOperator(
     arguments=[SBG_RESAMPLE_CWL, "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -529,6 +532,7 @@ reflect_correct_task = KubernetesPodOperator(
     arguments=[SBG_REFLECT_CORRECT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -586,6 +590,7 @@ frcover_task = KubernetesPodOperator(
     arguments=[SBG_FRCOVER_CWL, "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity={
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
