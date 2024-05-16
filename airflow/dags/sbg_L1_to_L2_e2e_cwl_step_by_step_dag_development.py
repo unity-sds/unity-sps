@@ -389,7 +389,7 @@ preprocess_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.xlarge"],
+                                "values": ["r7i.2xlarge"],
                             }
                         ]
                     }
@@ -452,7 +452,7 @@ isofit_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.xlarge"],
+                                "values": ["r7i.2xlarge"],
                             }
                         ]
                     }
@@ -515,7 +515,7 @@ resample_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.xlarge"],
+                                "values": ["r7i.2xlarge"],
                             }
                         ]
                     }
@@ -576,7 +576,7 @@ reflect_correct_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.xlarge"],
+                                "values": ["r7i.2xlarge"],
                             }
                         ]
                     }
@@ -639,7 +639,7 @@ frcover_task = KubernetesJobOperator(
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.xlarge"],
+                                "values": ["r7i.2xlarge"],
                             }
                         ]
                     }
