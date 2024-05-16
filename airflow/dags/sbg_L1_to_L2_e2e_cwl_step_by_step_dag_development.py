@@ -20,10 +20,6 @@ from kubernetes.client import models as k8s
 
 from airflow import DAG
 
-# The Kubernetes Pod that executes the CWL-Docker container
-# Must use elevated privileges to start/stop the Docker engine
-POD_TEMPLATE_FILE = "/opt/airflow/dags/docker_cwl_pod.yaml"
-
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
 
@@ -61,11 +57,10 @@ dag = DAG(
     tags=["SBG", "Unity", "SPS", "NASA", "JPL"],
     catchup=False,
     schedule=None,
-    max_active_runs=2,
-    max_active_tasks=4,
+    max_active_runs=10,
+    max_active_tasks=30,
     default_args=dag_default_args,
     params={
-        # For step: PREPROCESS
         "preprocess_input_cmr_stac": Param(
             "https://cmr.earthdata.nasa.gov/search/granules.stac"
             "?collection_concept_id=C2408009906-LPCLOUD&"
@@ -73,7 +68,6 @@ dag = DAG(
             type="string",
         ),
         "preprocess_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L1B_PRE___1", type="string"),
-        # For step: ISOFIT
         "isofit_input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
         "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
@@ -113,7 +107,6 @@ dag = DAG(
             type="string",
         ),
         "isofit_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RFL___1", type="string"),
-        # For step: RESAMPLE
         "resample_input_stac": Param(
             "https://1gp9st60gd.execute-api.us-west-2.amazonaws.com/dev/am-uds-dapa/collections"
             "/urn:nasa:unity:unity"
@@ -123,7 +116,6 @@ dag = DAG(
             type="string",
         ),
         "resample_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1", type="string"),
-        # For step: REFLECT-CORRECT
         "reflect_correct_input_stac": Param(
             '{"type":"FeatureCollection","features":[{"type":"Feature","stac_version":"1.0.0",'
             '"id":"urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1'
@@ -251,7 +243,6 @@ dag = DAG(
             '"collection":"urn:nasa:unity:unity:dev:SBG-L1B_PRE___1"}]}'
         ),
         "reflect_correct_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1"),
-        # For step: FRCOVER
         "frcover_input_stac": Param(
             "https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity"
             ":dev:SBG-L2A_CORFL___1"
