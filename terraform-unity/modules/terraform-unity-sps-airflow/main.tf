@@ -64,6 +64,7 @@ resource "kubernetes_role" "airflow_pod_creator" {
     name      = "airflow-pod-creator"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
+
   rule {
     api_groups = [""]
     resources  = ["pods"]
@@ -73,6 +74,19 @@ resource "kubernetes_role" "airflow_pod_creator" {
   rule {
     api_groups = [""]
     resources  = ["pods/log"]
+    verbs      = ["get", "list", "watch"]
+  }
+
+  rule {
+    api_groups = ["batch"]
+    resources  = ["jobs"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  # Adding permissions to access job status
+  rule {
+    api_groups = ["batch"]
+    resources  = ["jobs/status"]
     verbs      = ["get", "list", "watch"]
   }
 }
@@ -93,6 +107,7 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
 }
+
 
 resource "random_password" "sps_db" {
   length           = 16
