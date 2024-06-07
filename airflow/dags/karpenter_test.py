@@ -1,8 +1,7 @@
 from datetime import datetime
 
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
-
 from airflow import DAG
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 
 POD_NAMESPACE = "airflow"
 
@@ -15,7 +14,7 @@ default_params = {"placeholder": 1}
 
 
 dag = DAG(
-    "kubernetes_tasks_with_affinity",
+    "karpenter_test",
     default_args=default_args,
     description="DAG with Kubernetes Pod Operators using affinity configurations.",
     schedule=None,
