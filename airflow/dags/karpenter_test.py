@@ -1,7 +1,8 @@
 from datetime import datetime
 
-from airflow import DAG
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+
+from airflow import DAG
 
 POD_NAMESPACE = "airflow"
 POD_LABEL = "karpenter_test_task"
