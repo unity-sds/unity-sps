@@ -65,7 +65,7 @@ dag_default_args = {
 INPUT_PROCESSING_LABELS = ["label1", "label2"]
 
 
-def get_affinity():
+def get_affinity(instance_type: list[str]):
     affinity = {
         "nodeAffinity": {
             "preferredDuringSchedulingIgnoredDuringExecution": [
@@ -89,7 +89,7 @@ def get_affinity():
                             {
                                 "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": ["r7i.xlarge"],
+                                "values": instance_type,
                             }
                         ]
                     }
@@ -431,7 +431,7 @@ preprocess_task = KubernetesPodOperator(
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     labels={"task": POD_LABEL},
-    affinity=get_affinity(),
+    affinity=get_affinity(instance_type=["r7i.xlarge"]),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -465,7 +465,7 @@ isofit_task = KubernetesPodOperator(
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     labels={"task": POD_LABEL},
-    affinity=get_affinity(),
+    affinity=get_affinity(instance_type=["c5.9xlarge"]),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -499,7 +499,7 @@ resample_task = KubernetesPodOperator(
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     labels={"task": POD_LABEL},
-    affinity=get_affinity(),
+    affinity=get_affinity(instance_type=["r7i.xlarge"]),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -531,7 +531,7 @@ reflect_correct_task = KubernetesPodOperator(
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     labels={"task": POD_LABEL},
-    affinity=get_affinity(),
+    affinity=get_affinity(instance_type=["r7i.xlarge"]),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -565,7 +565,7 @@ frcover_task = KubernetesPodOperator(
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     labels={"task": POD_LABEL},
-    affinity=get_affinity(),
+    affinity=get_affinity(instance_type=["r7i.xlarge"]),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
