@@ -10,17 +10,18 @@ import shutil
 from datetime import datetime
 
 import boto3
+from kubernetes.client import models as k8s
+
+from airflow import DAG
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
-from kubernetes.client import models as k8s
-
-from airflow import DAG
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
+POD_LABEL = "airflow_task"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -62,6 +63,58 @@ dag_default_args = {
 
 # common parameters
 INPUT_PROCESSING_LABELS = ["label1", "label2"]
+
+
+def get_affinity():
+    affinity = {
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.sh/capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                    {
+                        "matchExpressions": [
+                            {
+                                "key": "node.kubernetes.io/instance-type",
+                                "operator": "In",
+                                "values": ["r7i.xlarge"],
+                            }
+                        ]
+                    }
+                ]
+            },
+        },
+        "podAntiAffinity": {
+            "requiredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "labelSelector": {
+                        "matchExpressions": [
+                            {
+                                "key": "task",
+                                "operator": "In",
+                                "values": [POD_LABEL],
+                            },
+                        ]
+                    },
+                    "topologyKey": "kubernetes.io/hostname",
+                }
+            ]
+        },
+    }
+    return affinity
+
 
 dag = DAG(
     dag_id="sbg_L1_to_L2_e2e_cwl_step_by_step_dag_development",
@@ -362,7 +415,7 @@ SBG_PREPROCESS_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 )
 preprocess_task = KubernetesPodOperator(
-    retries=5,
+    retries=0,
     task_id="SBG_Preprocess",
     namespace=POD_NAMESPACE,
     name="sbg-preprocess-pod",
@@ -370,44 +423,15 @@ preprocess_task = KubernetesPodOperator(
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=1200,
+    startup_timeout_seconds=600,
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"task": POD_LABEL},
+    affinity=get_affinity(),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -425,7 +449,7 @@ SBG_ISOFIT_CWL = (
 )
 isofit_task = KubernetesPodOperator(
     # wait_until_job_complete=True,
-    retries=5,
+    retries=0,
     task_id="SBG_Isofit",
     namespace=POD_NAMESPACE,
     name="sbg-isofit",
@@ -433,44 +457,15 @@ isofit_task = KubernetesPodOperator(
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=1200,
+    startup_timeout_seconds=600,
     arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"task": POD_LABEL},
+    affinity=get_affinity(),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -488,7 +483,7 @@ SBG_RESAMPLE_CWL = (
 )
 resample_task = KubernetesPodOperator(
     # wait_until_job_complete=True,=True,
-    retries=5,
+    retries=0,
     task_id="SBG_Resample",
     namespace=POD_NAMESPACE,
     name="sbg-resample-pod",
@@ -496,44 +491,15 @@ resample_task = KubernetesPodOperator(
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=1200,
+    startup_timeout_seconds=600,
     arguments=[SBG_RESAMPLE_CWL, "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"task": POD_LABEL},
+    affinity=get_affinity(),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -549,7 +515,7 @@ resample_task = KubernetesPodOperator(
 SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
 reflect_correct_task = KubernetesPodOperator(
     # wait_until_job_complete=True,=True,
-    retries=5,
+    retries=0,
     task_id="SBG_Reflect",
     namespace=POD_NAMESPACE,
     name="sbg-reflect-pod",
@@ -557,44 +523,15 @@ reflect_correct_task = KubernetesPodOperator(
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=1200,
+    startup_timeout_seconds=600,
     arguments=[SBG_REFLECT_CORRECT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"task": POD_LABEL},
+    affinity=get_affinity(),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -612,7 +549,7 @@ SBG_FRCOVER_CWL = (
 )
 frcover_task = KubernetesPodOperator(
     # wait_until_job_complete=True,=True,
-    retries=5,
+    retries=0,
     task_id="SBG_Frcover",
     namespace=POD_NAMESPACE,
     name="sbg-frcover-pod",
@@ -620,44 +557,15 @@ frcover_task = KubernetesPodOperator(
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    startup_timeout_seconds=1200,
+    startup_timeout_seconds=600,
     arguments=[SBG_FRCOVER_CWL, "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"task": POD_LABEL},
+    affinity=get_affinity(),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
