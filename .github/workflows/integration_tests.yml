@@ -30,7 +30,6 @@ jobs:
         pip install -e ".[test]"
 
     - name: MCP Venue Dev - Integration tests
-      continue-on-error: true
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
       run: |
@@ -44,3 +43,22 @@ jobs:
     #     pytest -vv --gherkin-terminal-reporter \
     #     unity-test/system/integration \
     #     --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
+
+    - name: Check Integration Tests Results
+      if: always()
+      run: |
+        dev_status=${{ steps.mcp_venue_dev_integration_tests.outcome }}
+        # test_status=${{ steps.mcp_venue_test_integration_tests.outcome }}
+        echo "Dev Integration Tests: $dev_status"
+        # echo "Test Integration Tests: $test_status"
+        
+        if [ "$dev_status" != "success" ]; then
+          echo "MCP Venue Dev Integration Tests failed."
+          exit 1
+        fi
+
+        # Uncomment this block if MCP Venue Test Integration tests are re-enabled
+        # if [ "$test_status" != "success" ]; then
+        #   echo "MCP Venue Test Integration Tests failed."
+        #   exit 1
+        # fi
