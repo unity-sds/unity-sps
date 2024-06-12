@@ -1,9 +1,9 @@
 from datetime import datetime
 
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from unity_sps_utils import get_affinity
 
 from airflow import DAG
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 
 POD_NAMESPACE = "airflow"
 POD_LABEL = "karpenter_test_task"
