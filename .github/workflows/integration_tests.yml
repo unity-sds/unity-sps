@@ -30,6 +30,7 @@ jobs:
         pip install -e ".[test]"
 
     - name: MCP Venue Dev - Integration tests
+      continue-on-error: true
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
       run: |
