@@ -103,7 +103,7 @@ jobs:
         echo "Test Smoke Tests: $test_status"
         echo "Ops Smoke Tests: $ops_status"
         echo "SBG Dev Smoke Tests: $sbg_dev_status"
-        
+
         if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ] || [ "$ops_status" != "success" ] || [ "$sbg_dev_status" != "success" ]; then
           echo "One or more smoke tests failed."
           if [ "$dev_status" != "success" ]; then

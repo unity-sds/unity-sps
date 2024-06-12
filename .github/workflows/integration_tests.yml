@@ -51,7 +51,7 @@ jobs:
         # test_status=${{ steps.mcp_venue_test_integration_tests.outcome }}
         echo "Dev Integration Tests: $dev_status"
         # echo "Test Integration Tests: $test_status"
-        
+
         if [ "$dev_status" != "success" ]; then
           echo "MCP Venue Dev Integration Tests failed."
           exit 1
