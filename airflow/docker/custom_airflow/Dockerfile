@@ -3,4 +3,4 @@ FROM apache/airflow:2.9.1-python3.11
 RUN pip install cwltool==3.1.20240112164112
 RUN pip install boto3==1.34.89
 
-COPY ../plugins /opt/airflow/plugins
+COPY airflow/plugins /opt/airflow/plugins
