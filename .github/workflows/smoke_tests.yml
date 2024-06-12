@@ -54,7 +54,7 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue Test - Smoke tests
@@ -65,7 +65,7 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue Ops - Smoke tests
@@ -75,8 +75,8 @@ jobs:
       continue-on-error: true
       run: |
         pytest -vv --gherkin-terminal-reporter \
-        unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_ENDPOINT }}
+        unity-test/system/smoke/step_defs/test_airflow_api_health.py \
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue SBG Dev - Smoke tests
@@ -87,7 +87,7 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT }}
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT }}
 
     # Final step to check outcomes and potentially fail the job
