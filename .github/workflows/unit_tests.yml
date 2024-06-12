@@ -23,3 +23,5 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/unit
+      env:
+        PYTHONPATH: airflow/plugins
