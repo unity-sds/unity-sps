@@ -1,7 +1,6 @@
 name: Smoke Tests
 
 on:
-  push:
   schedule:
     - cron: "0 7 * * *" # Runs around midnight Pacific Time (UTC-7)
   workflow_dispatch:
