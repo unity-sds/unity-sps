@@ -269,7 +269,7 @@ variable "dag_catalog_repo" {
   })
   default = {
     url                 = "https://github.com/unity-sds/unity-sps.git"
-    ref                 = "2.0.2-beta.0"
+    ref                 = "develop"
     dags_directory_path = "airflow/dags"
   }
 }

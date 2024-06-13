@@ -1,6 +1,6 @@
 name: Unit Tests
 
-on: 
+on:
   pull_request:
   workflow_dispatch:
 jobs:
@@ -23,3 +23,5 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/unit
+      env:
+        PYTHONPATH: airflow/plugins

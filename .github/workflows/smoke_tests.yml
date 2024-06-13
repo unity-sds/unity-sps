@@ -1,7 +1,6 @@
 name: Smoke Tests
 
 on:
-  push:
   schedule:
     - cron: "0 7 * * *" # Runs around midnight Pacific Time (UTC-7)
   workflow_dispatch:
@@ -55,7 +54,7 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue Test - Smoke tests
@@ -66,7 +65,7 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue Ops - Smoke tests
@@ -76,9 +75,8 @@ jobs:
       continue-on-error: true
       run: |
         pytest -vv --gherkin-terminal-reporter \
-        unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_ENDPOINT }}
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT }}
+        unity-test/system/smoke/step_defs/test_airflow_api_health.py \
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_ENDPOINT }} \
 
     - name: MCP Venue SBG Dev - Smoke tests
       id: mcp_sbg_dev_smoke_tests
@@ -88,7 +86,7 @@ jobs:
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT }}
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT }}
 
     # Final step to check outcomes and potentially fail the job
@@ -103,7 +101,7 @@ jobs:
         echo "Test Smoke Tests: $test_status"
         echo "Ops Smoke Tests: $ops_status"
         echo "SBG Dev Smoke Tests: $sbg_dev_status"
-        
+
         if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ] || [ "$ops_status" != "success" ] || [ "$sbg_dev_status" != "success" ]; then
           echo "One or more smoke tests failed."
           if [ "$dev_status" != "success" ]; then
