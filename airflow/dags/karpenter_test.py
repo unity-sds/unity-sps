@@ -1,10 +1,12 @@
 from datetime import datetime
 
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from unity_sps_utils import get_affinity
 
 from airflow import DAG
 
 POD_NAMESPACE = "airflow"
+POD_LABEL = "karpenter_test_task"
 
 default_args = {
     "owner": "unity-sps",
@@ -15,7 +17,7 @@ default_params = {"placeholder": 1}
 
 
 dag = DAG(
-    "kubernetes_tasks_with_affinity",
+    "karpenter_test",
     default_args=default_args,
     description="DAG with Kubernetes Pod Operators using affinity configurations.",
     schedule=None,
@@ -26,147 +28,76 @@ dag = DAG(
 
 # Define KubernetesPodOperator tasks with default affinity
 compute_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    image="hello-world",
-    name="compute-task",
-    task_id="compute_task",
-    get_logs=True,
     dag=dag,
-    is_delete_operator_pod=True,
-    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-family",
-                                "operator": "In",
-                                "values": ["c6i", "c5"],
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": ["2", "4"],
-                            },
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    task_id="compute_task",
+    namespace=POD_NAMESPACE,
+    name="compute-task",
+    image="busybox",
+    cmds=["sleep"],
+    arguments=["60"],
+    retries=3,
+    in_cluster=True,
+    get_logs=True,
+    container_logs=True,
     startup_timeout_seconds=900,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    labels={"app": POD_LABEL},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_family=["c6i", "c5"],
+        instance_cpu=["2", "4"],
+        anti_affinity_label=POD_LABEL,
+    ),
 )
 
 memory_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    image="hello-world",
-    name="memory-task",
-    task_id="memory_task",
-    get_logs=True,
     dag=dag,
-    is_delete_operator_pod=True,
-    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-family",
-                                "operator": "In",
-                                "values": ["r6i", "r5"],
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": ["2", "4"],
-                            },
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    task_id="memory_task",
+    namespace=POD_NAMESPACE,
+    name="memory-task",
+    image="busybox",
+    cmds=["sleep"],
+    arguments=["60"],
+    retries=3,
+    in_cluster=True,
+    get_logs=True,
+    container_logs=True,
     startup_timeout_seconds=900,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    labels={"app": POD_LABEL},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_family=["r6i", "r5"],
+        instance_cpu=["2", "4"],
+        anti_affinity_label=POD_LABEL,
+    ),
 )
 
+
 general_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    image="hello-world",
-    name="general-task",
-    task_id="general_task",
-    get_logs=True,
     dag=dag,
-    is_delete_operator_pod=True,
-    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.k8s.aws/instance-family",
-                                "operator": "In",
-                                "values": ["m6i", "m5"],
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": ["2", "4"],
-                            },
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    task_id="general_task",
+    namespace=POD_NAMESPACE,
+    name="general-task",
+    image="busybox",
+    cmds=["sleep"],
+    arguments=["60"],
+    retries=3,
+    in_cluster=True,
+    get_logs=True,
+    container_logs=True,
     startup_timeout_seconds=900,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    labels={"app": POD_LABEL},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_family=["m6i", "m5"],
+        instance_cpu=["2", "4"],
+        anti_affinity_label=POD_LABEL,
+    ),
 )
 
 # Task sequence
