@@ -38,6 +38,20 @@ DEFAULT_CWL_WORKFLOW = (
 )
 DEFAULT_CWL_ARGUMENTS = {"message": "Hello Unity"}
 
+# Alternative arguments to execute SBG Pre-Process
+# DEFAULT_CWL_WORKFLOW = https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl
+# DEFAULT_CWL_ARGUMENTS = https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml
+# or:
+# DEFAULT_CWL_ARGUMENTS = {
+#     "input_processing_labels": ["label1", "label2"],
+#     "input_cmr_stac": "https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z",
+#     "input_unity_dapa_client": "40c2s0ulbhp9i0fmaph3su9jch",
+#     "input_unity_dapa_api": "https://d3vc8w9zcq658.cloudfront.net",
+#     "input_crid": "001",
+#     "output_collection_id": "urn:nasa:unity:unity:dev:SBG-L1B_PRE___1",
+#     "output_data_bucket": "sps-dev-ds-storage",
+# }
+
 # Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
