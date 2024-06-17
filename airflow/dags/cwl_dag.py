@@ -47,7 +47,7 @@ dag_default_args = {"owner": "unity-sps", "depends_on_past": False, "start_date"
 
 # The DAG
 dag = DAG(
-    dag_id="cwl-dag",
+    dag_id="cwl_dag",
     description="DAG to execute a generic CWL workflow",
     tags=["cwl", "unity-sps", "docker"],
     is_paused_upon_creation=False,
