@@ -129,8 +129,7 @@ cwl_task = KubernetesPodOperator(
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity=get_affinity(
         capacity_type=["spot"],
-        instance_family=["c6i", "c5"],
-        instance_cpu=["2", "4"],
+        instance_type=["r7i.xlarge"],
         anti_affinity_label=POD_LABEL,
     ),
 )
