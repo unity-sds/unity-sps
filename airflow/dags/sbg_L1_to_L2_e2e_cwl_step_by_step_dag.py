@@ -10,6 +10,7 @@ import shutil
 from datetime import datetime
 
 import boto3
+from airflow.models import Variable
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator
@@ -30,7 +31,8 @@ WORKING_DIR = "/scratch"
 # SSM keys for venue-dependent parameters
 UNITY_DAPA_CLIENT_ID = "/unity/shared-services/dapa/client-id"
 UNITY_DAPA_API_URL = "/unity/shared-services/dapa/api-url"
-UNITY_OUTPUT_DATA_BUCKET = "/unity/ds/data/bucket/primary-data-bucket"
+UNITY_IDENTIFIER = f"""{Variable.get("unity_deployment_name")}/{Variable.get("unity_venue")}-{Variable.get("unity_counter")}"""
+UNITY_OUTPUT_DATA_BUCKET = f"/unity/ds/data/bucket/{UNITY_IDENTIFIER}/primary-data-bucket"
 
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB

@@ -856,6 +856,18 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   })
 }
 
+resource "aws_ssm_parameter" "unity_output_data_bucket" {
+  name        = format("/unity/ds/data/bucket/%s/%s-%s/primary-data-bucket", var.deployment_name, var.venue, var.counter)
+  description = "The S3 Address of the primary DS data bucket."
+  type        = "String"
+  value       = "sps-${var.venue}-ds-storage"
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "endpoints-output_data_bucket")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
 resource "kubernetes_manifest" "karpenter_node_class" {
   manifest = {
     apiVersion = "karpenter.k8s.aws/v1beta1"
