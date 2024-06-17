@@ -3,9 +3,7 @@ Module containing common utilities for the Unity Science Processing System.
 """
 
 
-def get_affinity(
-    capacity_type: list[str], instance_family: list[str], instance_cpu: list[str], anti_affinity_label: str
-):
+def get_affinity(capacity_type: list[str], instance_type: list[str], anti_affinity_label: str):
 
     affinity = {
         "nodeAffinity": {
@@ -28,15 +26,10 @@ def get_affinity(
                     {
                         "matchExpressions": [
                             {
-                                "key": "karpenter.k8s.aws/instance-family",
+                                "key": "node.kubernetes.io/instance-type",
                                 "operator": "In",
-                                "values": instance_family,
-                            },
-                            {
-                                "key": "karpenter.k8s.aws/instance-cpu",
-                                "operator": "In",
-                                "values": instance_cpu,
-                            },
+                                "values": instance_type,
+                            }
                         ]
                     }
                 ]
