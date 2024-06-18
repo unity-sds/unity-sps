@@ -16,11 +16,13 @@ from airflow.operators.python import PythonOperator
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
+from unity_sps_utils import get_affinity
 
 from airflow import DAG
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
+POD_LABEL = "sbg_task"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -377,37 +379,12 @@ preprocess_task = KubernetesPodOperator(
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"app": POD_LABEL},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_type=["r7i.xlarge"],
+        anti_affinity_label=POD_LABEL,
+    ),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -440,37 +417,12 @@ isofit_task = KubernetesPodOperator(
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"app": POD_LABEL},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_type=["c5.9xlarge"],
+        anti_affinity_label=POD_LABEL,
+    ),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -503,37 +455,12 @@ resample_task = KubernetesPodOperator(
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"app": POD_LABEL},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_type=["r7i.xlarge"],
+        anti_affinity_label=POD_LABEL,
+    ),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -564,37 +491,12 @@ reflect_correct_task = KubernetesPodOperator(
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"app": POD_LABEL},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_type=["r7i.xlarge"],
+        anti_affinity_label=POD_LABEL,
+    ),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -627,37 +529,12 @@ frcover_task = KubernetesPodOperator(
     container_logs=True,
     node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity={
-        "nodeAffinity": {
-            "preferredDuringSchedulingIgnoredDuringExecution": [
-                {
-                    "weight": 1,
-                    "preference": {
-                        "matchExpressions": [
-                            {
-                                "key": "karpenter.sh/capacity-type",
-                                "operator": "In",
-                                "values": ["spot"],
-                            }
-                        ]
-                    },
-                }
-            ],
-            "requiredDuringSchedulingIgnoredDuringExecution": {
-                "nodeSelectorTerms": [
-                    {
-                        "matchExpressions": [
-                            {
-                                "key": "node.kubernetes.io/instance-type",
-                                "operator": "In",
-                                "values": ["r7i.xlarge"],
-                            }
-                        ]
-                    }
-                ]
-            },
-        }
-    },
+    labels={"app": POD_LABEL},
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        instance_type=["r7i.xlarge"],
+        anti_affinity_label=POD_LABEL,
+    ),
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
