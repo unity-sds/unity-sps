@@ -45,8 +45,7 @@ compute_task = KubernetesPodOperator(
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity=get_affinity(
         capacity_type=["spot"],
-        instance_family=["c6i", "c5"],
-        instance_cpu=["2", "4"],
+        instance_type=["c6i.xlarge", "c5.xlarge"],
         anti_affinity_label=POD_LABEL,
     ),
 )
@@ -69,8 +68,7 @@ memory_task = KubernetesPodOperator(
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity=get_affinity(
         capacity_type=["spot"],
-        instance_family=["r6i", "r5"],
-        instance_cpu=["2", "4"],
+        instance_type=["r6i.xlarge", "r5.xlarge"],
         anti_affinity_label=POD_LABEL,
     ),
 )
@@ -94,8 +92,7 @@ general_task = KubernetesPodOperator(
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity=get_affinity(
         capacity_type=["spot"],
-        instance_family=["m6i", "m5"],
-        instance_cpu=["2", "4"],
+        instance_type=["m6i.xlarge", "m5.xlarge"],
         anti_affinity_label=POD_LABEL,
     ),
 )
