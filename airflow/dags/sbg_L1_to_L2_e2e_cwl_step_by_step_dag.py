@@ -7,7 +7,6 @@ import json
 import logging
 import os
 import shutil
-import uuid
 from datetime import datetime
 
 import boto3
@@ -19,10 +18,6 @@ from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 
 from airflow import DAG
-
-# The Kubernetes Pod that executes the CWL-Docker container
-# Must use elevated privileges to start/stop the Docker engine
-POD_TEMPLATE_FILE = "/opt/airflow/dags/docker_cwl_pod.yaml"
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
@@ -39,11 +34,23 @@ UNITY_OUTPUT_DATA_BUCKET = "/unity/ds/data/bucket/primary-data-bucket"
 
 # Resources needed by each Task
 # EC2 r6a.xlarge	4vCPU	32GiB
+# CONTAINER_RESOURCES = {
+#     # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
+#     # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
+#     "limits": {"ephemeral-storage": "20Gi"},
+#     "requests": {"ephemeral-storage": "20Gi"},
+# }
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-    # limits={"memory": "16G", "cpu": "2000m", "ephemeral-storage": "50G"},
-    # requests={"memory": "8G", "cpu": "1000m", "ephemeral-storage": "25G"},
-    limits={"ephemeral-storage": "50G"},
-    requests={"ephemeral-storage": "50G"},
+    requests={
+        # "cpu": "2660m",  # 2.67 vCPUs, specified in milliCPUs
+        # "memory": "22Gi",  # Rounded to 22 GiB for easier specification
+        "ephemeral-storage": "20Gi"
+    },
+    limits={
+        # "cpu": "2660m",  # Optional: set the same as requests if you want a fixed allocation
+        # "memory": "22Gi",
+        "ephemeral-storage": "20Gi"
+    },
 )
 
 # Default DAG configuration
@@ -57,17 +64,15 @@ dag_default_args = {
 INPUT_PROCESSING_LABELS = ["label1", "label2"]
 
 dag = DAG(
-    dag_id="sbg-l1-to-l2-e2e-cwl-step-by-step-dag",
+    dag_id="sbg_L1_to_L2_e2e_cwl_step_by_step_dag",
     description="SBG L1 to L2 End-To-End Workflow as step-by-step CWL DAGs",
     tags=["SBG", "Unity", "SPS", "NASA", "JPL"],
-    is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=2,
-    max_active_tasks=4,
+    max_active_runs=10,
+    max_active_tasks=30,
     default_args=dag_default_args,
     params={
-        # For step: PREPROCESS
         "preprocess_input_cmr_stac": Param(
             "https://cmr.earthdata.nasa.gov/search/granules.stac"
             "?collection_concept_id=C2408009906-LPCLOUD&"
@@ -75,7 +80,6 @@ dag = DAG(
             type="string",
         ),
         "preprocess_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L1B_PRE___1", type="string"),
-        # For step: ISOFIT
         "isofit_input_cmr_collection_name": Param("C2408009906-LPCLOUD", type="string"),
         "isofit_input_cmr_search_start_time": Param("2024-01-03T13:19:36.000Z", type="string"),
         "isofit_input_cmr_search_stop_time": Param("2024-01-03T13:19:36.000Z", type="string"),
@@ -115,7 +119,6 @@ dag = DAG(
             type="string",
         ),
         "isofit_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RFL___1", type="string"),
-        # For step: RESAMPLE
         "resample_input_stac": Param(
             "https://1gp9st60gd.execute-api.us-west-2.amazonaws.com/dev/am-uds-dapa/collections"
             "/urn:nasa:unity:unity"
@@ -125,7 +128,6 @@ dag = DAG(
             type="string",
         ),
         "resample_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1", type="string"),
-        # For step: REFLECT-CORRECT
         "reflect_correct_input_stac": Param(
             '{"type":"FeatureCollection","features":[{"type":"Feature","stac_version":"1.0.0",'
             '"id":"urn:nasa:unity:unity:dev:SBG-L2A_RSRFL___1'
@@ -253,7 +255,6 @@ dag = DAG(
             '"collection":"urn:nasa:unity:unity:dev:SBG-L1B_PRE___1"}]}'
         ),
         "reflect_correct_output_collection_id": Param("urn:nasa:unity:unity:dev:SBG-L2A_CORFL___1"),
-        # For step: FRCOVER
         "frcover_input_stac": Param(
             "https://d3vc8w9zcq658.cloudfront.net/am-uds-dapa/collections/urn:nasa:unity:unity"
             ":dev:SBG-L2A_CORFL___1"
@@ -316,12 +317,6 @@ def setup(ti=None, **context):
         "input_cmr_search_start_time": context["params"]["isofit_input_cmr_search_start_time"],
         "input_cmr_search_stop_time": context["params"]["isofit_input_cmr_search_stop_time"],
         "input_stac": context["params"]["isofit_input_stac"],
-        # Output file from "preprocess" step. Path must be relative to the /scratch directory
-        # shared across tasks.
-        # "input_stac": {
-        #    "class": "File",
-        #    "path": "stage_out_results.txt"
-        # },
         "input_aux_stac": context["params"]["isofit_input_aux_stac"],
         "output_collection_id": context["params"]["isofit_output_collection_id"],
         "unity_stac_auth": context["params"]["unity_stac_auth"],
@@ -363,24 +358,56 @@ def setup(ti=None, **context):
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
-# Step: PREPROCESS
 SBG_PREPROCESS_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess" "-workflow.cwl"
+    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 )
 preprocess_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Preprocess",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
+    retries=5,
     task_id="SBG_Preprocess",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-preprocess-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
+    namespace=POD_NAMESPACE,
+    name="sbg-preprocess-pod",
+    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    service_account_name="airflow-worker",
+    in_cluster=True,
+    get_logs=True,
+    startup_timeout_seconds=1200,
     arguments=[SBG_PREPROCESS_CWL, "{{ti.xcom_pull(task_ids='Setup', key='preprocess_args')}}"],
+    container_security_context={"privileged": True},
+    container_resources=CONTAINER_RESOURCES,
+    container_logs=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity={
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.sh/capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                    {
+                        "matchExpressions": [
+                            {
+                                "key": "node.kubernetes.io/instance-type",
+                                "operator": "In",
+                                "values": ["r7i.xlarge"],
+                            }
+                        ]
+                    }
+                ]
+            },
+        }
+    },
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -393,26 +420,57 @@ preprocess_task = KubernetesPodOperator(
     dag=dag,
 )
 
-# Step: ISOFIT
 SBG_ISOFIT_CWL = (
     "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/isofit/sbg-isofit-workflow.cwl"
 )
-# SBG_ISOFIT_CWL = "https://raw.githubusercontent.com/LucaCinquini/sbg-workflows/devel/isofit/sbg
-# -isofit-workflow.cwl"
 isofit_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Isofit",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
+    # wait_until_job_complete=True,
+    retries=5,
     task_id="SBG_Isofit",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-isofit-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
-    container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
+    namespace=POD_NAMESPACE,
+    name="sbg-isofit",
+    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    service_account_name="airflow-worker",
+    in_cluster=True,
+    get_logs=True,
+    startup_timeout_seconds=1200,
     arguments=[SBG_ISOFIT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='isofit_args')}}"],
+    container_security_context={"privileged": True},
+    container_resources=CONTAINER_RESOURCES,
+    container_logs=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity={
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.sh/capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                    {
+                        "matchExpressions": [
+                            {
+                                "key": "node.kubernetes.io/instance-type",
+                                "operator": "In",
+                                "values": ["r7i.xlarge"],
+                            }
+                        ]
+                    }
+                ]
+            },
+        }
+    },
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -425,31 +483,57 @@ isofit_task = KubernetesPodOperator(
     dag=dag,
 )
 
-# Step: RESAMPLE
 SBG_RESAMPLE_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample" "-workflow.cwl"
+    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample/sbg-resample-workflow.cwl"
 )
-# SBG_RESAMPLE_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/resample
-# /sbg-resample-workflow
-# .dev.yml"
 resample_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Resample",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
+    # wait_until_job_complete=True,=True,
+    retries=5,
     task_id="SBG_Resample",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-resample-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
+    namespace=POD_NAMESPACE,
+    name="sbg-resample-pod",
+    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    service_account_name="airflow-worker",
+    in_cluster=True,
+    get_logs=True,
+    startup_timeout_seconds=1200,
+    arguments=[SBG_RESAMPLE_CWL, "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}"],
+    container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
-    arguments=[
-        SBG_RESAMPLE_CWL,
-        # SBG_RESAMPLE_ARGS
-        "{{ti.xcom_pull(task_ids='Setup', key='resample_args')}}",
-    ],
+    container_logs=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity={
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.sh/capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                    {
+                        "matchExpressions": [
+                            {
+                                "key": "node.kubernetes.io/instance-type",
+                                "operator": "In",
+                                "values": ["r7i.xlarge"],
+                            }
+                        ]
+                    }
+                ]
+            },
+        }
+    },
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -462,29 +546,55 @@ resample_task = KubernetesPodOperator(
     dag=dag,
 )
 
-# Step: REFLECT-CORRECT
-SBG_REFLECT_CORRECT_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect"
-    "-correct-workflow.cwl"
-)
+SBG_REFLECT_CORRECT_CWL = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/reflect-correct/sbg-reflect-correct-workflow.cwl"
 reflect_correct_task = KubernetesPodOperator(
+    # wait_until_job_complete=True,=True,
+    retries=5,
+    task_id="SBG_Reflect",
     namespace=POD_NAMESPACE,
-    name="SBG_Reflect_Correct",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
+    name="sbg-reflect-pod",
+    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    service_account_name="airflow-worker",
+    in_cluster=True,
     get_logs=True,
-    task_id="SBG_Reflect_Correct",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-reflect-correct-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
+    startup_timeout_seconds=1200,
+    arguments=[SBG_REFLECT_CORRECT_CWL, "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}"],
+    container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
-    arguments=[
-        SBG_REFLECT_CORRECT_CWL,
-        # SBG_REFLECT_CORRECT_ARGS
-        "{{ti.xcom_pull(task_ids='Setup', key='reflect_correct_args')}}",
-    ],
+    container_logs=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity={
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.sh/capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                    {
+                        "matchExpressions": [
+                            {
+                                "key": "node.kubernetes.io/instance-type",
+                                "operator": "In",
+                                "values": ["r7i.xlarge"],
+                            }
+                        ]
+                    }
+                ]
+            },
+        }
+    },
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -497,31 +607,57 @@ reflect_correct_task = KubernetesPodOperator(
     dag=dag,
 )
 
-# Step: FRCOVER
 SBG_FRCOVER_CWL = (
-    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow" ".cwl"
+    "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg-frcover-workflow.cwl"
 )
-# SBG_FRCOVER_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/frcover/sbg
-# -frcover-workflow.dev
-# .yml"
 frcover_task = KubernetesPodOperator(
-    namespace=POD_NAMESPACE,
-    name="SBG_Frcover",
-    on_finish_action="delete_succeeded_pod",
-    hostnetwork=False,
-    startup_timeout_seconds=14400,
-    get_logs=True,
+    # wait_until_job_complete=True,=True,
+    retries=5,
     task_id="SBG_Frcover",
-    full_pod_spec=k8s.V1Pod(k8s.V1ObjectMeta(name="sbg-frcover-pod-" + uuid.uuid4().hex)),
-    pod_template_file=POD_TEMPLATE_FILE,
+    namespace=POD_NAMESPACE,
+    name="sbg-frcover-pod",
+    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    service_account_name="airflow-worker",
+    in_cluster=True,
+    get_logs=True,
+    startup_timeout_seconds=1200,
+    arguments=[SBG_FRCOVER_CWL, "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}"],
+    container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
-    priority_weight=1,
-    weight_rule="upstream",
-    arguments=[
-        SBG_FRCOVER_CWL,
-        # SBG_FRCOVER_ARGS
-        "{{ti.xcom_pull(task_ids='Setup', key='frcover_args')}}",
-    ],
+    container_logs=True,
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    affinity={
+        "nodeAffinity": {
+            "preferredDuringSchedulingIgnoredDuringExecution": [
+                {
+                    "weight": 1,
+                    "preference": {
+                        "matchExpressions": [
+                            {
+                                "key": "karpenter.sh/capacity-type",
+                                "operator": "In",
+                                "values": ["spot"],
+                            }
+                        ]
+                    },
+                }
+            ],
+            "requiredDuringSchedulingIgnoredDuringExecution": {
+                "nodeSelectorTerms": [
+                    {
+                        "matchExpressions": [
+                            {
+                                "key": "node.kubernetes.io/instance-type",
+                                "operator": "In",
+                                "values": ["r7i.xlarge"],
+                            }
+                        ]
+                    }
+                ]
+            },
+        }
+    },
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
     ],
@@ -557,9 +693,6 @@ cleanup_task = PythonOperator(
     # weight_rule="upstream",
     dag=dag,
 )
-
-# setup_task >> preprocess_task >> isofit_task >> resample_task >> reflect_correct_task >>
-# frcover_task >> cleanup_task
 
 chain(
     setup_task,

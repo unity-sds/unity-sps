@@ -278,6 +278,12 @@ env:
 
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
+  - name: AIRFLOW__CORE__DAGS_FOLDER
+    value: "/opt/airflow/dags"
+  - name: AIRFLOW__CORE__PLUGINS_FOLDER
+    value: "/opt/airflow/plugins"
+  - name: AIRFLOW__CORE__LAZY_LOAD_PLUGINS
+    value: "False"
   - name: AIRFLOW__API__AUTH_BACKENDS
     value: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
   - name: AIRFLOW__CORE__PARALLELISM
