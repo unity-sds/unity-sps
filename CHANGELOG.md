@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-# [Unity Release 24.2] - 2024-06-30
+# [Unity Release 24.2] - 2024-06-25
 
 ## Tag
 
@@ -23,10 +23,8 @@ SPS Version 2.1.0
   - [[New Feature]: Implement the WPS-T methods execute() and status()](https://github.com/unity-sds/unity-sps/issues/61)
   - [[New Feature]: Implement the WPS-T methods register() and unregister()](https://github.com/unity-sds/unity-sps/issues/62)
   - [[New Feature]: Move the DAGs folder to a shared Persistent Volume](https://github.com/unity-sds/unity-sps/issues/63)
-  - [[New Feature]: Automatically generate a DAG that can execute an arbitrary CWL workflow](https://github.com/unity-sds/unity-sps/issues/92)
 - EPIC: `Airflow Scaling Improvements`
   - [[New Feature]: Implement autoscaling of Kubernetes worker nodes](https://github.com/unity-sds/unity-sps/issues/45)
-  - [[New Feature]: Concurrent Execution of N SBG end-to-end workflows](https://github.com/unity-sds/unity-sps/issues/64)
   - [[New Feature]: Nightly test for SBG end-to-end workflow](https://github.com/unity-sds/unity-sps/issues/65)
   - [[Dependency]: PSE to provide analysis of resources needed by each SBG Task](https://github.com/unity-sds/unity-sps/issues/68)
   - [[New Feature] Only use MCP Golden AMIs](https://github.com/unity-sds/unity-sps/issues/75)
@@ -47,8 +45,8 @@ SPS Version 2.1.0
 - [SPS EKS Cluster Provisioning with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-eks-cluster-provisioning-with-terraform)
 - [SPS Airflow Deployment with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-deployment-with-terraform)
 - [SPS Airflow Custom Docker Image Build Instructions](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
-- ADD: Using the OGC Processes API
-- ADD: Tutorial: registering and executing an Application Package
+- [Tutorial: Register, Execute, and Unregister a Process using the OGC API - Processes](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/developers-guide/tutorial-register-execute-and-unregister-a-process-using-the-ogc-api-processes)
+- [Tutorial: registering and executing an Application Package](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
 
 --------
 
