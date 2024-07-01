@@ -90,11 +90,11 @@ variable "docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.0.2-beta.0"
+      tag  = "2.1.0"
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.2-beta.0"
+      tag  = "2.1.0"
     }
     git_sync = {
       name = "registry.k8s.io/git-sync/git-sync"

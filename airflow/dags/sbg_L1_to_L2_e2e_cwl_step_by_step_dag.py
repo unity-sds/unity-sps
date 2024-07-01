@@ -23,6 +23,7 @@ from airflow import DAG
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
 POD_LABEL = "sbg_task"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -368,7 +369,7 @@ preprocess_task = KubernetesPodOperator(
     task_id="SBG_Preprocess",
     namespace=POD_NAMESPACE,
     name="sbg-preprocess-pod",
-    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    image=SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
@@ -406,7 +407,7 @@ isofit_task = KubernetesPodOperator(
     task_id="SBG_Isofit",
     namespace=POD_NAMESPACE,
     name="sbg-isofit",
-    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    image=SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
@@ -444,7 +445,7 @@ resample_task = KubernetesPodOperator(
     task_id="SBG_Resample",
     namespace=POD_NAMESPACE,
     name="sbg-resample-pod",
-    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    image=SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
@@ -480,7 +481,7 @@ reflect_correct_task = KubernetesPodOperator(
     task_id="SBG_Reflect",
     namespace=POD_NAMESPACE,
     name="sbg-reflect-pod",
-    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    image=SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
@@ -518,7 +519,7 @@ frcover_task = KubernetesPodOperator(
     task_id="SBG_Frcover",
     namespace=POD_NAMESPACE,
     name="sbg-frcover-pod",
-    image="ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.0.0",
+    image=SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
