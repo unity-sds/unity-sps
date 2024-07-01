@@ -1,3 +1,13 @@
+terraform {
+  backend "s3" {
+    # full path to Terraform state file:
+    # s3://<bucket>/<key>
+    bucket = ""
+    key = ""
+    region = "us-west-2"
+  }
+}
+
 module "unity-sps-airflow" {
   source                     = "./modules/terraform-unity-sps-airflow"
   project                    = var.project
