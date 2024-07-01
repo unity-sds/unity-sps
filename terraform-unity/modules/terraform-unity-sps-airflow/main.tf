@@ -16,27 +16,25 @@ resource "helm_release" "keda" {
   namespace  = kubernetes_namespace.keda.metadata[0].name
 }
 
-resource "null_resource" "remove_finalizers" {
+resource "null_resource" "remove_keda_finalizers" {
   # https://keda.sh/docs/deploy/#uninstall
   provisioner "local-exec" {
     when    = destroy
     command = <<EOT
       set -x
-      for i in $(kubectl get scaledobjects -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].kind}{"/"}{.items[*].metadata.name}{"\n"}'); do
-          if [[ "$i" != "/" ]]; then
-              kubectl patch $i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
-          fi
+      export KUBECONFIG=${self.triggers.kubeconfig_filepath}
+      for i in $(kubectl get scaledobjects -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].metadata.name}{"\n"}'); do
+          kubectl patch ScaledObject/$i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
       done
-      for i in $(kubectl get scaledjobs -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].kind}{"/"}{.items[*].metadata.name}{"\n"}'); do
-          if [[ "$i" != "/" ]]; then
-              kubectl patch $i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
-          fi
+      for i in $(kubectl get scaledjobs -n ${self.triggers.airflow_namespace} -o jsonpath='{.items[*].metadata.name}{"\n"}'); do
+          kubectl patch ScaledJob/$i -n ${self.triggers.airflow_namespace} -p '{"metadata":{"finalizers":null}}' --type=merge
       done
     EOT
   }
   triggers = {
-    always_run        = timestamp()
-    airflow_namespace = kubernetes_namespace.airflow.metadata[0].name
+    always_run          = timestamp()
+    kubeconfig_filepath = var.kubeconfig_filepath
+    airflow_namespace   = kubernetes_namespace.airflow.metadata[0].name
   }
   depends_on = [helm_release.keda, helm_release.airflow]
 }
@@ -56,27 +54,45 @@ resource "kubernetes_secret" "airflow_webserver" {
     name      = "airflow-webserver-secret"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-
   data = {
     "webserver-secret-key" = random_id.airflow_webserver_secret.hex
   }
 }
 
+# TODO evaluate if this role is still necessary
 resource "kubernetes_role" "airflow_pod_creator" {
   metadata {
-    name      = "airflow-pod-creator"
+    name      = "airflow-job-launcher-and-reader-role"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
 
+  # rule {
+  #   api_groups = [""]
+  #   resources  = ["pods"]
+  #   verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  # }
+
+  # rule {
+  #   api_groups = [""]
+  #   resources  = ["pods/log"]
+  #   verbs      = ["get", "list", "watch"]
+  # }
+
   rule {
-    api_groups = [""]
-    resources  = ["pods"]
+    api_groups = ["batch"]
+    resources  = ["jobs"]
     verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
   }
 
+  # Adding permissions to access job status
+  rule {
+    api_groups = ["batch"]
+    resources  = ["jobs/log", "jobs/status"]
+    verbs      = ["get", "list", "watch"]
+  }
   rule {
     api_groups = [""]
-    resources  = ["pods/log"]
+    resources  = ["jobs/log"]
     verbs      = ["get", "list", "watch"]
   }
 }
@@ -86,48 +102,57 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
     name      = "airflow-pod-creator-binding"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-
   role_ref {
     api_group = "rbac.authorization.k8s.io"
     kind      = "Role"
     name      = kubernetes_role.airflow_pod_creator.metadata[0].name
   }
-
   subject {
     kind      = "ServiceAccount"
     name      = "airflow-worker"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "airflow-webserver"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = "airflow-triggerer"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
 }
 
-resource "random_password" "airflow_db" {
+
+resource "random_password" "sps_db" {
   length           = 16
   special          = true
   override_special = "_!%^"
 }
 
-resource "aws_secretsmanager_secret" "airflow_db" {
-  name                    = format(local.resource_name_prefix, "AirflowDb")
+resource "aws_secretsmanager_secret" "sps_db" {
+  name                    = format(local.resource_name_prefix, "db")
   recovery_window_in_days = 0
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowDb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
-resource "aws_secretsmanager_secret_version" "airflow_db" {
-  secret_id     = aws_secretsmanager_secret.airflow_db.id
-  secret_string = random_password.airflow_db.result
+resource "aws_secretsmanager_secret_version" "sps_db" {
+  secret_id     = aws_secretsmanager_secret.sps_db.id
+  secret_string = random_password.sps_db.result
 }
 
-resource "aws_db_subnet_group" "airflow_db" {
-  name       = format(local.resource_name_prefix, "airflowdb")
+resource "aws_db_subnet_group" "sps_db" {
+  name       = format(local.resource_name_prefix, "db")
   subnet_ids = jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "airflowdb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
@@ -141,14 +166,6 @@ resource "aws_security_group" "rds_sg" {
     Component = "airflow"
     Stack     = "airflow"
   })
-}
-
-data "aws_security_group" "default" {
-  vpc_id = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-  filter {
-    name   = "tag:Name"
-    values = ["${format(local.resource_name_prefix, "eks")}-node"]
-  }
 }
 
 # Ingress rule for RDS security group to allow PostgreSQL traffic from EKS nodes security group
@@ -171,25 +188,25 @@ resource "aws_security_group_rule" "eks_egress_to_rds" {
   source_security_group_id = aws_security_group.rds_sg.id
 }
 
-resource "aws_db_instance" "airflow_db" {
-  identifier             = format(local.resource_name_prefix, "airflowdb")
+resource "aws_db_instance" "sps_db" {
+  identifier             = format(local.resource_name_prefix, "spsdb")
   allocated_storage      = 100
   storage_type           = "gp3"
   engine                 = "postgres"
   engine_version         = "13.13"
   instance_class         = "db.m5d.large"
-  db_name                = "airflow_db"
-  username               = "airflow_db_user"
-  password               = aws_secretsmanager_secret_version.airflow_db.secret_string
+  db_name                = "sps_db"
+  username               = "sps_db_user"
+  password               = aws_secretsmanager_secret_version.sps_db.secret_string
   parameter_group_name   = "default.postgres13"
   skip_final_snapshot    = true
   publicly_accessible    = false
-  db_subnet_group_name   = aws_db_subnet_group.airflow_db.name
+  db_subnet_group_name   = aws_db_subnet_group.sps_db.name
   vpc_security_group_ids = [aws_security_group.rds_sg.id]
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "airflowdb")
-    Component = "airflow"
-    Stack     = "airflow"
+    Name      = format(local.resource_name_prefix, "db")
+    Component = "processing"
+    Stack     = "processing"
   })
 }
 
@@ -199,8 +216,8 @@ resource "kubernetes_secret" "airflow_metadata" {
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   data = {
-    kedaConnection = "postgresql://${aws_db_instance.airflow_db.username}:${urlencode(aws_secretsmanager_secret_version.airflow_db.secret_string)}@${aws_db_instance.airflow_db.endpoint}/${aws_db_instance.airflow_db.db_name}"
-    connection     = "postgresql://${aws_db_instance.airflow_db.username}:${urlencode(aws_secretsmanager_secret_version.airflow_db.secret_string)}@${aws_db_instance.airflow_db.endpoint}/${aws_db_instance.airflow_db.db_name}"
+    kedaConnection = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
+    connection     = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
   }
 }
 
@@ -276,65 +293,6 @@ resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {
   policy_arn = aws_iam_policy.airflow_worker_policy.arn
 }
 
-resource "aws_efs_file_system" "airflow_kpo" {
-  creation_token = format(local.resource_name_prefix, "AirflowKpoEfs")
-
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowKpoEfs")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
-resource "aws_security_group" "airflow_kpo_efs" {
-  name        = format(local.resource_name_prefix, "AirflowKpoEfsSg")
-  description = "Security group for the EFS used in Airflow Kubernetes Pod Operators"
-  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
-
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowKpoEfsSg")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
-resource "aws_security_group_rule" "airflow_kpo_efs" {
-  type              = "ingress"
-  from_port         = 2049
-  to_port           = 2049
-  protocol          = "tcp"
-  security_group_id = aws_security_group.airflow_kpo_efs.id
-  cidr_blocks       = [data.aws_vpc.cluster_vpc.cidr_block] # VPC CIDR to allow entire VPC. Adjust as necessary.
-}
-
-resource "aws_efs_mount_target" "airflow_kpo" {
-  for_each        = nonsensitive(toset(jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]))
-  file_system_id  = aws_efs_file_system.airflow_kpo.id
-  subnet_id       = each.value
-  security_groups = [aws_security_group.airflow_kpo_efs.id]
-}
-
-resource "aws_efs_access_point" "airflow_kpo" {
-  file_system_id = aws_efs_file_system.airflow_kpo.id
-  posix_user {
-    gid = 0
-    uid = 50000
-  }
-  root_directory {
-    path = "/efs"
-    creation_info {
-      owner_gid   = 0
-      owner_uid   = 50000
-      permissions = "0755"
-    }
-  }
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowKpoEfsAp")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
 # https://github.com/hashicorp/terraform-provider-kubernetes/issues/864
 resource "kubernetes_storage_class" "efs" {
   metadata {
@@ -344,11 +302,96 @@ resource "kubernetes_storage_class" "efs" {
   storage_provisioner = "efs.csi.aws.com"
 }
 
-resource "kubernetes_persistent_volume" "efs_pv" {
-  metadata {
-    name = "kpo-efs"
-  }
+resource "aws_efs_file_system" "airflow" {
+  creation_token = format(local.resource_name_prefix, "AirflowEfs")
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowEfs")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
 
+resource "aws_security_group" "airflow_efs" {
+  name        = format(local.resource_name_prefix, "AirflowEfsSg")
+  description = "Security group for the EFS used in Airflow"
+  vpc_id      = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowEfsSg")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_security_group_rule" "airflow_efs" {
+  type              = "ingress"
+  from_port         = 2049
+  to_port           = 2049
+  protocol          = "tcp"
+  security_group_id = aws_security_group.airflow_efs.id
+  cidr_blocks       = [data.aws_vpc.cluster_vpc.cidr_block] # VPC CIDR to allow entire VPC. Adjust as necessary.
+}
+
+resource "aws_efs_mount_target" "airflow" {
+  for_each        = nonsensitive(toset(jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"]))
+  file_system_id  = aws_efs_file_system.airflow.id
+  subnet_id       = each.value
+  security_groups = [aws_security_group.airflow_efs.id]
+}
+
+resource "aws_efs_access_point" "airflow_kpo" {
+  file_system_id = aws_efs_file_system.airflow.id
+  posix_user {
+    gid = 0
+    uid = 50000
+  }
+  root_directory {
+    path = "/airflow-kpo"
+    creation_info {
+      owner_gid   = 0
+      owner_uid   = 50000
+      permissions = "0755"
+    }
+  }
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "EfsAirflowKpoAp")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_efs_access_point" "airflow_deployed_dags" {
+  file_system_id = aws_efs_file_system.airflow.id
+  posix_user {
+    gid = 0
+    uid = 50000
+  }
+  root_directory {
+    path = "/deployed-dags"
+    creation_info {
+      owner_gid   = 0
+      owner_uid   = 50000
+      permissions = "0755"
+    }
+  }
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowDeployedDagsAp")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "time_sleep" "wait_for_efs_mount_target_dns_propagation" {
+  # AWS recommends that you wait 90 seconds after creating a mount target before
+  # you mount your file system. This wait lets the DNS records propagate fully
+  # in the AWS Region where the file system is.
+  depends_on      = [aws_efs_mount_target.airflow]
+  create_duration = "120s"
+}
+
+resource "kubernetes_persistent_volume" "airflow_kpo" {
+  metadata {
+    name = "airflow-kpo"
+  }
   spec {
     capacity = {
       storage = "5Gi"
@@ -358,16 +401,16 @@ resource "kubernetes_persistent_volume" "efs_pv" {
     persistent_volume_source {
       csi {
         driver        = "efs.csi.aws.com"
-        volume_handle = "${aws_efs_file_system.airflow_kpo.id}::${aws_efs_access_point.airflow_kpo.id}"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_kpo.id}"
       }
     }
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
 
-resource "kubernetes_persistent_volume_claim" "efs_pvc" {
+resource "kubernetes_persistent_volume_claim" "airflow_kpo" {
   metadata {
-    name      = "kpo-efs"
+    name      = "airflow-kpo"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
   spec {
@@ -377,7 +420,44 @@ resource "kubernetes_persistent_volume_claim" "efs_pvc" {
         storage = "5Gi"
       }
     }
-    volume_name        = "kpo-efs"
+    volume_name        = kubernetes_persistent_volume.airflow_kpo.metadata[0].name
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
+resource "kubernetes_persistent_volume" "airflow_deployed_dags" {
+  metadata {
+    name = "airflow-deployed-dags"
+  }
+  spec {
+    capacity = {
+      storage = "5Gi"
+    }
+    access_modes                     = ["ReadWriteMany"]
+    persistent_volume_reclaim_policy = "Retain"
+    persistent_volume_source {
+      csi {
+        driver        = "efs.csi.aws.com"
+        volume_handle = "${aws_efs_file_system.airflow.id}::${aws_efs_access_point.airflow_deployed_dags.id}"
+      }
+    }
+    storage_class_name = kubernetes_storage_class.efs.metadata[0].name
+  }
+}
+
+resource "kubernetes_persistent_volume_claim" "airflow_deployed_dags" {
+  metadata {
+    name      = "airflow-deployed-dags"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    access_modes = ["ReadWriteMany"]
+    resources {
+      requests = {
+        storage = "5Gi"
+      }
+    }
+    volume_name        = kubernetes_persistent_volume.airflow_deployed_dags.metadata[0].name
     storage_class_name = kubernetes_storage_class.efs.metadata[0].name
   }
 }
@@ -397,18 +477,80 @@ resource "helm_release" "airflow" {
       webserver_secret_name    = "airflow-webserver-secret"
       airflow_logs_s3_location = "s3://${aws_s3_bucket.airflow_logs.id}"
       airflow_worker_role_arn  = aws_iam_role.airflow_worker_role.arn
-      workers_pvc_name         = kubernetes_persistent_volume_claim.efs_pvc.metadata[0].name
+      workers_pvc_name         = kubernetes_persistent_volume_claim.airflow_kpo.metadata[0].name
+      dags_pvc_name            = kubernetes_persistent_volume_claim.airflow_deployed_dags.metadata[0].name
       webserver_instance_name  = format(local.resource_name_prefix, "airflow")
       webserver_navbar_color   = local.airflow_webserver_navbar_color
       service_area             = upper(var.service_area)
       service_area_version     = var.release
+      unity_project            = var.project
+      unity_venue              = var.venue
+      unity_deployment_name    = var.deployment_name
+      unity_counter            = var.counter
+      unity_cluster_name       = data.aws_eks_cluster.cluster.name
     })
   ]
   set_sensitive {
     name  = "webserver.defaultUser.password"
     value = var.airflow_webserver_password
   }
-  depends_on = [aws_db_instance.airflow_db, helm_release.keda, kubernetes_secret.airflow_metadata, kubernetes_secret.airflow_webserver]
+  timeout = 1200
+  depends_on = [
+    aws_db_instance.sps_db,
+    helm_release.keda,
+    kubernetes_secret.airflow_metadata,
+    kubernetes_secret.airflow_webserver,
+    kubernetes_manifest.karpenter_node_pools,
+  ]
+}
+
+resource "kubernetes_deployment" "redis" {
+  metadata {
+    name      = "ogc-processes-api-redis-lock"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "redis"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app = "redis"
+        }
+      }
+      spec {
+        container {
+          name  = "redis"
+          image = "${var.docker_images.redis.name}:${var.docker_images.redis.tag}"
+          port {
+            container_port = 6379
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "redis" {
+  metadata {
+    name      = "ogc-processes-api-redis-lock"
+    namespace = kubernetes_namespace.airflow.metadata[0].name
+  }
+  spec {
+    selector = {
+      app = "redis"
+    }
+    port {
+      name        = "redis"
+      port        = 6379
+      target_port = 6379
+    }
+    type = "ClusterIP"
+  }
 }
 
 resource "kubernetes_deployment" "ogc_processes_api" {
@@ -416,7 +558,6 @@ resource "kubernetes_deployment" "ogc_processes_api" {
     name      = "ogc-processes-api"
     namespace = kubernetes_namespace.airflow.metadata[0].name
   }
-
   spec {
     replicas = 2
     selector {
@@ -431,16 +572,130 @@ resource "kubernetes_deployment" "ogc_processes_api" {
         }
       }
       spec {
+        affinity {
+          node_affinity {
+            required_during_scheduling_ignored_during_execution {
+              node_selector_term {
+                match_expressions {
+                  key      = "karpenter.sh/nodepool"
+                  operator = "In"
+                  values   = ["airflow-core-components"]
+                }
+                match_expressions {
+                  key      = "karpenter.sh/capacity-type"
+                  operator = "In"
+                  values   = ["on-demand"]
+                }
+                match_expressions {
+                  key      = "karpenter.k8s.aws/instance-family"
+                  operator = "In"
+                  values   = ["c6i", "c5"]
+                }
+                match_expressions {
+                  key      = "karpenter.k8s.aws/instance-cpu"
+                  operator = "In"
+                  values   = ["2", "4"]
+                }
+              }
+            }
+          }
+        }
         container {
-          image = "${var.docker_images.ogc_processes_api.name}:${var.docker_images.ogc_processes_api.tag}"
           name  = "ogc-processes-api"
+          image = "${var.docker_images.ogc_processes_api.name}:${var.docker_images.ogc_processes_api.tag}"
           port {
             container_port = 80
           }
+          env {
+            name  = "DB_URL"
+            value = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
+          }
+          env {
+            name  = "REDIS_HOST"
+            value = "${kubernetes_service.redis.metadata[0].name}.${kubernetes_namespace.airflow.metadata[0].name}.svc.cluster.local"
+
+          }
+          env {
+            name  = "REDIS_PORT"
+            value = 6379
+          }
+          env {
+            name  = "EMS_API_URL"
+            value = "http://airflow-webserver.${kubernetes_namespace.airflow.metadata[0].name}.svc.cluster.local:8080/api/v1"
+          }
+          env {
+            name  = "EMS_API_AUTH_USERNAME"
+            value = local.airflow_webserver_username
+          }
+          env {
+            name  = "EMS_API_AUTH_PASSWORD"
+            value = var.airflow_webserver_password
+          }
+          env {
+            name  = "DAG_CATALOG_DIRECTORY"
+            value = "/dag-catalog/current/${var.dag_catalog_repo.dags_directory_path}"
+          }
+          env {
+            name  = "DEPLOYED_DAGS_DIRECTORY"
+            value = "/deployed-dags"
+          }
+          volume_mount {
+            name       = "dag-catalog"
+            mount_path = "/dag-catalog"
+          }
+          volume_mount {
+            name       = "deployed-dags"
+            mount_path = "/deployed-dags"
+          }
+        }
+        container {
+          name  = "git-sync"
+          image = "${var.docker_images.git_sync.name}:${var.docker_images.git_sync.tag}"
+          env {
+            name  = "GITSYNC_REPO"
+            value = var.dag_catalog_repo.url
+          }
+          env {
+            name  = "GITSYNC_REF"
+            value = var.dag_catalog_repo.ref
+          }
+          env {
+            name  = "GITSYNC_ROOT"
+            value = "/dag-catalog"
+          }
+          env {
+            name  = "GITSYNC_LINK"
+            value = "current"
+          }
+          env {
+            name  = "GITSYNC_PERIOD"
+            value = "3s"
+          }
+          env {
+            name  = "GITSYNC_ONE_TIME"
+            value = "false"
+          }
+          volume_mount {
+            name       = "dag-catalog"
+            mount_path = "/dag-catalog"
+          }
+        }
+        volume {
+          name = "deployed-dags"
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.airflow_deployed_dags.metadata[0].name
+          }
+        }
+        volume {
+          name = "dag-catalog"
+          empty_dir {}
         }
       }
     }
   }
+  depends_on = [
+    kubernetes_manifest.karpenter_node_pools
+  ]
 }
 
 resource "kubernetes_service" "ogc_processes_api" {
@@ -472,7 +727,6 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
     }
   }
-
   spec {
     ingress_class_name = "alb"
     rule {
@@ -520,7 +774,6 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
     }
   }
-
   spec {
     ingress_class_name = "alb"
     rule {
@@ -579,6 +832,18 @@ resource "aws_ssm_parameter" "airflow_logs" {
   })
 }
 
+resource "aws_ssm_parameter" "ogc_processes_ui_url" {
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "ui_url"])))
+  description = "The URL of the OGC Proccesses API Docs UI."
+  type        = "String"
+  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
 resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
@@ -591,6 +856,115 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   })
 }
 
+resource "kubernetes_manifest" "karpenter_node_class" {
+  manifest = {
+    apiVersion = "karpenter.k8s.aws/v1beta1"
+    kind       = "EC2NodeClass"
+    metadata = {
+      name = "default"
+    }
+    spec = {
+      amiFamily = "AL2"
+      amiSelectorTerms = [{
+        id = data.aws_ami.al2_eks_optimized.image_id
+      }]
+      userData = <<-EOT
+        #!/bin/bash
+        echo "Starting pre-bootstrap configurations..."
+        # Custom script to enable IP forwarding
+        sudo sed -i 's/^net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/sysctl.conf && sudo sysctl -p |true
+        echo "Pre-bootstrap configurations applied."
+      EOT
+      role     = data.aws_iam_role.cluster_iam_role.name
+      subnetSelectorTerms = [for subnet_id in jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"] : {
+        id = subnet_id
+      }]
+      securityGroupSelectorTerms = [{
+        tags = {
+          "kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}" = "owned"
+          "Name"                                                       = "${data.aws_eks_cluster.cluster.name}-node"
+        }
+      }]
+      blockDeviceMappings = [for bd in tolist(data.aws_ami.al2_eks_optimized.block_device_mappings) : {
+        deviceName = bd.device_name
+        ebs = {
+          volumeSize          = "${bd.ebs.volume_size}Gi"
+          volumeType          = bd.ebs.volume_type
+          encrypted           = bd.ebs.encrypted
+          deleteOnTermination = bd.ebs.delete_on_termination
+        }
+      }]
+      metadataOptions = {
+        httpEndpoint            = "enabled"
+        httpPutResponseHopLimit = 3
+      }
+      tags = merge(local.common_tags, {
+        "karpenter.sh/discovery" = data.aws_eks_cluster.cluster.name
+        Name                     = format(local.resource_name_prefix, "karpenter")
+        Component                = "karpenter"
+        Stack                    = "karpenter"
+      })
+    }
+  }
+}
+
+resource "null_resource" "remove_node_class_finalizers" {
+  # https://github.com/aws/karpenter-provider-aws/issues/5079
+  provisioner "local-exec" {
+    when    = destroy
+    command = <<EOT
+      set -x
+      export KUBECONFIG=${self.triggers.kubeconfig_filepath}
+      kubectl patch ec2nodeclass ${self.triggers.node_class_name} -p '{"metadata":{"finalizers":null}}' --type=merge
+    EOT
+  }
+  triggers = {
+    kubeconfig_filepath = var.kubeconfig_filepath
+    node_class_name     = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+  }
+  depends_on = [
+    kubernetes_manifest.karpenter_node_pools
+  ]
+}
+
+resource "kubernetes_manifest" "karpenter_node_pools" {
+  for_each = var.karpenter_node_pools
+
+  manifest = {
+    apiVersion = "karpenter.sh/v1beta1"
+    kind       = "NodePool"
+    metadata = {
+      name = each.key
+    }
+    spec = {
+      template = {
+        spec = {
+          nodeClassRef = {
+            name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+          }
+          requirements = [for req in each.value.requirements : {
+            key      = req.key
+            operator = req.operator
+            values   = req.values
+          }]
+        }
+      }
+      limits = {
+        cpu    = each.value.limits.cpu
+        memory = each.value.limits.memory
+      }
+      disruption = {
+        consolidationPolicy = each.value.disruption.consolidationPolicy
+        consolidateAfter    = each.value.disruption.consolidateAfter
+      }
+    }
+  }
+  depends_on = [
+    kubernetes_manifest.karpenter_node_class
+  ]
+}
+
+
 resource "null_resource" "build_lambda_packages" {
   triggers = {
     lambda_dir_sha1 = sha1(
@@ -599,7 +973,6 @@ resource "null_resource" "build_lambda_packages" {
       )
     )
   }
-
   provisioner "local-exec" {
     command = <<EOF
       set -ex
@@ -711,12 +1084,10 @@ resource "aws_sns_topic_policy" "s3_isl_event_topic_policy" {
 
 resource "aws_s3_bucket_notification" "isl_bucket_notification" {
   bucket = aws_s3_bucket.inbound_staging_location.id
-
   topic {
     topic_arn = aws_sns_topic.s3_isl_event_topic.arn
     events    = ["s3:ObjectCreated:*"]
   }
-
   depends_on = [
     aws_sns_topic_policy.s3_isl_event_topic_policy,
     aws_sqs_queue_policy.s3_isl_event_queue_policy
@@ -735,7 +1106,6 @@ resource "aws_sqs_queue" "s3_isl_event_queue" {
 
 resource "aws_sqs_queue_policy" "s3_isl_event_queue_policy" {
   queue_url = aws_sqs_queue.s3_isl_event_queue.id
-
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -775,9 +1145,7 @@ resource "aws_s3_object" "lambdas" {
   bucket = aws_s3_bucket.lambdas.id
   key    = format("%s.zip", format(local.resource_name_prefix, "AirflowDAGTrigger"))
   # TODO remove handcoding of lambda file name
-  source = "${abspath(path.module)}/../../../lambda/deployment_packages/airflow-dag-trigger_package.zip"
-  # TODO may have to rely on output from docker build or something... getting inconsistent plan issue
-  # etag   = filemd5("${abspath(path.module)}/../../../../lambda_deployment_packages/airflow_dag_trigger_package.zip")
+  source     = "${abspath(path.module)}/../../../lambda/deployment_packages/airflow-dag-trigger_package.zip"
   depends_on = [null_resource.build_lambda_packages]
 }
 
@@ -795,7 +1163,6 @@ resource "aws_ssm_parameter" "airflow_dag_trigger_lambda_package" {
 
 resource "aws_iam_role" "lambda" {
   name = format(local.resource_name_prefix, "LambdaExecutionRole")
-
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -855,7 +1222,6 @@ resource "aws_lambda_function" "airflow_dag_trigger" {
       AIRFLOW_BASE_API_ENDPOINT = aws_ssm_parameter.airflow_api_url.value
       AIRFLOW_USERNAME          = "admin"
       AIRFLOW_PASSWORD          = var.airflow_webserver_password
-
     }
   }
   tags = merge(local.common_tags, {

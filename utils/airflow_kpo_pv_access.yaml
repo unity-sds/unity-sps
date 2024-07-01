@@ -1,0 +1,46 @@
+# Pod that mounts the Kubernetes Persistent Volume "airflow-kpo"
+# where the DAGs write shared data so that the location can be inspected
+#
+# To use:
+# kubectl create -f airflow_kpo_pv_access.yaml -n airflow
+# kubectl get pods -n airflow --> identify the pod id
+# kubectl exec -it <airflow-kpo-pv-access-67f65c99b7-9nhgb>  -n airflow sh
+# ls -l /scratch
+#
+# To delete the pod:
+# kubectl delete deployment airflow-kpo-pv-access -n airflow
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-kpo-pv-access
+  namespace: airflow
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: busybox
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - name: busybx
+        image: busybox
+        command: ["sleep"]
+        args: ["infinity"]
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1024Mi
+          requests:
+            cpu: 100m
+            memory: 150Mi
+        volumeMounts:
+        - name: efs
+          mountPath: "/scratch"
+      volumes:
+      - name: efs
+        persistentVolumeClaim:
+          claimName: airflow-kpo

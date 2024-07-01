@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+# [Unity Release 24.2] - 2024-07-01
+
+## Tag
+
+SPS Version 2.1.0
+
+## Repositories
+
+- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.1.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.1.0>
+
+## Epics
+
+- EPIC: `Airflow/WPS-T Integration`
+  - [[New Feature]: Implement the WPS-T methods execute() and status()](https://github.com/unity-sds/unity-sps/issues/61)
+  - [[New Feature]: Implement the WPS-T methods register() and unregister()](https://github.com/unity-sds/unity-sps/issues/62)
+  - [[New Feature]: Move the DAGs folder to a shared Persistent Volume](https://github.com/unity-sds/unity-sps/issues/63)
+- EPIC: `Airflow Scaling Improvements`
+  - [[New Feature]: Implement autoscaling of Kubernetes worker nodes](https://github.com/unity-sds/unity-sps/issues/45)
+  - [[New Feature]: Nightly test for SBG end-to-end workflow](https://github.com/unity-sds/unity-sps/issues/65)
+  - [[Dependency]: PSE to provide analysis of resources needed by each SBG Task](https://github.com/unity-sds/unity-sps/issues/68)
+  - [[New Feature] Only use MCP Golden AMIs](https://github.com/unity-sds/unity-sps/issues/75)
+  - [[New Feature] Configure multiple pools of Kubernetes nodes](https://github.com/unity-sds/unity-sps/issues/76)
+  - [[New Feature] Retrieve venue-dependent parameters from SSM](https://github.com/unity-sds/unity-sps/issues/77)
+  - [[New Feature] Store deployment parameters as AIRFLOW variables](https://github.com/unity-sds/unity-sps/issues/85)
+  - [[New Feature] Enable Airflow "plugins" folder](https://github.com/unity-sds/unity-sps/issues/96)
+  - [[Task] Add TESTING.md file to SPS repo](https://github.com/unity-sds/unity-sps/issues/99)
+- EPIC: `SPS Infrastructure`
+  - [[New Feature] Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
+
+## Docker Containers
+
+- ghcr.io/unity-sds/unity-sps/sps-airflow:2.1.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.1.0
+
+## Documentation
+
+- [SPS Deployment with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-terraform)
+- [Interacting with an Existing SPS Deployment](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/interacting-with-an-existing-sps-deployment)
+- [SPS Airflow Custom Docker Image Build Instructions](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
+- [Tutorial: Register, Execute, and Unregister a Process using the OGC API - Processes](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/developers-guide/tutorial-register-execute-and-unregister-a-process-using-the-ogc-api-processes)
+- [Tutorial: Register and Execute a CWL Workflow](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
+
 --------
 
 # [Unity Release 24.1] - 2024-04-09

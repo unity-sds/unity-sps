@@ -58,5 +58,46 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+    git_sync = object({
+      name = string
+      tag  = string
+    })
+    redis = object({
+      name = string
+      tag  = string
+    })
+  })
+}
+
+variable "mcp_ami_owner_id" {
+  description = "The ID of the MCP AMIs"
+  type        = string
+}
+
+variable "karpenter_node_pools" {
+  description = "Configuration for Karpenter node pools"
+  type = map(object({
+    requirements : list(object({
+      key : string
+      operator : string
+      values : list(string)
+    }))
+    limits : object({
+      cpu : string
+      memory : string
+    })
+    disruption : object({
+      consolidationPolicy : string
+      consolidateAfter : string
+    })
+  }))
+}
+
+variable "dag_catalog_repo" {
+  description = "Git repository that stores the catalog of Airflow DAGs."
+  type = object({
+    url                 = string
+    ref                 = string
+    dags_directory_path = string
   })
 }

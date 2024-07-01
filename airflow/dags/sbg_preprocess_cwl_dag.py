@@ -8,7 +8,7 @@ from datetime import datetime
 
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
 from airflow import DAG
@@ -98,7 +98,7 @@ cwl_task = KubernetesPodOperator(
     volumes=[
         k8s.V1Volume(
             name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="kpo-efs"),
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
         )
     ],
 )
