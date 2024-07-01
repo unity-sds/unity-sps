@@ -8,15 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unity Release 24.2] - 2024-07-01
 
-## Tag
+## Tags
 
-SPS Version 2.1.0
+- SPS Version 2.1.0
+- OGC API Version 1.0.0
+- OGC Python Client Version 1.0.0
 
 ## Repositories
 
 - unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.1.0>
-- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.1.0>
-- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/1.0.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/1.0.0>
 
 ## Epics
 
