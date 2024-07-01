@@ -33,7 +33,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "2.0.2-beta.0"
+  default     = "24.2"
 }
 
 variable "kubeconfig_filepath" {
@@ -94,7 +94,7 @@ variable "docker_images" {
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.1.0"
+      tag  = "1.0.0"
     }
     git_sync = {
       name = "registry.k8s.io/git-sync/git-sync"
