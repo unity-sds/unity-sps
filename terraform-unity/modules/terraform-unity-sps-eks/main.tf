@@ -1,9 +1,10 @@
+# S3 backend
 terraform {
   backend "s3" {
     # full path to Terraform state file:
     # s3://<bucket>/<key>
     bucket = ""
-    key = ""
+    key    = ""
     region = "us-west-2"
   }
 }
