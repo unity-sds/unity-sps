@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
-# [Unity Release 24.2] - 2024-06-25
+# [Unity Release 24.2] - 2024-07-01
 
 ## Tag
 
@@ -33,6 +33,8 @@ SPS Version 2.1.0
   - [[New Feature] Store deployment parameters as AIRFLOW variables](https://github.com/unity-sds/unity-sps/issues/85)
   - [[New Feature] Enable Airflow "plugins" folder](https://github.com/unity-sds/unity-sps/issues/96)
   - [[Task] Add TESTING.md file to SPS repo](https://github.com/unity-sds/unity-sps/issues/99)
+- EPIC: `SPS Infrastructure`
+  - [[New Feature] Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
 
 ## Docker Containers
 
@@ -42,11 +44,11 @@ SPS Version 2.1.0
 
 ## Documentation
 
-- [SPS EKS Cluster Provisioning with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-eks-cluster-provisioning-with-terraform)
-- [SPS Airflow Deployment with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-deployment-with-terraform)
+- [SPS Deployment with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-terraform)
+- [Interacting with an Existing SPS Deployment](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/interacting-with-an-existing-sps-deployment)
 - [SPS Airflow Custom Docker Image Build Instructions](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
 - [Tutorial: Register, Execute, and Unregister a Process using the OGC API - Processes](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/developers-guide/tutorial-register-execute-and-unregister-a-process-using-the-ogc-api-processes)
-- [Tutorial: registering and executing an Application Package](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
+- [Tutorial: Register and Execute a CWL Workflow](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
 
 --------
 
