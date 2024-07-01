@@ -16,6 +16,7 @@ SPS Version 2.1.0
 
 - unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.1.0>
 - unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.1.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python>
 
 ## Epics
 

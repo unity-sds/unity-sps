@@ -33,7 +33,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "2.0.2-beta.0"
+  default     = "2.1.0"
 }
 
 variable "kubeconfig_filepath" {

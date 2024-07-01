@@ -186,7 +186,7 @@ No resources.
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_mcp_ami_owner_id"></a> [mcp\_ami\_owner\_id](#input\_mcp\_ami\_owner\_id) | The owner ID of the MCP AMIs | `string` | `"794625662971"` | no |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS. | `string` | `"unity"` | no |
-| <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | `"2.0.2-beta.0"` | no |
+| <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | `"2.1.0"` | no |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed. | `string` | `"sps"` | no |
 | <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the resources will be deployed. | `string` | n/a | yes |
 
