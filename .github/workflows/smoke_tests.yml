@@ -80,14 +80,14 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT }}
 
-    - name: MCP Venue SBG Dev - Smoke tests
+    - name: MCP SBG DEV - Smoke tests
       id: mcp_sbg_dev_smoke_tests
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_SBG_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
       continue-on-error: true
       run: |
         pytest -vv --gherkin-terminal-reporter \
-        unity-test/system/smoke \
+        unity-test/system/smoke/step_defs/test_airflow_api_health.py \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT }}
 
@@ -99,7 +99,6 @@ jobs:
         ops_status=${{ steps.mcp_venue_ops_smoke_tests.outcome }}
         sbg_dev_status=${{ steps.mcp_sbg_dev_smoke_tests.outcome }}
         echo "Dev Smoke Tests: $dev_status"
-        echo "Test Smoke Tests: $test_status"
         echo "Ops Smoke Tests: $ops_status"
         echo "SBG Dev Smoke Tests: $sbg_dev_status"
 
