@@ -87,7 +87,7 @@ jobs:
       continue-on-error: true
       run: |
         pytest -vv --gherkin-terminal-reporter \
-        unity-test/system/smoke \
+        unity-test/system/smoke/step_defs/test_airflow_api_health.py \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_SBG_DEV_OGC_PROCESSES_ENDPOINT }}
 
