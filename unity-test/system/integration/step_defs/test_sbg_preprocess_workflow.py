@@ -19,7 +19,7 @@ def api_up_and_running():
     pass
 
 
-@when("When I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
+@when("I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
 def trigger_dag(airflow_api_url, airflow_api_auth):
     # leaving out dag_run_id to avoid conflicts with previous runs- we can always fetch it from the response
     # unsure about contents of the conf argument, though
