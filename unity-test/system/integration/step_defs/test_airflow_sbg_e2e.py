@@ -24,7 +24,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth):
     # leaving out dag_run_id to avoid conflicts with previous runs- we can always fetch it from the response
     # unsure about contents of the conf argument, though
     response = requests.post(
-        f"{airflow_api_url}/api/v1/dags/sbg-l1-to-l2-e2e-cwl-step-by-step-dag/dagRuns",
+        f"{airflow_api_url}/api/v1/dags/sbg_preprocess_cwl_dag/dagRuns",
         auth=airflow_api_auth,
         json={"note": "Triggered by unity-test suite"},
     )
