@@ -80,7 +80,6 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_ENDPOINT }}
 
-
     - name: MCP Venue SBG Dev - Smoke tests
       id: mcp_sbg_dev_smoke_tests
       env:
