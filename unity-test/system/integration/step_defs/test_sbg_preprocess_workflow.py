@@ -6,11 +6,11 @@ from pytest_bdd import given, scenario, then, when
 
 FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
-FEATURE_FILE = FEATURES_DIR / "airflow_sbg_e2e.feature"
+FEATURE_FILE: Path = FEATURES_DIR / "sbg_preprocess_workflow.feature"
 
 
-@scenario(FEATURE_FILE, "Check SBG E2E processing")
-def test_check_sbg_e2e():
+@scenario(FEATURE_FILE, "Check SBG Preprocess Workflow")
+def test_check_sbg_preprocess_workflow():
     pass
 
 
@@ -19,7 +19,7 @@ def api_up_and_running():
     pass
 
 
-@when("I trigger a dag run for the SBG E2E dag", target_fixture="response")
+@when("When I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
 def trigger_dag(airflow_api_url, airflow_api_auth):
     # leaving out dag_run_id to avoid conflicts with previous runs- we can always fetch it from the response
     # unsure about contents of the conf argument, though

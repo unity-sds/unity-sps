@@ -60,7 +60,7 @@ jobs:
           exit 1
         fi
 
-        # Uncomment this block if MCP Venue Test Integration tests are re-enabled
+        # Uncomment this block when MCP Venue Test Integration tests are re-enabled
         # if [ "$test_status" != "success" ]; then
         #   echo "MCP Venue Test Integration Tests failed."
         #   exit 1
