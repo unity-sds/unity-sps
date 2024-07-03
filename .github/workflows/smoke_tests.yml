@@ -57,16 +57,17 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
 
-    - name: MCP Venue Test - Smoke tests
-      id: mcp_venue_test_smoke_tests
-      env:
-        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
-      continue-on-error: true
-      run: |
-        pytest -vv --gherkin-terminal-reporter \
-        unity-test/system/smoke \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
+# Temporary: comment out checks on MCP venue test until the SPS is redeployed
+#    - name: MCP Venue Test - Smoke tests
+#      id: mcp_venue_test_smoke_tests
+#      env:
+#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
+#      continue-on-error: true
+#      run: |
+#        pytest -vv --gherkin-terminal-reporter \
+#        unity-test/system/smoke \
+#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
+#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue Ops - Smoke tests
       id: mcp_venue_ops_smoke_tests
@@ -94,7 +95,6 @@ jobs:
       if: always()
       run: |
         dev_status=${{ steps.mcp_venue_dev_smoke_tests.outcome }}
-        test_status=${{ steps.mcp_venue_test_smoke_tests.outcome }}
         ops_status=${{ steps.mcp_venue_ops_smoke_tests.outcome }}
         sbg_dev_status=${{ steps.mcp_sbg_dev_smoke_tests.outcome }}
         echo "Dev Smoke Tests: $dev_status"
@@ -106,9 +106,6 @@ jobs:
           echo "One or more smoke tests failed."
           if [ "$dev_status" != "success" ]; then
             echo "MCP Venue Dev Smoke Tests failed."
-          fi
-          if [ "$test_status" != "success" ]; then
-            echo "MCP Venue Test Smoke Tests failed."
           fi
           if [ "$ops_status" != "success" ]; then
             echo "MCP Venue Ops Smoke Tests failed."
