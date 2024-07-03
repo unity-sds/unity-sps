@@ -30,6 +30,7 @@ jobs:
         pip install -e ".[test]"
 
     - name: MCP Venue Dev - Integration tests
+      id: mcp_venue_dev_integration_tests
       continue-on-error: true
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
@@ -39,6 +40,7 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
 
     # - name: MCP Venue Test - Integration tests
+    #   id: mcp_venue_test_integration_tests
     #   continue-on-error: true
     #   run: |
     #     pytest -vv --gherkin-terminal-reporter \
