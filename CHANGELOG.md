@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - ghcr.io/unity-sds/unity-sps/sps-airflow:2.1.0
 - ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0
-- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.1.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:1.0.0
 
 ## Documentation
 
