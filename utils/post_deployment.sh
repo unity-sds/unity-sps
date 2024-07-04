@@ -14,7 +14,7 @@
 export WPST_API=$1
 
 # list of processes to be registered
-declare -a procs=("cwl_dag" "karpenter_test" "sbg_L1_to_L2_e2e_cwl_step_by_step_dag")
+declare -a procs=("cwl_dag" "karpenter_test" "sbg_preprocess_cwl_dag")
 
 for proc in "${procs[@]}"
 do
