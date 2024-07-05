@@ -1,3 +1,7 @@
+# This test executes the SBG Preprocess DAG as a CWL workflow.
+# The workflow parameters are contained in a YAML file which is venue-dependent.
+# The SBG Preprocess DAG must already be deployed in Airflow,
+# and it is invoked via the Airflow API.
 from pathlib import Path
 
 import backoff
@@ -10,6 +14,10 @@ FEATURE_FILE: Path = FEATURES_DIR / "sbg_preprocess_workflow.feature"
 
 # DAG parameters are venue specific
 DAG_ID = "sbg_preprocess_cwl_dag"
+SBG_PREPROCESS_PARAMETERS = {
+    "dev": {"cwl_workflow": "abc", "cwl_args": "123"},
+    "test": {"cwl_workflow": "cde", "cwl_args": "456"},
+}
 
 
 @scenario(FEATURE_FILE, "Check SBG Preprocess Workflow")
@@ -24,11 +32,9 @@ def api_up_and_running():
 
 @when("I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
 def trigger_dag(airflow_api_url, airflow_api_auth, venue):
-    # leaving out dag_run_id to avoid conflicts with previous runs- we can always fetch it from the response
-    # unsure about contents of the conf argument, though
-    cwl_workflow = "abc"
-    cwl_args = "123"
-    print(f"VENUE={venue}")
+    # DAG parameters are venue dependent
+    cwl_workflow = SBG_PREPROCESS_PARAMETERS[venue]["cwl_workflow"]
+    cwl_args = SBG_PREPROCESS_PARAMETERS[venue]["cwl_args"]
     response = requests.post(
         f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,
