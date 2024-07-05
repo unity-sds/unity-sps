@@ -14,6 +14,11 @@ set -ex
 # Components must be destroyed in the revers order:
 # destroy airflow > karpenter > eks
 
+# Note: the first time you run "deploy" on eks/karpenter/airflow, you don't already have the $TFVARS_FILENAME
+# in the proper directory, the script will stop because it cannot parse the file that was automatically generated.
+# Edit that file: remove the first and last line, and add the specific values for your deployment.
+# Then run the script again.
+
 # Note:
 # Must make sure we don't check in a new version of this script with a real AWS account number
 

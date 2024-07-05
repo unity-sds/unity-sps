@@ -1,3 +1,9 @@
+# This test executes the SBG Preprocess DAG as a CWL workflow.
+# The workflow parameters are contained in a YAML file which is venue-dependent.
+# The SBG Preprocess DAG must already be deployed in Airflow,
+# and it is invoked via the Airflow API.
+# The CWL task is executed via a KubernetesPodOperator on a worker node
+# that is dynamically provisioned by Karpenter.
 from pathlib import Path
 
 import backoff
@@ -7,6 +13,19 @@ from pytest_bdd import given, scenario, then, when
 FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
 FEATURE_FILE: Path = FEATURES_DIR / "sbg_preprocess_workflow.feature"
+
+# DAG parameters are venue specific
+DAG_ID = "sbg_preprocess_cwl_dag"
+SBG_PREPROCESS_PARAMETERS = {
+    "dev": {
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml",
+    },
+    "test": {
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.test.yml",
+    },
+}
 
 
 @scenario(FEATURE_FILE, "Check SBG Preprocess Workflow")
@@ -20,13 +39,14 @@ def api_up_and_running():
 
 
 @when("I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
-def trigger_dag(airflow_api_url, airflow_api_auth):
-    # leaving out dag_run_id to avoid conflicts with previous runs- we can always fetch it from the response
-    # unsure about contents of the conf argument, though
+def trigger_dag(airflow_api_url, airflow_api_auth, venue):
+    # DAG parameters are venue dependent
+    cwl_workflow = SBG_PREPROCESS_PARAMETERS[venue]["cwl_workflow"]
+    cwl_args = SBG_PREPROCESS_PARAMETERS[venue]["cwl_args"]
     response = requests.post(
-        f"{airflow_api_url}/api/v1/dags/sbg_preprocess_cwl_dag/dagRuns",
+        f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,
-        json={"note": "Triggered by unity-test suite"},
+        json={"conf": {"cwl_workflow": f"{cwl_workflow}", "cwl_args": f"{cwl_args}"}},
     )
     return response
 
