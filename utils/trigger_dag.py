@@ -41,6 +41,10 @@ def main():
         dt_now = datetime.now(timezone.utc)
         logical_date = dt_now.strftime("%Y-%m-%dT%H:%M:%SZ")
         data = {"logical_date": logical_date}
+        # Example on how to pass DAG specific parameters
+        # data = {"logical_date": logical_date,
+        #        "conf": {"cwl_args": "abc123"}
+        #       }
         result = requests.post(
             url, json=data, headers=headers, auth=HTTPBasicAuth(airflow_username, airflow_password)
         )
