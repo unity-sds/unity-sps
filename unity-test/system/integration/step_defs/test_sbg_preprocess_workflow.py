@@ -2,6 +2,8 @@
 # The workflow parameters are contained in a YAML file which is venue-dependent.
 # The SBG Preprocess DAG must already be deployed in Airflow,
 # and it is invoked via the Airflow API.
+# The CWL task is executed via a KubernetesPodOperator on a worker node
+# that is dynamically provisioned by Karpenter.
 from pathlib import Path
 
 import backoff
@@ -15,8 +17,14 @@ FEATURE_FILE: Path = FEATURES_DIR / "sbg_preprocess_workflow.feature"
 # DAG parameters are venue specific
 DAG_ID = "sbg_preprocess_cwl_dag"
 SBG_PREPROCESS_PARAMETERS = {
-    "dev": {"cwl_workflow": "abc", "cwl_args": "123"},
-    "test": {"cwl_workflow": "cde", "cwl_args": "456"},
+    "dev": {
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml",
+    },
+    "test": {
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.test.yml",
+    },
 }
 
 
