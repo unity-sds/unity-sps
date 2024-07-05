@@ -8,6 +8,9 @@ FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
 FEATURE_FILE: Path = FEATURES_DIR / "sbg_preprocess_workflow.feature"
 
+# DAG parameters are venue specific
+DAG_ID = "sbg_preprocess_cwl_dag"
+
 
 @scenario(FEATURE_FILE, "Check SBG Preprocess Workflow")
 def test_check_sbg_preprocess_workflow():
@@ -20,13 +23,16 @@ def api_up_and_running():
 
 
 @when("I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
-def trigger_dag(airflow_api_url, airflow_api_auth):
+def trigger_dag(airflow_api_url, airflow_api_auth, venue):
     # leaving out dag_run_id to avoid conflicts with previous runs- we can always fetch it from the response
     # unsure about contents of the conf argument, though
+    cwl_workflow = "abc"
+    cwl_args = "123"
+    print(f"VENUE={venue}")
     response = requests.post(
-        f"{airflow_api_url}/api/v1/dags/sbg_preprocess_cwl_dag/dagRuns",
+        f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,
-        json={"conf": {"cwl_args": "abc123"}},
+        json={"conf": {"cwl_workflow": f"{cwl_workflow}", "cwl_args": f"{cwl_args}"}},
     )
     return response
 
