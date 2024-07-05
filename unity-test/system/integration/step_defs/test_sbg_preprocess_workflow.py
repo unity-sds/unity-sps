@@ -26,7 +26,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth):
     response = requests.post(
         f"{airflow_api_url}/api/v1/dags/sbg_preprocess_cwl_dag/dagRuns",
         auth=airflow_api_auth,
-        json={"note": "Triggered by unity-test suite"},
+        json={"conf": {"cwl_args": "abc123"}},
     )
     return response
 
