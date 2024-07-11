@@ -7,7 +7,7 @@ Parameter cwl_workflow: the URL of the CWL workflow to execute.
 Parameter args_as_json: JSON string contained the specific values for the workflow specific inputs.
 """
 
-import json
+# import json
 import logging
 import os
 import shutil
@@ -34,18 +34,18 @@ SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
 WORKING_DIR = "/scratch"
 
 # default parameters
-DEFAULT_CWL_WORKFLOW = (
-    "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
-)
-DEFAULT_CWL_ARGUMENTS = json.dumps({"message": "Hello Unity"})
+# DEFAULT_CWL_WORKFLOW = (
+#     "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
+# )
+# DEFAULT_CWL_ARGUMENTS = json.dumps({"message": "Hello Unity"})
 
 # Alternative arguments to execute SBG Pre-Process
 # DEFAULT_CWL_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 # DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml"
 
 # Alternative arguments to execute SBG end-to-end
-# DEFAULT_CWL_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.cwl"
-# DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.dev.yml"
+DEFAULT_CWL_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.cwl"
+DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.dev.yml"
 
 # Alternative arguments to execute SBG end-to-end
 # unity_sps_sbg_debug.txt
@@ -53,7 +53,7 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     requests={
         # "cpu": "2660m",  # 2.67 vCPUs, specified in milliCPUs
         # "memory": "22Gi",  # Rounded to 22 GiB for easier specification
-        "ephemeral-storage": "10Gi"
+        "ephemeral-storage": "50Gi"
     },
     # limits={
     #    # "cpu": "2660m",  # Optional: set the same as requests if you want a fixed allocation
@@ -134,12 +134,12 @@ cwl_task = KubernetesPodOperator(
         )
     ],
     dag=dag,
-    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator"},
+    node_selector={"karpenter.sh/nodepool": "airflow-kubernetes-pod-operator-high-workload"},
     labels={"app": POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     affinity=get_affinity(
         capacity_type=["spot"],
-        instance_type=["r7i.xlarge"],
+        instance_type=["c5.9xlarge"],
         anti_affinity_label=POD_LABEL,
     ),
     on_finish_action="keep_pod",

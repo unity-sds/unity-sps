@@ -82,6 +82,7 @@ variable "karpenter_node_pools" {
       operator : string
       values : list(string)
     }))
+    nodeClassRef : string
     limits : object({
       cpu : string
       memory : string

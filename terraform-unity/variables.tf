@@ -121,6 +121,7 @@ variable "karpenter_node_pools" {
       operator : string
       values : list(string)
     }))
+    nodeClassRef : string
     limits : object({
       cpu : string
       memory : string
@@ -131,7 +132,51 @@ variable "karpenter_node_pools" {
     })
   }))
   default = {
+    "airflow-kubernetes-pod-operator-high-workload" = {
+      nodeClassRef = "airflow-kubernetes-pod-operator-high-workload",
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-family"
+          operator = "In"
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["17"] // To 16 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // From 8 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["32769"] // To 32 GB inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        }
+      ]
+      limits = {
+        cpu    = "100"
+        memory = "400Gi"
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "1m"
+      }
+    },
     "airflow-kubernetes-pod-operator" = {
+      nodeClassRef = "default",
       requirements = [
         {
           key      = "karpenter.k8s.aws/instance-family"
@@ -174,6 +219,7 @@ variable "karpenter_node_pools" {
       }
     },
     "airflow-celery-workers" = {
+      nodeClassRef = "default",
       requirements = [
         {
           key      = "karpenter.k8s.aws/instance-family"
@@ -216,6 +262,7 @@ variable "karpenter_node_pools" {
       }
     },
     "airflow-core-components" = {
+      nodeClassRef = "default",
       requirements = [
         {
           key      = "karpenter.k8s.aws/instance-family"
