@@ -40,18 +40,20 @@ DEFAULT_CWL_WORKFLOW = (
 DEFAULT_CWL_ARGUMENTS = json.dumps({"message": "Hello Unity"})
 
 # Alternative arguments to execute SBG Pre-Process
-# DEFAULT_CWL_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+# DEFAULT_CWL_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
 # DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml"
 
 # Alternative arguments to execute SBG end-to-end
-# DEFAULT_CWL_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
-# DEFAULT_CWL_ARGUMENTS = json.dumps({"input_processing_labels": ["label1", "label2"], "input_cmr_stac": "https://cmr.earthdata.nasa.gov/search/granules.stac?collection_concept_id=C2408009906-LPCLOUD&temporal[]=2023-08-10T03:41:03.000Z,2023-08-10T03:41:03.000Z", "input_unity_dapa_client": "40c2s0ulbhp9i0fmaph3su9jch", "input_unity_dapa_api": "https://d3vc8w9zcq658.cloudfront.net", "input_crid": "001", "output_collection_id": "urn:nasa:unity:unity:dev:SBG-L1B_PRE___1", "output_data_bucket": "sps-dev-ds-storage"})
+# DEFAULT_CWL_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.cwl"
+# DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.dev.yml"
 
+# Alternative arguments to execute SBG end-to-end
+# unity_sps_sbg_debug.txt
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     requests={
         # "cpu": "2660m",  # 2.67 vCPUs, specified in milliCPUs
         # "memory": "22Gi",  # Rounded to 22 GiB for easier specification
-        "ephemeral-storage": "30Gi"
+        "ephemeral-storage": "10Gi"
     },
     # limits={
     #    # "cpu": "2660m",  # Optional: set the same as requests if you want a fixed allocation
@@ -120,7 +122,7 @@ cwl_task = KubernetesPodOperator(
     startup_timeout_seconds=1800,
     arguments=["{{ params.cwl_workflow }}", "{{ params.cwl_args }}"],
     container_security_context={"privileged": True},
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
