@@ -1,9 +1,22 @@
+# S3 backend
+terraform {
+  backend "s3" {
+    # full path to Terraform state file:
+    # s3://<bucket>/<key>
+    bucket  = ""
+    key     = ""
+    region  = "us-west-2"
+    encrypt = true
+  }
+}
+
 resource "random_id" "counter" {
   byte_length = 2
 }
 
 module "unity-eks" {
-  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.0.1"
+
+  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.1.0"
   deployment_name = local.cluster_name
   nodegroups      = var.nodegroups
   aws_auth_roles = [{
@@ -16,7 +29,7 @@ module "unity-eks" {
     Component = "eks"
     Stack     = "eks"
   })
-  cluster_version = "1.27"
+  cluster_version = "1.29"
 }
 
 # add extra policies as inline policy

@@ -28,7 +28,7 @@ variable "counter" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "2.0.1"
+  default     = "24.2"
 }
 
 variable "nodegroups" {
