@@ -34,7 +34,7 @@ export SERVICE_AREA=sps
 export VENUE=dev
 export DEPLOYMENT=luca
 export COUNTER=7
-export BUCKET=unity-unity-dev-bucket
+export TF_BACKEND_BUCKET=unity-unity-dev-bucket
 
 # the root directory of the "unity-sps" installation
 export UNITY_SPS_DIR=/Users/cinquini/PycharmProjects/unity-sps
@@ -62,8 +62,9 @@ export TFVARS_FILENAME=unity-${VENUE}-sps-${COMPONENT}-${DEPLOYMENT}-${COUNTER}.
 # initialize Terraform
 cd $tf_dir
 tfswitch 1.8.2
-export KEY=sps/tfstates/${PROJECT}-${VENUE}-${SERVICE_AREA}-${COMPONENT}-${DEPLOYMENT}-${COUNTER}.tfstate
-terraform init -reconfigure -backend-config="bucket=$BUCKET" -backend-config="key=$KEY"
+export TF_WORKSPACE_KEY_PREFIX="sps/tfstates"
+export TF_BACKEND_KEY="terraform.tfstate"
+terraform init -reconfigure -backend-config="bucket=$TF_BACKEND_BUCKET" -backend-config="workspace_key_prefix=$TF_WORKSPACE_KEY_PREFIX" -backend-config="key=$TF_BACKEND_KEY"
 terraform get -update
 
 # if new cluster --> create new tfvars file
