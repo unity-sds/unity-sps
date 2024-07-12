@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unity-sps"
-version = "24.1-beta.1"
+version = "2.1.0"
 authors = [
     { name = "Drew Meyers", email = "drew.meyers@jpl.nasa.gov" },
 ]
@@ -46,7 +46,7 @@ test = [
 experiment = []
 lambda-airflow-dag-trigger = [
     "requests==2.31.0",
-    "aws-lambda-powertools[parser]==2.36.0",
+    "aws-lambda-powertools[parser]==2.41.0",
 ]
 
 [tool.setuptools.packages.find]
