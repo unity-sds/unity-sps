@@ -46,7 +46,7 @@ test = [
 experiment = []
 lambda-airflow-dag-trigger = [
     "requests==2.31.0",
-    "aws-lambda-powertools[parser]==2.36.0",
+    "aws-lambda-powertools[parser]==2.41.0",
 ]
 
 [tool.setuptools.packages.find]
