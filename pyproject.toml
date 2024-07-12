@@ -36,7 +36,7 @@ test = [
     "pytest==8.0.2",
     "pytest-bdd==7.1.1",
     "pytest-mock==3.12.0",
-    "requests==2.31.0",
+    "requests==2.32.3",
     "apache-airflow==2.9.2",
     "kubernetes==30.1.0",
     "boto3==1.34.143",
@@ -45,7 +45,7 @@ test = [
 ]
 experiment = []
 lambda-airflow-dag-trigger = [
-    "requests==2.31.0",
+    "requests==2.32.3",
     "aws-lambda-powertools[parser]==2.41.0",
 ]
 
