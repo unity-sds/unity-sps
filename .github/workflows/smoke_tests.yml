@@ -99,10 +99,10 @@ jobs:
         test_status=${{ steps.mcp_venue_test_smoke_tests.outcome }}
         sbg_dev_status=${{ steps.mcp_sbg_dev_smoke_tests.outcome }}
         echo "Dev Smoke Tests: $dev_status"
-        echo "Test Smoke Tests: test_status"
+        echo "Test Smoke Tests: $test_status"
         echo "SBG Dev Smoke Tests: $sbg_dev_status"
 
-        if [ "$dev_status" != "success" ] || [ "test_status" != "success" ] || [ "$sbg_dev_status" != "success" ]; then
+        if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ] || [ "$sbg_dev_status" != "success" ]; then
           echo "One or more smoke tests failed."
           if [ "$dev_status" != "success" ]; then
             echo "MCP Venue Dev Smoke Tests failed."
