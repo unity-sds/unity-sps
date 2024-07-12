@@ -1,10 +1,10 @@
-# S3 backend
 terraform {
   backend "s3" {
-    bucket  = ""
-    key     = ""
-    region  = "us-west-2"
-    encrypt = true
+    bucket               = "unity-unity-dev-bucket"
+    workspace_key_prefix = "sps/tfstates"
+    key                  = "terraform.tfstate"
+    region               = "us-west-2"
+    encrypt              = true
   }
 }
 
