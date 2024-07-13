@@ -993,7 +993,6 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
         spec = {
           nodeClassRef = {
             # name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
-            # name = each.value.disruption.consolidateAfter - 1m
             name = each.value.nodeClassRef
           }
           requirements = [for req in each.value.requirements : {
