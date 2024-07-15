@@ -864,7 +864,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
-      Substitute "s|\"/(?!sps/)([^\"]+)|\"/sps/$1|q"
+      Substitute "s|\"/([^\"]*)|\"/sps/$1|q"
     </LocationMatch>
 
 EOT
