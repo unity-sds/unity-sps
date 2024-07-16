@@ -124,7 +124,6 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
   }
 }
 
-
 resource "random_password" "sps_db" {
   length           = 16
   special          = true
@@ -964,73 +963,6 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
   ]
 }
 
-
-resource "null_resource" "build_lambda_packages" {
-  triggers = {
-    lambda_dir_sha1 = sha1(
-      join("", [
-        for f in fileset("${path.module}/../../../lambda/src", "**/**") : filesha1("${path.module}/../../../lambda/src/${f}")]
-      )
-    )
-  }
-  provisioner "local-exec" {
-    command = <<EOF
-      set -ex
-      # Create a cleanup function
-      cleanup() {
-        # Change directory to the lambdas folder
-        cd "${abspath(path.module)}/../../../lambda/src"
-        for lambda_dir in */ ; do
-          cd $lambda_dir
-
-          # Run cleanup commands
-          rm -rf venv
-          rm -rf lambda_package
-          rm -r *.egg-info || true
-
-          # Go back to the parent directory to prepare for the next loop iteration
-          cd ..
-        done
-      }
-
-      # Call the cleanup function
-      cleanup
-
-      # Remove any existing built lambda packages
-      rm -f "${abspath(path.module)}/../../../lambda/deployment_packages/*.zip" || true
-
-      # Register the cleanup function to be called on exit
-      trap cleanup EXIT
-
-      # Change directory to the lambdas folder
-      cd "${abspath(path.module)}/../../../lambda/src"
-
-      # Loop over all directories in the lambdas folder../../../deployment_packages/
-      for lambda_dir in */ ; do
-        lambda_name=$(basename $lambda_dir)
-        cd $lambda_dir
-
-        python3.9 -m venv venv
-        . venv/bin/activate
-        # TODO sort out the pip version, it's causing issues with installing optional
-        # dependencies in pyproject.toml. The pip version should be sorted out at
-        # the Dockerfile level.
-        pip install -U pip
-        pip install ../../../ "unity-sps[lambda-$${lambda_name}]"
-        mkdir -p lambda_package
-        cp -R venv/lib/python3.9/site-packages/* ./lambda_package
-        cp -R ./*.py ./lambda_package
-        cd lambda_package
-        zip -r $${lambda_name}_package.zip .
-        mv $${lambda_name}_package.zip ../../../deployment_packages/
-        deactivate
-        # Go back to the parent directory (the lambdas folder) to prepare for the next loop iteration
-        cd ../..
-      done
-    EOF
-  }
-}
-
 resource "aws_s3_bucket" "inbound_staging_location" {
   bucket        = format(local.resource_name_prefix, "isl")
   force_destroy = true
@@ -1041,211 +973,63 @@ resource "aws_s3_bucket" "inbound_staging_location" {
   })
 }
 
-resource "aws_ssm_parameter" "isl_bucket" {
-  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "resources", "pipeline", "buckets", "isl"])))
-  description = "The name of the S3 bucket for the inbound staging location."
-  type        = "String"
-  value       = aws_s3_bucket.inbound_staging_location.id
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "S3-isl")
-    Component = "SSM"
-    Stack     = "SSM"
-  })
-}
-
-resource "aws_sns_topic" "s3_isl_event_topic" {
-  name = format(local.resource_name_prefix, "S3IslSnsTopic")
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "SNS-S3IslSnsTopic")
-    Component = "SNS"
-    Stack     = "SNS"
-  })
-}
-
-resource "aws_sns_topic_policy" "s3_isl_event_topic_policy" {
-  arn = aws_sns_topic.s3_isl_event_topic.arn
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "s3.amazonaws.com"
-      }
-      Action   = "SNS:Publish"
-      Resource = aws_sns_topic.s3_isl_event_topic.arn
-      Condition = {
-        ArnLike = {
-          "aws:SourceArn" : aws_s3_bucket.inbound_staging_location.arn
-        }
-      }
-    }]
-  })
-}
-
-resource "aws_s3_bucket_notification" "isl_bucket_notification" {
-  bucket = aws_s3_bucket.inbound_staging_location.id
-  topic {
-    topic_arn = aws_sns_topic.s3_isl_event_topic.arn
-    events    = ["s3:ObjectCreated:*"]
-  }
-  depends_on = [
-    aws_sns_topic_policy.s3_isl_event_topic_policy,
-    aws_sqs_queue_policy.s3_isl_event_queue_policy
-  ]
-}
-
-resource "aws_sqs_queue" "s3_isl_event_queue" {
-  name                       = format(local.resource_name_prefix, "S3IslSqsQueue")
-  visibility_timeout_seconds = 60
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "SQS-S3IslSqsQueue")
-    Component = "SQS"
-    Stack     = "SQS"
-  })
-}
-
-resource "aws_sqs_queue_policy" "s3_isl_event_queue_policy" {
-  queue_url = aws_sqs_queue.s3_isl_event_queue.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "sqs:SendMessage"
-        Resource  = aws_sqs_queue.s3_isl_event_queue.arn
-        Condition = {
-          ArnEquals = {
-            "aws:SourceArn" = aws_sns_topic.s3_isl_event_topic.arn
-          }
-        }
-      },
-    ]
-  })
-}
-
-resource "aws_sns_topic_subscription" "s3_isl_event_subscription" {
-  topic_arn = aws_sns_topic.s3_isl_event_topic.arn
-  protocol  = "sqs"
-  endpoint  = aws_sqs_queue.s3_isl_event_queue.arn
-}
-
-resource "aws_s3_bucket" "lambdas" {
-  bucket        = format(local.resource_name_prefix, "lambdas")
+resource "aws_s3_bucket" "code" {
+  bucket        = format(local.resource_name_prefix, "code")
   force_destroy = true
   tags = merge(local.common_tags, {
-    # Add or overwrite specific tags for this resource
-    Name      = format(local.resource_name_prefix, "S3-lambdas")
+    Name      = format(local.resource_name_prefix, "S3-code")
     Component = "S3"
     Stack     = "S3"
   })
 }
 
-resource "aws_s3_object" "lambdas" {
-  bucket = aws_s3_bucket.lambdas.id
-  key    = format("%s.zip", format(local.resource_name_prefix, "AirflowDAGTrigger"))
-  # TODO remove handcoding of lambda file name
-  source     = "${abspath(path.module)}/../../../lambda/deployment_packages/airflow-dag-trigger_package.zip"
-  depends_on = [null_resource.build_lambda_packages]
-}
-
-resource "aws_ssm_parameter" "airflow_dag_trigger_lambda_package" {
-  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "artifacts", "pipeline", "lambdas", "AirflowDAGTrigger"])))
-  description = "The S3 key of the Lambda package for the Airflow Dag Trigger."
-  type        = "String"
-  value       = aws_s3_object.lambdas.key
+resource "aws_s3_bucket" "config" {
+  bucket        = format(local.resource_name_prefix, "config")
+  force_destroy = true
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "SSM-AirflowDAGTrigger")
-    Component = "SSM"
-    Stack     = "SSM"
+    Name      = format(local.resource_name_prefix, "S3-config")
+    Component = "S3"
+    Stack     = "S3"
   })
 }
 
-resource "aws_iam_role" "lambda" {
-  name = format(local.resource_name_prefix, "LambdaExecutionRole")
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "lambda.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      },
-    ]
+resource "aws_s3_object" "router_config" {
+  bucket = aws_s3_bucket.config.id
+  key    = "routers/srl_router.yaml"
+  content = templatefile("${path.module}/../../../unity-initiator/routers/srl_router.tmpl.yaml", {
+    airflow_base_api_endpoint = aws_ssm_parameter.airflow_api_url.value,
+    airflow_username          = "admin",
+    airflow_password          = var.airflow_webserver_password
   })
-  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
-}
-
-# Attach necessary policies to the role. For Lambda execution, you often need AWSLambdaBasicExecutionRole for logging etc.
-resource "aws_iam_role_policy_attachment" "lambda_logs" {
-  role       = aws_iam_role.lambda.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-# If the Lambda interacts with specific AWS services, you might need to create and attach custom policies here.
-resource "aws_iam_policy" "lambda_sqs_access" {
-  name        = format(local.resource_name_prefix, "LambdaSQSAccessPolicy")
-  description = "Allows Lambda function to interact with SQS queue"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "sqs:ReceiveMessage",
-          "sqs:DeleteMessage",
-          "sqs:GetQueueAttributes"
-        ],
-        Resource = aws_sqs_queue.s3_isl_event_queue.arn
-      },
-    ]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_sqs_access_attach" {
-  role       = aws_iam_role.lambda.name
-  policy_arn = aws_iam_policy.lambda_sqs_access.arn
-}
-
-resource "aws_lambda_function" "airflow_dag_trigger" {
-  function_name = format(local.resource_name_prefix, "AirflowDAGTrigger")
-  s3_bucket     = format(local.resource_name_prefix, "lambdas")
-  s3_key        = aws_ssm_parameter.airflow_dag_trigger_lambda_package.value
-  role          = aws_iam_role.lambda.arn
-  handler       = "airflow_dag_trigger.lambda_handler"
-  runtime       = "python3.9"
-  timeout       = 60
-  environment {
-    variables = {
-      AIRFLOW_BASE_API_ENDPOINT = aws_ssm_parameter.airflow_api_url.value
-      AIRFLOW_USERNAME          = "admin"
-      AIRFLOW_PASSWORD          = var.airflow_webserver_password
-    }
-  }
+  # etag = filemd5(templatefile("${path.module}/../../../unity-initiator/routers/srl_router.tmpl.yaml", {
+  #   airflow_base_api_endpoint = aws_ssm_parameter.airflow_api_url.value,
+  #   airflow_username          = "admin",
+  #   airflow_password          = var.airflow_webserver_password
+  # }))
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "Lambda-AirflowDAGTrigger")
-    Component = "Lambda"
-    Stack     = "Lambda"
-  })
-  depends_on = [
-    aws_cloudwatch_log_group.airflow_dag_trigger,
-  ]
-}
-
-resource "aws_cloudwatch_log_group" "airflow_dag_trigger" {
-  name              = "/aws/lambda/${format(local.resource_name_prefix, "AirflowDAGTrigger")}"
-  retention_in_days = 14
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "CloudWatch-${format(local.resource_name_prefix, "AirflowDAGTrigger")}")
-    Component = "CloudWatch"
-    Stack     = "CloudWatch"
+    Name      = format(local.resource_name_prefix, "S3-router")
+    Component = "S3"
+    Stack     = "S3"
   })
 }
 
-resource "aws_lambda_event_source_mapping" "lambda_airflow_dag_trigger" {
-  event_source_arn = aws_sqs_queue.s3_isl_event_queue.arn
-  function_name    = aws_lambda_function.airflow_dag_trigger.arn
-  batch_size       = 1
+module "unity_initiator" {
+  source          = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator?ref=f22fbdcc6831f483ad2f9e0b21a79274a1a352f1"
+  code_bucket     = aws_s3_bucket.code.id
+  deployment_name = var.deployment_name
+  router_config   = "s3://${aws_s3_bucket.config.id}/${aws_s3_object.router_config.key}"
+  project         = var.project
+  venue           = var.venue
+}
+
+resource "aws_s3_object" "isl_stacam_rawdp_folder" {
+  bucket = aws_s3_bucket.inbound_staging_location.id
+  key    = "STACAM/RawDP/"
+}
+
+module "s3_bucket_notification" {
+  source              = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification?ref=f22fbdcc6831f483ad2f9e0b21a79274a1a352f1"
+  initiator_topic_arn = module.unity_initiator.initiator_topic_arn
+  isl_bucket          = aws_s3_bucket.inbound_staging_location.id
+  isl_bucket_prefix   = "STACAM/RawDP/"
 }
