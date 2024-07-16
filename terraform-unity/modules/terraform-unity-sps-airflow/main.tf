@@ -860,7 +860,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       ProxyPassReverse "/"
     </Location>
     <LocationMatch "^/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
@@ -1383,4 +1383,9 @@ resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
   depends_on    = [aws_ssm_parameter.unity_proxy_airflow_ui]
   function_name = "${var.project}-${var.venue}-httpdproxymanagement"
   input         = "{}"
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_ssm_parameter.unity_proxy_airflow_ui
+    ]))
+  }
 }
