@@ -6,7 +6,7 @@ initiator_config:
     url:
       # SRL example: EDRGen; example of matching a regex
       - regexes:
-            - !!python/regexp '/(?P<apid>0980|0990)_(?P<sclk_seconds>\d{10})-(?P<sclk_subseconds>\d{5})-(?P<version>\d{1,3})(?P<extension>\.dat|\.emd)$'
+          - '/(?P<apid>0980|0990)_(?P<sclk_seconds>\d{10})-(?P<sclk_subseconds>\d{5})-(?P<version>\d{1,3})(?P<extension>\.dat|\.emd)$/'
         evaluators:
           # If the regex matches, the router submits a JSON payload to the eval_srl_edrgen_readiness DAG via Airflow REST API
           # that contains the the payload and the regex match groupdict() as JSON.
