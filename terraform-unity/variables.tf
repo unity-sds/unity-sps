@@ -113,6 +113,21 @@ variable "mcp_ami_owner_id" {
   default     = "794625662971"
 }
 
+variable "karpenter_node_classes" {
+  description = "Configuration for karpenter_node_classes"
+  type = map(object({
+    volume_size = string
+  }))
+  default = {
+    "default" = {
+      volume_size = "30Gi"
+    }
+    "airflow-kubernetes-pod-operator-high-workload" = {
+      volume_size = "200Gi"
+    }
+  }
+}
+
 variable "karpenter_node_pools" {
   description = "Configuration for Karpenter node pools"
   type = map(object({

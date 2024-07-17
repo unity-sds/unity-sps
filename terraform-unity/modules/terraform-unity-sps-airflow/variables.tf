@@ -74,6 +74,12 @@ variable "mcp_ami_owner_id" {
   type        = string
 }
 
+variable "karpenter_node_classes" {
+  type = map(object({
+    volume_size = string
+  }))
+}
+
 variable "karpenter_node_pools" {
   description = "Configuration for Karpenter node pools"
   type = map(object({

@@ -940,7 +940,7 @@ resource "kubernetes_manifest" "karpenter_node_class_high_workload" {
       blockDeviceMappings = [for bd in tolist(data.aws_ami.al2_eks_optimized.block_device_mappings) : {
         deviceName = bd.device_name
         ebs = {
-          volumeSize          = "200Gi"
+          volumeSize          = var.karpenter_node_classes["airflow-kubernetes-pod-operator-high-workload"].volume_size
           volumeType          = bd.ebs.volume_type
           encrypted           = bd.ebs.encrypted
           deleteOnTermination = bd.ebs.delete_on_termination
