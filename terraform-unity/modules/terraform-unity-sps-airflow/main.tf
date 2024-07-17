@@ -973,6 +973,7 @@ resource "null_resource" "remove_node_class_finalizers" {
   triggers = {
     kubeconfig_filepath = var.kubeconfig_filepath
     node_class_name     = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+    node_class_name     = kubernetes_manifest.karpenter_node_class_high_workload.manifest.metadata.name
   }
   depends_on = [
     kubernetes_manifest.karpenter_node_pools
