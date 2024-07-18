@@ -181,7 +181,7 @@ The below list of test categories are included in our testing setup. Further det
 
 ### Security Tests
 
-- Location: `/unity`
+- Location: `/.github/workflows`
 - Purpose: Identify potential security vulnerabilities.
 - Running Tests:
   - Manually: N/A
