@@ -26,7 +26,7 @@ from airflow import DAG
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "airflow"
-POD_LABEL = "cwl_sbg_task"
+POD_LABEL = "cwl_high_workload_task"
 SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
 NODE_POOL = "airflow-kubernetes-pod-operator-high-workload"
 EC2_TYPE = "c5.9xlarge"
@@ -65,9 +65,9 @@ dag_default_args = {
 INPUT_PROCESSING_LABELS = ["label1", "label2"]
 
 dag = DAG(
-    dag_id="cwl_sbg_dag",
-    description="CWL SBG DAG",
-    tags=["CWL", "SBG"],
+    dag_id="cwl_high_workload_dag",
+    description="CWL High Workload DAG",
+    tags=["CWL"],
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
@@ -104,9 +104,9 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
 cwl_task = KubernetesPodOperator(
     retries=0,
-    task_id="cwl_sbg_task",
+    task_id="cwl_high_workload_task",
     namespace=POD_NAMESPACE,
-    name="cwl-sbg-task-pod",
+    name="cwl-high_workload-task-pod",
     image=SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
