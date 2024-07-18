@@ -8,8 +8,7 @@ repos:
       - id: check-yaml
       - id: check-xml
       - id: check-added-large-files
-        args:
-          - --maxkb=50000
+        args: [--maxkb=50000]
       - id: check-json # Checks json files for parsable syntax.
       - id: pretty-format-json # Sets a standard for formatting json files.
         args:
