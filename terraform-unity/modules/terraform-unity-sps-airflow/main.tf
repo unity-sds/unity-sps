@@ -1014,7 +1014,8 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
     }
   }
   depends_on = [
-    kubernetes_manifest.karpenter_node_class
+    kubernetes_manifest.karpenter_node_class,
+    kubernetes_manifest.karpenter_node_class_high_workload
   ]
 }
 

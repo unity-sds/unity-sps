@@ -163,17 +163,17 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-cpu"
           operator = "Lt"
-          values   = ["17"] // To 16 inclusive
+          values   = ["49"] // To 48 inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // From 8 GB inclusive
+          values   = ["8191"] // 8 GiB = 8192 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["32769"] // To 32 GB inclusive
+          values   = ["98305"] // 96 GiB = 98404 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -211,12 +211,12 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // From 8 GB inclusive
+          values   = ["8191"] // 8 GiB = 8192 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["32769"] // To 32 GB inclusive
+          values   = ["32769"] // 32 GiB = 32768 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
