@@ -875,6 +875,31 @@ EOT
   })
 }
 
+resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
+  name        = format("/%s", join("/", compact(["unity", var.project, var.venue, "cs", "management", "proxy", "configurations", "016-sps-ogc-api"])))
+  description = "The unity-proxy configuration for the Airflow OGC API."
+  type        = "String"
+  value       = <<-EOT
+
+    <Location "/sps-ogc/">
+      ProxyPassReverse "/"
+    </Location>
+    <LocationMatch "^/sps-ogc/(.*)$">
+      ProxyPassMatch "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
+      ProxyPreserveHost On
+      FallbackResource /management/index.html
+      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
+      Substitute "s|\"/([^\"]*)|\"/sps-ogc/$1|q"
+    </LocationMatch>
+
+EOT
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "httpd-proxy-config-ogc")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
 resource "aws_ssm_parameter" "airflow_logs" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "airflow", "logs"])))
   description = "The name of the S3 bucket for the Airflow logs."
@@ -1385,7 +1410,8 @@ resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
   input         = "{}"
   triggers = {
     redeployment = sha1(jsonencode([
-      aws_ssm_parameter.unity_proxy_airflow_ui
+      aws_ssm_parameter.unity_proxy_airflow_ui,
+      aws_ssm_parameter.unity_proxy_ogc_api
     ]))
   }
 }
