@@ -16,9 +16,9 @@ from datetime import datetime
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
+from unity_sps_utils import SpsKubernetesPodOperator, get_affinity
 
 from airflow import DAG
 
@@ -40,43 +40,6 @@ DEFAULT_CWL_WORKFLOW = (
     "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
 )
 DEFAULT_CWL_ARGUMENTS = json.dumps({"message": "Hello Unity"})
-
-
-class SpsKubernetesPodOperator(KubernetesPodOperator):
-    """
-    Subclass of KubernetesPodOperator that adds more fields for Jinja templating.
-    """
-
-    template_fields = KubernetesPodOperator.template_fields + ("node_selector", "affinity")
-
-
-def get_affinity2(capacity_type: str, anti_affinity_label: str):
-
-    affinity = k8s.V1Affinity(
-        node_affinity=k8s.V1NodeAffinity(
-            required_during_scheduling_ignored_during_execution=k8s.V1NodeSelector(
-                node_selector_terms=[
-                    k8s.V1NodeSelectorTerm(
-                        match_expressions=[
-                            {"key": "karpenter.sh/capacity-type", "operator": "In", "values": [capacity_type]}
-                        ]
-                    )
-                ]
-            ),
-        ),
-        pod_anti_affinity=k8s.V1PodAntiAffinity(
-            required_during_scheduling_ignored_during_execution=[
-                k8s.V1PodAffinityTerm(
-                    k8s.V1LabelSelector(
-                        match_expressions=[{"key": "app", "operator": "In", "values": [anti_affinity_label]}]
-                    ),
-                    topology_key="kubernetes.io/hostname",
-                ),
-            ]
-        ),
-    )
-
-    return affinity
 
 
 # Alternative arguments to execute SBG Pre-Process
@@ -129,7 +92,7 @@ dag = DAG(
             DEFAULT_CWL_ARGUMENTS,
             type="string",
             title="CWL workflow parameters",
-            description="The job parameters encoded as a JSON string, or the URL of a JSON or YAML file",
+            description=("The job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"),
         ),
         "request_memory": Param(
             "4Gi",
@@ -155,7 +118,8 @@ dag = DAG(
 
 def setup(ti=None, **context):
     """
-    Task that creates the working directory on the shared volume.
+    Task that creates the working directory on the shared volume
+    and parses the input parameter values.
     """
     context = get_current_context()
     dag_run_id = context["dag_run"].run_id
@@ -208,7 +172,12 @@ cwl_task = SpsKubernetesPodOperator(
     node_selector={"karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}"},
     labels={"app": POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
-    affinity=get_affinity2("spot", POD_LABEL),
+    # note: 'affinity' cannot yet be templated
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        # instance_type=["t3.2xlarge"],
+        anti_affinity_label=POD_LABEL,
+    ),
     on_finish_action="keep_pod",
     is_delete_operator_pod=False,
 )
