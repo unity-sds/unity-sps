@@ -32,6 +32,10 @@ data "aws_security_group" "default" {
   }
 }
 
+data "aws_ssm_parameter" "ssl_cert_arn" {
+  name = "/unity/account/network/ssl"
+}
+
 data "kubernetes_ingress_v1" "airflow_ingress" {
   metadata {
     name      = kubernetes_ingress_v1.airflow_ingress.metadata[0].name
