@@ -90,7 +90,7 @@ variable "docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.1.0"
+      tag  = "2.1.2"
     },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
@@ -113,6 +113,21 @@ variable "mcp_ami_owner_id" {
   default     = "794625662971"
 }
 
+variable "karpenter_node_classes" {
+  description = "Configuration for karpenter_node_classes"
+  type = map(object({
+    volume_size = string
+  }))
+  default = {
+    "default" = {
+      volume_size = "30Gi"
+    }
+    "airflow-kubernetes-pod-operator-high-workload" = {
+      volume_size = "200Gi"
+    }
+  }
+}
+
 variable "karpenter_node_pools" {
   description = "Configuration for Karpenter node pools"
   type = map(object({
@@ -121,6 +136,7 @@ variable "karpenter_node_pools" {
       operator : string
       values : list(string)
     }))
+    nodeClassRef : string
     limits : object({
       cpu : string
       memory : string
@@ -131,7 +147,51 @@ variable "karpenter_node_pools" {
     })
   }))
   default = {
+    "airflow-kubernetes-pod-operator-high-workload" = {
+      nodeClassRef = "airflow-kubernetes-pod-operator-high-workload",
+      requirements = [
+        {
+          key      = "karpenter.k8s.aws/instance-family"
+          operator = "In"
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Gt"
+          values   = ["1"] // From 2 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-cpu"
+          operator = "Lt"
+          values   = ["49"] // To 48 inclusive
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Gt"
+          values   = ["8191"] // 8 GiB = 8192 MiB
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-memory"
+          operator = "Lt"
+          values   = ["98305"] // 96 GiB = 98404 MiB
+        },
+        {
+          key      = "karpenter.k8s.aws/instance-hypervisor",
+          operator = "In",
+          values   = ["nitro"]
+        }
+      ]
+      limits = {
+        cpu    = "528"    // 11 x 48
+        memory = "1056Gi" // 11 x 96
+      }
+      disruption = {
+        consolidationPolicy = "WhenEmpty"
+        consolidateAfter    = "1m"
+      }
+    },
     "airflow-kubernetes-pod-operator" = {
+      nodeClassRef = "default",
       requirements = [
         {
           key      = "karpenter.k8s.aws/instance-family"
@@ -151,12 +211,12 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // From 8 GB inclusive
+          values   = ["8191"] // 8 GiB = 8192 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["32769"] // To 32 GB inclusive
+          values   = ["32769"] // 32 GiB = 32768 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -174,6 +234,7 @@ variable "karpenter_node_pools" {
       }
     },
     "airflow-celery-workers" = {
+      nodeClassRef = "default",
       requirements = [
         {
           key      = "karpenter.k8s.aws/instance-family"
@@ -216,6 +277,7 @@ variable "karpenter_node_pools" {
       }
     },
     "airflow-core-components" = {
+      nodeClassRef = "default",
       requirements = [
         {
           key      = "karpenter.k8s.aws/instance-family"
