@@ -823,7 +823,7 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
     Stack     = "SSM"
   })
   lifecycle {
-    ignore_changes = [ value ]
+    ignore_changes = [value]
   }
 }
 
@@ -854,7 +854,7 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
     Stack     = "SSM"
   })
   lifecycle {
-    ignore_changes = [ value ]
+    ignore_changes = [value]
   }
 }
 
@@ -909,7 +909,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
     Stack     = "SSM"
   })
   lifecycle {
-    ignore_changes = [ value ]
+    ignore_changes = [value]
   }
 }
 

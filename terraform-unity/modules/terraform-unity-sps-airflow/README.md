@@ -65,11 +65,14 @@ No modules.
 | [aws_sns_topic_subscription.s3_isl_event_subscription](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/sns_topic_subscription) | resource |
 | [aws_sqs_queue.s3_isl_event_queue](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/sqs_queue) | resource |
 | [aws_sqs_queue_policy.s3_isl_event_queue_policy](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/sqs_queue_policy) | resource |
+| [aws_ssm_parameter.airflow_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_dag_trigger_lambda_package](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.airflow_ui_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.isl_bucket](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.ogc_processes_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
