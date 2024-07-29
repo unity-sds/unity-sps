@@ -850,6 +850,59 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   }
 }
 
+resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
+  name        = format("/%s", join("/", compact(["unity", var.project, var.venue, "cs", "management", "proxy", "configurations", "015-sps-airflow-ui"])))
+  description = "The unity-proxy configuration for the Airflow UI."
+  type        = "String"
+  value       = <<-EOT
+
+    <Location "/${var.project}/${var.venue}/sps/">
+      ProxyPassReverse "/"
+    </Location>
+    <Location "/${var.project}/${var.venue}/sps/${var.project}/${var.venue}/sps/home">
+      Redirect "/${var.project}/${var.venue}/sps/home"
+    </Location>
+    <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
+      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
+      ProxyPreserveHost On
+      FallbackResource /management/index.html
+      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
+      Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/sps/$1|q"
+    </LocationMatch>
+
+EOT
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "httpd-proxy-config-airflow")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
+resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
+  name        = format("/%s", join("/", compact(["unity", var.project, var.venue, "cs", "management", "proxy", "configurations", "016-sps-ogc-api"])))
+  description = "The unity-proxy configuration for the Airflow OGC API."
+  type        = "String"
+  value       = <<-EOT
+
+    <Location "/${var.project}/${var.venue}/ogc/">
+      ProxyPassReverse "/"
+    </Location>
+    <LocationMatch "^/${var.project}/${var.venue}/ogc/(.*)$">
+      ProxyPassMatch "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
+      ProxyPreserveHost On
+      FallbackResource /management/index.html
+      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
+      Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/ogc/$1|q"
+    </LocationMatch>
+
+EOT
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "httpd-proxy-config-ogc")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
 resource "aws_ssm_parameter" "airflow_logs" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "airflow", "logs"])))
   description = "The name of the S3 bucket for the Airflow logs."
@@ -1352,4 +1405,16 @@ resource "aws_lambda_event_source_mapping" "lambda_airflow_dag_trigger" {
   event_source_arn = aws_sqs_queue.s3_isl_event_queue.arn
   function_name    = aws_lambda_function.airflow_dag_trigger.arn
   batch_size       = 1
+}
+
+resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
+  depends_on    = [aws_ssm_parameter.unity_proxy_airflow_ui]
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
+  input         = "{}"
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_ssm_parameter.unity_proxy_airflow_ui,
+      aws_ssm_parameter.unity_proxy_ogc_api
+    ]))
+  }
 }
