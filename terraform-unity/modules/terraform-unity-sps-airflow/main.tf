@@ -801,7 +801,7 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "airflow-ui"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-ui"])))
   description = "The URL of the Airflow UI."
   type        = "String"
   value = jsonencode({
@@ -814,6 +814,9 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
     Component = "SSM"
     Stack     = "SSM"
   })
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
 resource "aws_ssm_parameter" "airflow_api_url" {
@@ -829,7 +832,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "airflow-api"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-api"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
   value = jsonencode({
@@ -842,6 +845,9 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
     Component = "SSM"
     Stack     = "SSM"
   })
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
 resource "aws_ssm_parameter" "airflow_logs" {
@@ -881,7 +887,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
 }
 
 resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "ogc-api"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "ogc-api"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
   value = jsonencode({
@@ -894,6 +900,9 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
     Component = "SSM"
     Stack     = "SSM"
   })
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
 resource "kubernetes_manifest" "karpenter_node_class" {
@@ -948,6 +957,58 @@ resource "kubernetes_manifest" "karpenter_node_class" {
   }
 }
 
+resource "kubernetes_manifest" "karpenter_node_class_high_workload" {
+  manifest = {
+    apiVersion = "karpenter.k8s.aws/v1beta1"
+    kind       = "EC2NodeClass"
+    metadata = {
+      name = "airflow-kubernetes-pod-operator-high-workload"
+    }
+    spec = {
+      amiFamily = "AL2"
+      amiSelectorTerms = [{
+        id = data.aws_ami.al2_eks_optimized.image_id
+      }]
+      userData = <<-EOT
+        #!/bin/bash
+        echo "Starting pre-bootstrap configurations..."
+        # Custom script to enable IP forwarding
+        sudo sed -i 's/^net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/sysctl.conf && sudo sysctl -p |true
+        echo "Pre-bootstrap configurations applied."
+      EOT
+      role     = data.aws_iam_role.cluster_iam_role.name
+      subnetSelectorTerms = [for subnet_id in jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"] : {
+        id = subnet_id
+      }]
+      securityGroupSelectorTerms = [{
+        tags = {
+          "kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}" = "owned"
+          "Name"                                                       = "${data.aws_eks_cluster.cluster.name}-node"
+        }
+      }]
+      blockDeviceMappings = [for bd in tolist(data.aws_ami.al2_eks_optimized.block_device_mappings) : {
+        deviceName = bd.device_name
+        ebs = {
+          volumeSize          = var.karpenter_node_classes["airflow-kubernetes-pod-operator-high-workload"].volume_size
+          volumeType          = bd.ebs.volume_type
+          encrypted           = bd.ebs.encrypted
+          deleteOnTermination = bd.ebs.delete_on_termination
+        }
+      }]
+      metadataOptions = {
+        httpEndpoint            = "enabled"
+        httpPutResponseHopLimit = 3
+      }
+      tags = merge(local.common_tags, {
+        "karpenter.sh/discovery" = data.aws_eks_cluster.cluster.name
+        Name                     = format(local.resource_name_prefix, "karpenter")
+        Component                = "karpenter"
+        Stack                    = "karpenter"
+      })
+    }
+  }
+}
+
 resource "null_resource" "remove_node_class_finalizers" {
   # https://github.com/aws/karpenter-provider-aws/issues/5079
   provisioner "local-exec" {
@@ -961,6 +1022,7 @@ resource "null_resource" "remove_node_class_finalizers" {
   triggers = {
     kubeconfig_filepath = var.kubeconfig_filepath
     node_class_name     = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+    node_class_name     = kubernetes_manifest.karpenter_node_class_high_workload.manifest.metadata.name
   }
   depends_on = [
     kubernetes_manifest.karpenter_node_pools
@@ -980,7 +1042,8 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
       template = {
         spec = {
           nodeClassRef = {
-            name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+            # name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+            name = each.value.nodeClassRef
           }
           requirements = [for req in each.value.requirements : {
             key      = req.key
@@ -1000,7 +1063,8 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
     }
   }
   depends_on = [
-    kubernetes_manifest.karpenter_node_class
+    kubernetes_manifest.karpenter_node_class,
+    kubernetes_manifest.karpenter_node_class_high_workload
   ]
 }
 
