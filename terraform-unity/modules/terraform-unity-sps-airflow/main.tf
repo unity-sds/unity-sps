@@ -863,7 +863,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       Redirect "/${var.project}/${var.venue}/sps/home"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
+      ProxyPassMatch "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
@@ -888,7 +888,7 @@ resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
       ProxyPassReverse "/"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/ogc/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
+      ProxyPassMatch "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
