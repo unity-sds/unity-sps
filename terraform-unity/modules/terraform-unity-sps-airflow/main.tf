@@ -809,7 +809,7 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, "airflow-ui"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-ui"])))
   description = "The URL of the Airflow UI."
   type        = "String"
   value = jsonencode({
@@ -840,7 +840,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, "airflow-api"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-api"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
   value = jsonencode({
@@ -895,7 +895,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
 }
 
 resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, "ogc-api"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "ogc-api"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
   value = jsonencode({
