@@ -859,6 +859,9 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
     <Location "/${var.project}/${var.venue}/sps/">
       ProxyPassReverse "/"
     </Location>
+    <Location "/unity/dev/sps/unity/dev/sps/home">
+      Redirect "/unity/dev/sps/home"
+    </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
       ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
       ProxyPreserveHost On
