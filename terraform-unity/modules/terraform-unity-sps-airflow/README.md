@@ -111,6 +111,7 @@ No modules.
 | [aws_iam_role.cluster_iam_role](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/iam_role) | data source |
 | [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/security_group) | data source |
 | [aws_ssm_parameter.al2_eks_optimized_ami](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.ssl_cert_arn](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/ingress_v1) | data source |
