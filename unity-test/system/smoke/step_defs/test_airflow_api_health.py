@@ -23,7 +23,7 @@ def api_up_and_running():
 
 @when("I send a GET request to the health endpoint", target_fixture="response")
 def send_get_request(airflow_api_url):
-    response = requests.get(f"{airflow_api_url}/health")
+    response = requests.get(f"{airflow_api_url}/health", verify=False)
     return response
 
 
