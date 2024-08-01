@@ -201,7 +201,7 @@ with DAG(
     key = parsed_url.path.lstrip("/")
     filename = key.split("/")[-1]
 
-    dp_templates = json.loads(Variable.get("data_product_templates"))
+    dp_templates = json.loads(Variable.get("data_products_templates"))
     rc_templates = json.loads(Variable.get("run_config_templates"))
 
     dp = identify_dataset(dp_templates, filename)
