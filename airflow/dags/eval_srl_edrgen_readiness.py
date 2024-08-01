@@ -4,6 +4,7 @@ import logging
 import re
 from datetime import datetime
 from typing import Dict, List
+from urllib.parse import urlparse
 
 import jsonschema
 from airflow.decorators import task
@@ -37,12 +38,14 @@ def render_template(template, values=dict()):
 
 @task
 def identify_dataset(dp_templates: Dict, dp_filename: str) -> Dict:
+    if not dp_filename:
+        raise ValueError("No filename provided in the payload")
     for dp_name, dp_template in dp_templates.items():
         matched_dp_obj = re.fullmatch(dp_template["regex_pattern"], dp_filename)
         if matched_dp_obj:
             dp_id = dp_template["data_product_id_format"].format(**matched_dp_obj.groupdict())
             return {"data_product_name": dp_name, "data_product_id": dp_id}
-    raise ValueError("No matching data product found")
+    raise ValueError(f"No matching data product found for filename: {dp_filename}")
 
 
 @task
@@ -177,8 +180,11 @@ with DAG(
     and triggering downstream DAGs if all prerequisites are met.
     """,
 ) as dag:
-    filename = "{{ dag_run.conf['filename'] }}"
-    bucket = "{{ dag_run.conf['bucket'] }}"
+    payload = "{{ dag_run.conf['payload'] }}"
+    parsed_url = urlparse(payload)
+    bucket = parsed_url.netloc
+    key = parsed_url.path.lstrip("/")
+    filename = key.split("/")[-1]
 
     dp_templates = json.loads(Variable.get("data_products"))
     rc_templates = json.loads(Variable.get("run_config"))
