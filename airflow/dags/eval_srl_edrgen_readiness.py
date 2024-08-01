@@ -74,7 +74,7 @@ def identify_dags(run_config_templates: Dict, data_product_name: str) -> List[st
 
 @task
 def generate_run_configs(
-    run_config_templates: Dict, data_product_templates: Dict, dags: List[str], dp: Dict
+    run_config_templates: Dict, data_products_templates: Dict, dags: List[str], dp: Dict
 ) -> Dict:
     osl_bucket = Variable.get("osl_bucket")
     isl_bucket = Variable.get("isl_bucket")
@@ -84,7 +84,7 @@ def generate_run_configs(
     matched_dp_name = dp["data_product_name"]
     matched_dp_id = dp["data_product_id"]
     dp_rendered_dict = render_template(
-        data_product_templates[matched_dp_name],
+        data_products_templates[matched_dp_name],
         {"DATA_PRODUCT_ID": matched_dp_id, "ISL_BUCKET": isl_bucket},
     )
 
@@ -93,12 +93,12 @@ def generate_run_configs(
         rc_values = {matched_dp_name.upper(): dp_rendered_dict}
 
         for req_static_dp in rc["required_static_data"]:
-            static_dp = data_product_templates[req_static_dp]
+            static_dp = data_products_templates[req_static_dp]
             static_dp_rendered_dict = render_template(static_dp, {"CONFIG_BUCKET": config_bucket})
             rc_values[req_static_dp.upper()] = static_dp_rendered_dict
 
         for exp_output_dp in rc["expected_output_data_products"]:
-            exp_dp = data_product_templates[exp_output_dp]
+            exp_dp = data_products_templates[exp_output_dp]
             exp_dp_rendered_dict = render_template(exp_dp, {"OSL_BUCKET": osl_bucket})
             rc_values[exp_output_dp.upper()] = exp_dp_rendered_dict
 
