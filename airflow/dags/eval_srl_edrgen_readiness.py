@@ -7,7 +7,6 @@ from typing import Dict, List
 
 import jsonschema
 from airflow.decorators import task
-from airflow.exceptions import AirflowException
 from airflow.models import Variable
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
@@ -146,26 +145,6 @@ def evaluate_dag_triggers(run_configs: Dict) -> Dict:
 
 
 @task
-def read_json_file(filename: str) -> Dict:
-    """
-    Read a JSON file from the include directory.
-
-    :param filename: Name of the JSON file to read
-    :return: Parsed JSON content as a dictionary
-    """
-    # dag_folder = os.path.dirname(__file__)
-    # file_path = os.path.join(dag_folder, "..", "include", filename)
-    file_path = filename
-    try:
-        with open(file_path, "r") as file:
-            return json.load(file)
-    except FileNotFoundError:
-        raise AirflowException(f"File not found: {file_path}")
-    except json.JSONDecodeError:
-        raise AirflowException(f"Invalid JSON in file: {file_path}")
-
-
-@task
 def trigger_downstream_dags(filtered_run_configs: Dict):
     for dag_id, rc in filtered_run_configs.items():
         required_files = [file["key"] for file in rc["required_input_data_products"]["STACAM_RawDP"]["files"]]
@@ -201,8 +180,8 @@ with DAG(
     filename = "{{ dag_run.conf['filename'] }}"
     bucket = "{{ dag_run.conf['bucket'] }}"
 
-    dp_templates = read_json_file("data_products.schema.json")
-    rc_templates = read_json_file("run_config.schema.json")
+    dp_templates = json.loads(Variable.get("data_products"))
+    rc_templates = json.loads(Variable.get("run_config"))
 
     dp = identify_dataset(dp_templates, filename)
     dags = identify_dags(rc_templates, dp["data_product_name"])
@@ -211,13 +190,4 @@ with DAG(
     filtered_run_configs = evaluate_dag_triggers(validated_run_configs)
     trigger_dags = trigger_downstream_dags(filtered_run_configs)
 
-    (
-        dp_templates
-        >> rc_templates
-        >> dp
-        >> dags
-        >> run_configs
-        >> validated_run_configs
-        >> filtered_run_configs
-        >> trigger_dags
-    )
+    (dp >> dags >> run_configs >> validated_run_configs >> filtered_run_configs >> trigger_dags)
