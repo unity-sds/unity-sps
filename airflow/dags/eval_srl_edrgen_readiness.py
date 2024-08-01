@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import os
 import re
 from datetime import datetime
 from typing import Dict, List
@@ -154,8 +153,9 @@ def read_json_file(filename: str) -> Dict:
     :param filename: Name of the JSON file to read
     :return: Parsed JSON content as a dictionary
     """
-    dag_folder = os.path.dirname(__file__)
-    file_path = os.path.join(dag_folder, "..", "include", filename)
+    # dag_folder = os.path.dirname(__file__)
+    # file_path = os.path.join(dag_folder, "..", "include", filename)
+    file_path = filename
     try:
         with open(file_path, "r") as file:
             return json.load(file)
@@ -201,8 +201,8 @@ with DAG(
     filename = "{{ dag_run.conf['filename'] }}"
     bucket = "{{ dag_run.conf['bucket'] }}"
 
-    dp_templates = read_json_file("dp_templates.json")
-    rc_templates = read_json_file("rc_templates.json")
+    dp_templates = read_json_file("data_products.schema.json")
+    rc_templates = read_json_file("run_config.schema.json")
 
     dp = identify_dataset(dp_templates, filename)
     dags = identify_dags(rc_templates, dp["data_product_name"])
