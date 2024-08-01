@@ -38,29 +38,24 @@ def render_template(template, values=dict()):
 
 @task
 def identify_dataset(dp_templates: Dict, dp_filename: str) -> Dict:
-    task_logger.info(f"Identifying dataset for filename: {dp_filename}")
-    task_logger.debug(f"Data product templates: {dp_templates}")
-
-    if not isinstance(dp_templates, dict):
-        raise ValueError(f"Expected dp_templates to be a dict, got {type(dp_templates)}")
-
+    matched_dp_obj = None
+    matched_dp_name = None
+    matched_dp_template = None
     for dp_name, dp_template in dp_templates.items():
-        if not isinstance(dp_template, dict):
-            task_logger.warning(f"Invalid template for {dp_name}: {dp_template}")
+        matched_dp_obj = re.fullmatch(dp_template["regex_pattern"], dp_filename)
+
+        if not matched_dp_obj:
             continue
 
-        regex_pattern = dp_template.get("regex_pattern")
-        if not regex_pattern:
-            task_logger.warning(f"Missing regex_pattern for {dp_name}")
-            continue
+        matched_dp_name = dp_name
+        matched_dp_template = dp_template
+        break
 
-        matched_dp_obj = re.fullmatch(regex_pattern, dp_filename)
-        if matched_dp_obj:
-            dp_id = dp_template["data_product_id_format"].format(**matched_dp_obj.groupdict())
-            task_logger.info(f"Matched data product: {dp_name}")
-            return {"data_product_name": dp_name, "data_product_id": dp_id}
+    if not matched_dp_obj:
+        raise ValueError
 
-    raise ValueError(f"No matching data product found for filename: {dp_filename}")
+    dp_id = matched_dp_template["data_product_id_format"].format(**matched_dp_obj.groupdict())
+    return {"data_product_name": matched_dp_name, "data_product_id": dp_id}
 
 
 @task
