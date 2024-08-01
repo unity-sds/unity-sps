@@ -111,7 +111,7 @@ def validate_run_configs(run_configs: Dict) -> Dict:
     return run_configs
 
 
-@task(multiple_outputs=True)
+@task
 def evaluate_dag_triggers(run_configs: Dict) -> Dict:
     s3_hook = S3Hook()
 
