@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Dict, List
 
 import jsonschema
-from airflow.decorators import task, task_group
+from airflow.decorators import task
 from airflow.exceptions import AirflowException
 from airflow.models import Variable
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
@@ -111,7 +111,7 @@ def validate_run_configs(run_configs: Dict) -> Dict:
     return run_configs
 
 
-@task
+@task(multiple_outputs=True)
 def evaluate_dag_triggers(run_configs: Dict) -> Dict:
     s3_hook = S3Hook()
 
@@ -165,15 +165,6 @@ def read_json_file(filename: str) -> Dict:
         raise AirflowException(f"Invalid JSON in file: {file_path}")
 
 
-@task_group
-def process_data_products(dp_templates: Dict, rc_templates: Dict, filename: str):
-    dp = identify_dataset(dp_templates, filename)
-    dags = identify_dags(rc_templates, dp["data_product_name"])
-    run_configs = generate_run_configs(rc_templates, dp_templates, dags, dp)
-    validated_run_configs = validate_run_configs(run_configs)
-    return evaluate_dag_triggers(validated_run_configs)
-
-
 with DAG(
     dag_id="eval_srl_edrgen_readiness",
     default_args=default_args,
@@ -191,7 +182,11 @@ with DAG(
     dp_templates = read_json_file("dp_templates.json")
     rc_templates = read_json_file("rc_templates.json")
 
-    filtered_run_configs = process_data_products(dp_templates, rc_templates, filename)
+    dp = identify_dataset(dp_templates, filename)
+    dags = identify_dags(rc_templates, dp["data_product_name"])
+    run_configs = generate_run_configs(rc_templates, dp_templates, dags, dp)
+    validated_run_configs = validate_run_configs(run_configs)
+    filtered_run_configs = evaluate_dag_triggers(validated_run_configs)
 
     for dag_id, rc in filtered_run_configs.items():
         required_files = [file["key"] for file in rc["required_input_data_products"]["STACAM_RawDP"]["files"]]
@@ -210,4 +205,13 @@ with DAG(
             failed_states=["failed", "upstream_failed"],
             dag_run_id=dag_run_id,
         )
-        filtered_run_configs >> trigger_dag
+        (
+            dp_templates
+            >> rc_templates
+            >> dp
+            >> dags
+            >> run_configs
+            >> validated_run_configs
+            >> filtered_run_configs
+            >> trigger_dag
+        )
