@@ -1,0 +1,56 @@
+{
+  "$id": "urn:data_products",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "data_product_id": {
+      "type": "string"
+    },
+    "data_product_id_format": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "files": {
+      "items": {
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bucket",
+          "key"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "level": {
+      "type": "string"
+    },
+    "regex_pattern": {
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "Raw",
+        "SDP"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "regex_pattern",
+    "data_product_id_format",
+    "data_product_id",
+    "level",
+    "type",
+    "description",
+    "files"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,38 @@
+{
+  "$id": "urn:run_config",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "expected_output_data_products": {
+      "additionalProperties": {
+        "$ref": "urn:data_products"
+      },
+      "type": "object"
+    },
+    "local_inputs_directory": {
+      "type": "string"
+    },
+    "local_outputs_directory": {
+      "type": "string"
+    },
+    "required_input_data_products": {
+      "additionalProperties": {
+        "$ref": "urn:data_products"
+      },
+      "type": "object"
+    },
+    "required_static_data": {
+      "additionalProperties": {
+        "$ref": "urn:data_products"
+      },
+      "type": "object"
+    }
+  },
+  "required": [
+    "local_inputs_directory",
+    "local_outputs_directory",
+    "required_input_data_products",
+    "required_static_data",
+    "expected_output_data_products"
+  ],
+  "type": "object"
+}
