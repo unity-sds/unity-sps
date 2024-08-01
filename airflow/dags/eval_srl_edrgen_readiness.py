@@ -38,13 +38,28 @@ def render_template(template, values=dict()):
 
 @task
 def identify_dataset(dp_templates: Dict, dp_filename: str) -> Dict:
-    if not dp_filename:
-        raise ValueError("No filename provided in the payload")
+    task_logger.info(f"Identifying dataset for filename: {dp_filename}")
+    task_logger.debug(f"Data product templates: {dp_templates}")
+
+    if not isinstance(dp_templates, dict):
+        raise ValueError(f"Expected dp_templates to be a dict, got {type(dp_templates)}")
+
     for dp_name, dp_template in dp_templates.items():
-        matched_dp_obj = re.fullmatch(dp_template["regex_pattern"], dp_filename)
+        if not isinstance(dp_template, dict):
+            task_logger.warning(f"Invalid template for {dp_name}: {dp_template}")
+            continue
+
+        regex_pattern = dp_template.get("regex_pattern")
+        if not regex_pattern:
+            task_logger.warning(f"Missing regex_pattern for {dp_name}")
+            continue
+
+        matched_dp_obj = re.fullmatch(regex_pattern, dp_filename)
         if matched_dp_obj:
             dp_id = dp_template["data_product_id_format"].format(**matched_dp_obj.groupdict())
+            task_logger.info(f"Matched data product: {dp_name}")
             return {"data_product_name": dp_name, "data_product_id": dp_id}
+
     raise ValueError(f"No matching data product found for filename: {dp_filename}")
 
 
@@ -94,8 +109,8 @@ def generate_run_configs(
 
 @task
 def validate_run_configs(run_configs: Dict) -> Dict:
-    dp_schema = json.loads(Variable.get("dp_schema"))
-    rc_schema = json.loads(Variable.get("rc_schema"))
+    dp_schema = json.loads(Variable.get("data_product_schema"))
+    rc_schema = json.loads(Variable.get("run_config_schema"))
 
     registry = Registry().with_resources(
         [
@@ -186,8 +201,8 @@ with DAG(
     key = parsed_url.path.lstrip("/")
     filename = key.split("/")[-1]
 
-    dp_templates = json.loads(Variable.get("data_products"))
-    rc_templates = json.loads(Variable.get("run_config"))
+    dp_templates = json.loads(Variable.get("data_product_templates"))
+    rc_templates = json.loads(Variable.get("run_config_templates"))
 
     dp = identify_dataset(dp_templates, filename)
     dags = identify_dags(rc_templates, dp["data_product_name"])
