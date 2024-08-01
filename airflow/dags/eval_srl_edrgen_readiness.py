@@ -165,6 +165,28 @@ def read_json_file(filename: str) -> Dict:
         raise AirflowException(f"Invalid JSON in file: {file_path}")
 
 
+@task
+def trigger_downstream_dags(filtered_run_configs: Dict):
+    for dag_id, rc in filtered_run_configs.items():
+        required_files = [file["key"] for file in rc["required_input_data_products"]["STACAM_RawDP"]["files"]]
+        filename_string = "".join(required_files)
+        dag_run_id = hashlib.sha256(filename_string.encode()).hexdigest()
+
+        trigger_dag = TriggerDagRunOperator(
+            task_id=f"trigger_dag_{dag_id}",
+            trigger_dag_id=dag_id,
+            conf={"run_config": rc},
+            execution_date="{{ execution_date }}",
+            reset_dag_run=True,
+            wait_for_completion=True,
+            poke_interval=60,
+            allowed_states=["success"],
+            failed_states=["failed", "upstream_failed"],
+            dag_run_id=dag_run_id,
+        )
+        trigger_dag.execute(context=None)
+
+
 with DAG(
     dag_id="eval_srl_edrgen_readiness",
     default_args=default_args,
@@ -187,31 +209,15 @@ with DAG(
     run_configs = generate_run_configs(rc_templates, dp_templates, dags, dp)
     validated_run_configs = validate_run_configs(run_configs)
     filtered_run_configs = evaluate_dag_triggers(validated_run_configs)
+    trigger_dags = trigger_downstream_dags(filtered_run_configs)
 
-    for dag_id, rc in filtered_run_configs.items():
-        required_files = [file["key"] for file in rc["required_input_data_products"]["STACAM_RawDP"]["files"]]
-        filename_string = "".join(required_files)
-        dag_run_id = hashlib.sha256(filename_string.encode()).hexdigest()
-
-        trigger_dag = TriggerDagRunOperator(
-            task_id=f"trigger_dag_{dag_id}",
-            trigger_dag_id=dag_id,
-            conf={"run_config": rc},
-            execution_date="{{ execution_date }}",
-            reset_dag_run=True,
-            wait_for_completion=True,
-            poke_interval=60,
-            allowed_states=["success"],
-            failed_states=["failed", "upstream_failed"],
-            dag_run_id=dag_run_id,
-        )
-        (
-            dp_templates
-            >> rc_templates
-            >> dp
-            >> dags
-            >> run_configs
-            >> validated_run_configs
-            >> filtered_run_configs
-            >> trigger_dag
-        )
+    (
+        dp_templates
+        >> rc_templates
+        >> dp
+        >> dags
+        >> run_configs
+        >> validated_run_configs
+        >> filtered_run_configs
+        >> trigger_dags
+    )
