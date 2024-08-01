@@ -97,7 +97,7 @@ jobs:
         dev_status=${{ steps.mcp_venue_dev_smoke_tests.outcome }}
         test_status=${{ steps.mcp_venue_test_smoke_tests.outcome }}
         sbg_dev_status=${{ steps.mcp_sbg_dev_smoke_tests.outcome }}
-        ops_status = ${{ steps.mcp_venue_ops_smoke_tests.outcome }}
+        ops_status=${{ steps.mcp_venue_ops_smoke_tests.outcome }}
         echo "Dev Smoke Tests: $dev_status"
         echo "Test Smoke Tests: $test_status"
         echo "SBG Dev Smoke Tests: $sbg_dev_status"
