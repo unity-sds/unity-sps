@@ -1,7 +1,6 @@
 
 locals {
-  counter              = var.counter != "" ? var.counter : random_id.counter.hex
-  resource_name_prefix = join("-", compact([var.project, var.venue, var.service_area, "%s", var.deployment_name, local.counter]))
+  resource_name_prefix = join("-", compact([var.project, var.venue, var.service_area, "%s"]))
   common_tags = {
     Name        = ""
     Venue       = var.venue

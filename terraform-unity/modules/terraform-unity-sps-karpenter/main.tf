@@ -8,10 +8,6 @@ terraform {
   }
 }
 
-resource "random_id" "counter" {
-  byte_length = 2
-}
-
 module "karpenter" {
   source                            = "terraform-aws-modules/eks/aws//modules/karpenter"
   version                           = "20.8.5"

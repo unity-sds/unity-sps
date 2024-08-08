@@ -8,13 +8,16 @@ terraform {
   }
 }
 
+# module "unity-sps-tags" {
+# module "unity-sps-eks" {
+# module "unity-sps-karpenter" {
+# module "unity-sps-rds" {
+# module "unity-sps-ogc-api" {
 module "unity-sps-airflow" {
   source                     = "./modules/terraform-unity-sps-airflow"
   project                    = var.project
   venue                      = var.venue
   service_area               = var.service_area
-  deployment_name            = var.deployment_name
-  counter                    = var.counter
   release                    = var.release
   kubeconfig_filepath        = var.kubeconfig_filepath
   airflow_webserver_password = var.airflow_webserver_password
@@ -25,3 +28,4 @@ module "unity-sps-airflow" {
   karpenter_node_pools       = var.karpenter_node_pools
   dag_catalog_repo           = var.dag_catalog_repo
 }
+# module "unity-sps-initiators" {

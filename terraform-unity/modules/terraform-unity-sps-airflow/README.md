@@ -28,8 +28,8 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_s3_bucket_notification"></a> [s3\_bucket\_notification](#module\_s3\_bucket\_notification) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification | f22fbdcc6831f483ad2f9e0b21a79274a1a352f1 |
-| <a name="module_unity_initiator"></a> [unity\_initiator](#module\_unity\_initiator) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator | f22fbdcc6831f483ad2f9e0b21a79274a1a352f1 |
+| <a name="module_s3_bucket_notification"></a> [s3\_bucket\_notification](#module\_s3\_bucket\_notification) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification | 413-submit-ogc |
+| <a name="module_unity_initiator"></a> [unity\_initiator](#module\_unity\_initiator) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator | 413-submit-ogc |
 
 ## Resources
 
@@ -44,6 +44,8 @@
 | [aws_iam_policy.airflow_worker_policy](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/iam_policy) | resource |
 | [aws_iam_role.airflow_worker_role](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.airflow_worker_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_kms_alias.efs_key_alias](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/kms_alias) | resource |
+| [aws_kms_key.efs_key](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/kms_key) | resource |
 | [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/lambda_invocation) | resource |
 | [aws_s3_bucket.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.code](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/s3_bucket) | resource |
@@ -93,7 +95,6 @@
 | [null_resource.remove_keda_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.2/docs/resources/resource) | resource |
 | [null_resource.remove_node_class_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.2/docs/resources/resource) | resource |
 | [random_id.airflow_webserver_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/id) | resource |
-| [random_id.counter](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/id) | resource |
 | [random_password.sps_db](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/password) | resource |
 | [time_sleep.wait_for_efs_mount_target_dns_propagation](https://registry.terraform.io/providers/hashicorp/time/0.11.1/docs/resources/sleep) | resource |
 | [aws_ami.al2_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ami) | data source |
@@ -114,9 +115,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | The password for the Airflow webserver and UI. | `string` | n/a | yes |
-| <a name="input_counter"></a> [counter](#input\_counter) | Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead. | `string` | n/a | yes |
 | <a name="input_dag_catalog_repo"></a> [dag\_catalog\_repo](#input\_dag\_catalog\_repo) | Git repository that stores the catalog of Airflow DAGs. | <pre>object({<br>    url                 = string<br>    ref                 = string<br>    dags_directory_path = string<br>  })</pre> | n/a | yes |
-| <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | The name of the deployment. | `string` | n/a | yes |
 | <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>    git_sync = object({<br>      name = string<br>      tag  = string<br>    })<br>    redis = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
 | <a name="input_karpenter_node_classes"></a> [karpenter\_node\_classes](#input\_karpenter\_node\_classes) | n/a | <pre>map(object({<br>    volume_size = string<br>  }))</pre> | n/a | yes |

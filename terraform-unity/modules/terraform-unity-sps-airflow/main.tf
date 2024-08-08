@@ -1,7 +1,3 @@
-resource "random_id" "counter" {
-  byte_length = 2
-}
-
 resource "kubernetes_namespace" "keda" {
   metadata {
     name = "keda"
@@ -124,6 +120,7 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
   }
 }
 
+# Start move to RDS module
 resource "random_password" "sps_db" {
   length           = 16
   special          = true
@@ -219,6 +216,7 @@ resource "kubernetes_secret" "airflow_metadata" {
     connection     = "postgresql://${aws_db_instance.sps_db.username}:${urlencode(aws_secretsmanager_secret_version.sps_db.secret_string)}@${aws_db_instance.sps_db.endpoint}/${aws_db_instance.sps_db.db_name}"
   }
 }
+# End move to RDS module
 
 resource "aws_s3_bucket" "airflow_logs" {
   bucket        = format(local.resource_name_prefix, "airflowlogs")
@@ -301,8 +299,28 @@ resource "kubernetes_storage_class" "efs" {
   storage_provisioner = "efs.csi.aws.com"
 }
 
+resource "aws_kms_key" "efs_key" {
+  description             = "KMS key for EFS encryption"
+  deletion_window_in_days = 7
+  enable_key_rotation     = true
+
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "EfsKmsKey")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_kms_alias" "efs_key_alias" {
+  name          = "alias/${format(local.resource_name_prefix, "efs-key")}"
+  target_key_id = aws_kms_key.efs_key.key_id
+}
+
 resource "aws_efs_file_system" "airflow" {
   creation_token = format(local.resource_name_prefix, "AirflowEfs")
+  encrypted      = true
+  kms_key_id     = aws_kms_key.efs_key.arn
+
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "AirflowEfs")
     Component = "airflow"
@@ -484,8 +502,6 @@ resource "helm_release" "airflow" {
       service_area_version     = var.release
       unity_project            = var.project
       unity_venue              = var.venue
-      unity_deployment_name    = var.deployment_name
-      unity_counter            = var.counter
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
     })
   ]
@@ -502,6 +518,8 @@ resource "helm_release" "airflow" {
     kubernetes_manifest.karpenter_node_pools,
   ]
 }
+
+# Start move to OGC module
 
 resource "kubernetes_deployment" "redis" {
   metadata {
@@ -788,7 +806,7 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
 }
 
 resource "aws_ssm_parameter" "airflow_ui_url" {
-  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "airflow", "ui_url"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
   value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
@@ -800,7 +818,7 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-ui"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "airflow-ui"])))
   description = "The URL of the Airflow UI."
   type        = "String"
   value = jsonencode({
@@ -819,7 +837,7 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
 }
 
 resource "aws_ssm_parameter" "airflow_api_url" {
-  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "airflow", "api_url"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
   value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
@@ -831,7 +849,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-api"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "airflow-api"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
   value = jsonencode({
@@ -903,7 +921,7 @@ EOT
 }
 
 resource "aws_ssm_parameter" "airflow_logs" {
-  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "airflow", "logs"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "logs"])))
   description = "The name of the S3 bucket for the Airflow logs."
   type        = "String"
   value       = aws_s3_bucket.airflow_logs.id
@@ -915,7 +933,7 @@ resource "aws_ssm_parameter" "airflow_logs" {
 }
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {
-  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "ui_url"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "ui_url"])))
   description = "The URL of the OGC Proccesses API Docs UI."
   type        = "String"
   value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
@@ -927,7 +945,7 @@ resource "aws_ssm_parameter" "ogc_processes_ui_url" {
 }
 
 resource "aws_ssm_parameter" "ogc_processes_api_url" {
-  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "api_url"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
   value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
@@ -939,7 +957,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
 }
 
 resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "ogc-api"])))
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "ogc-api"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
   value = jsonencode({
@@ -1120,6 +1138,8 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
   ]
 }
 
+# Start move to initiator module
+
 resource "aws_s3_bucket" "inbound_staging_location" {
   bucket        = format(local.resource_name_prefix, "isl")
   force_destroy = true
@@ -1154,15 +1174,11 @@ resource "aws_s3_object" "router_config" {
   bucket = aws_s3_bucket.config.id
   key    = "routers/srl_router.yaml"
   content = templatefile("${path.module}/../../../unity-initiator/routers/srl_router.tmpl.yaml", {
-    airflow_base_api_endpoint = aws_ssm_parameter.airflow_api_url.value,
-    airflow_username          = "admin",
-    airflow_password          = var.airflow_webserver_password
+    airflow_base_api_endpoint       = aws_ssm_parameter.airflow_api_url.value,
+    airflow_username                = "admin",
+    airflow_password                = var.airflow_webserver_password
+    ogc_processes_base_api_endpoint = aws_ssm_parameter.ogc_processes_api_url.value
   })
-  # etag = filemd5(templatefile("${path.module}/../../../unity-initiator/routers/srl_router.tmpl.yaml", {
-  #   airflow_base_api_endpoint = aws_ssm_parameter.airflow_api_url.value,
-  #   airflow_username          = "admin",
-  #   airflow_password          = var.airflow_webserver_password
-  # }))
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "S3-router")
     Component = "S3"
@@ -1171,12 +1187,11 @@ resource "aws_s3_object" "router_config" {
 }
 
 module "unity_initiator" {
-  source          = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator?ref=f22fbdcc6831f483ad2f9e0b21a79274a1a352f1"
-  code_bucket     = aws_s3_bucket.code.id
-  deployment_name = var.deployment_name
-  router_config   = "s3://${aws_s3_bucket.config.id}/${aws_s3_object.router_config.key}"
-  project         = var.project
-  venue           = var.venue
+  source        = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator?ref=413-submit-ogc"
+  code_bucket   = aws_s3_bucket.code.id
+  project       = var.project
+  router_config = "s3://${aws_s3_bucket.config.id}/${aws_s3_object.router_config.key}"
+  venue         = var.venue
 }
 
 resource "aws_s3_object" "isl_stacam_rawdp_folder" {
@@ -1185,7 +1200,7 @@ resource "aws_s3_object" "isl_stacam_rawdp_folder" {
 }
 
 module "s3_bucket_notification" {
-  source              = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification?ref=f22fbdcc6831f483ad2f9e0b21a79274a1a352f1"
+  source              = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification?ref=413-submit-ogc"
   initiator_topic_arn = module.unity_initiator.initiator_topic_arn
   isl_bucket          = aws_s3_bucket.inbound_staging_location.id
   isl_bucket_prefix   = "STACAM/RawDP/"
@@ -1193,7 +1208,7 @@ module "s3_bucket_notification" {
 
 resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
   depends_on    = [aws_ssm_parameter.unity_proxy_airflow_ui]
-  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
+  function_name = "unity-${var.venue}-httpdproxymanagement"
   input         = "{}"
   triggers = {
     redeployment = sha1(jsonencode([

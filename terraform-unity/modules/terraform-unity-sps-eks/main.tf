@@ -8,12 +8,8 @@ terraform {
   }
 }
 
-resource "random_id" "counter" {
-  byte_length = 2
-}
-
 module "unity-eks" {
-  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.1.0"
+  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=eks-ami-updates"
   deployment_name = local.cluster_name
   nodegroups      = var.nodegroups
   aws_auth_roles = [{
