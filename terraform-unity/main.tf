@@ -21,6 +21,7 @@ module "unity-sps-airflow" {
   docker_images              = var.docker_images
   helm_charts                = var.helm_charts
   mcp_ami_owner_id           = var.mcp_ami_owner_id
+  karpenter_node_classes     = var.karpenter_node_classes
   karpenter_node_pools       = var.karpenter_node_pools
   dag_catalog_repo           = var.dag_catalog_repo
 }

@@ -722,8 +722,10 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"      = "ip"
       "alb.ingress.kubernetes.io/subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
-      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 5000}]"
+      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTPS\": 5000}]"
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
+      "alb.ingress.kubernetes.io/certificate-arn"  = data.aws_ssm_parameter.ssl_cert_arn.value
+      "alb.ingress.kubernetes.io/ssl-policy"       = "ELBSecurityPolicy-TLS13-1-2-2021-06"
     }
   }
   spec {
@@ -742,18 +744,6 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
             }
           }
         }
-        # path {
-        #   path      = "/ogc-processes-api"
-        #   path_type = "Prefix"
-        #   backend {
-        #     service {
-        #       name = "ogc-processes-api"
-        #       port {
-        #         number = 80
-        #       }
-        #     }
-        #   }
-        # }
       }
     }
   }
@@ -769,8 +759,10 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"      = "ip"
       "alb.ingress.kubernetes.io/subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
-      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 5001}]"
+      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTPS\": 5001}]"
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
+      "alb.ingress.kubernetes.io/certificate-arn"  = data.aws_ssm_parameter.ssl_cert_arn.value
+      "alb.ingress.kubernetes.io/ssl-policy"       = "ELBSecurityPolicy-TLS13-1-2-2021-06"
     }
   }
   spec {
@@ -799,7 +791,7 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+  value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_ui")
     Component = "SSM"
@@ -807,13 +799,104 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   })
 }
 
+resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-ui"])))
+  description = "The URL of the Airflow UI."
+  type        = "String"
+  value = jsonencode({
+    "componentName" : "Airflow UI"
+    "healthCheckUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/health"
+    "landingPageUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+  })
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_ui")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+  value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
+resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "airflow-api"])))
+  description = "The URL of the Airflow REST API."
+  type        = "String"
+  value = jsonencode({
+    "componentName" : "Airflow API"
+    "healthCheckUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1/health"
+    "landingPageUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+  })
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_api")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
+  name        = format("/%s", join("/", compact(["unity", var.project, var.venue, "cs", "management", "proxy", "configurations", "015-sps-airflow-ui"])))
+  description = "The unity-proxy configuration for the Airflow UI."
+  type        = "String"
+  value       = <<-EOT
+
+    <Location "/${var.project}/${var.venue}/sps/">
+      ProxyPassReverse "/"
+    </Location>
+    <Location "/${var.project}/${var.venue}/sps/${var.project}/${var.venue}/sps/home">
+      Redirect "/${var.project}/${var.venue}/sps/home"
+    </Location>
+    <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
+      ProxyPassMatch "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
+      ProxyPreserveHost On
+      FallbackResource /management/index.html
+      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
+      Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/sps/$1|q"
+    </LocationMatch>
+
+EOT
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "httpd-proxy-config-airflow")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
+resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
+  name        = format("/%s", join("/", compact(["unity", var.project, var.venue, "cs", "management", "proxy", "configurations", "016-sps-ogc-api"])))
+  description = "The unity-proxy configuration for the Airflow OGC API."
+  type        = "String"
+  value       = <<-EOT
+
+    <Location "/${var.project}/${var.venue}/ogc/">
+      ProxyPassReverse "/"
+    </Location>
+    <LocationMatch "^/${var.project}/${var.venue}/ogc/(.*)$">
+      ProxyPassMatch "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
+      ProxyPreserveHost On
+      FallbackResource /management/index.html
+      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
+      Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/ogc/$1|q"
+    </LocationMatch>
+
+EOT
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "httpd-proxy-config-ogc")
     Component = "SSM"
     Stack     = "SSM"
   })
@@ -835,7 +918,7 @@ resource "aws_ssm_parameter" "ogc_processes_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "ui_url"])))
   description = "The URL of the OGC Proccesses API Docs UI."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
+  value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
     Component = "SSM"
@@ -847,12 +930,31 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, var.deployment_name, local.counter, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
+  value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_api")
     Component = "SSM"
     Stack     = "SSM"
   })
+}
+
+resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
+  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", var.deployment_name, local.counter, "ogc-api"])))
+  description = "The URL of the OGC Processes REST API."
+  type        = "String"
+  value = jsonencode({
+    "componentName" : "OGC API"
+    "healthCheckUrl" : "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/health"
+    "landingPageUrl" : "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
+  })
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "health-check-endpoints-ogc_processes_api")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+  lifecycle {
+    ignore_changes = [value]
+  }
 }
 
 resource "kubernetes_manifest" "karpenter_node_class" {
@@ -907,6 +1009,58 @@ resource "kubernetes_manifest" "karpenter_node_class" {
   }
 }
 
+resource "kubernetes_manifest" "karpenter_node_class_high_workload" {
+  manifest = {
+    apiVersion = "karpenter.k8s.aws/v1beta1"
+    kind       = "EC2NodeClass"
+    metadata = {
+      name = "airflow-kubernetes-pod-operator-high-workload"
+    }
+    spec = {
+      amiFamily = "AL2"
+      amiSelectorTerms = [{
+        id = data.aws_ami.al2_eks_optimized.image_id
+      }]
+      userData = <<-EOT
+        #!/bin/bash
+        echo "Starting pre-bootstrap configurations..."
+        # Custom script to enable IP forwarding
+        sudo sed -i 's/^net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/sysctl.conf && sudo sysctl -p |true
+        echo "Pre-bootstrap configurations applied."
+      EOT
+      role     = data.aws_iam_role.cluster_iam_role.name
+      subnetSelectorTerms = [for subnet_id in jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"] : {
+        id = subnet_id
+      }]
+      securityGroupSelectorTerms = [{
+        tags = {
+          "kubernetes.io/cluster/${data.aws_eks_cluster.cluster.name}" = "owned"
+          "Name"                                                       = "${data.aws_eks_cluster.cluster.name}-node"
+        }
+      }]
+      blockDeviceMappings = [for bd in tolist(data.aws_ami.al2_eks_optimized.block_device_mappings) : {
+        deviceName = bd.device_name
+        ebs = {
+          volumeSize          = var.karpenter_node_classes["airflow-kubernetes-pod-operator-high-workload"].volume_size
+          volumeType          = bd.ebs.volume_type
+          encrypted           = bd.ebs.encrypted
+          deleteOnTermination = bd.ebs.delete_on_termination
+        }
+      }]
+      metadataOptions = {
+        httpEndpoint            = "enabled"
+        httpPutResponseHopLimit = 3
+      }
+      tags = merge(local.common_tags, {
+        "karpenter.sh/discovery" = data.aws_eks_cluster.cluster.name
+        Name                     = format(local.resource_name_prefix, "karpenter")
+        Component                = "karpenter"
+        Stack                    = "karpenter"
+      })
+    }
+  }
+}
+
 resource "null_resource" "remove_node_class_finalizers" {
   # https://github.com/aws/karpenter-provider-aws/issues/5079
   provisioner "local-exec" {
@@ -920,6 +1074,7 @@ resource "null_resource" "remove_node_class_finalizers" {
   triggers = {
     kubeconfig_filepath = var.kubeconfig_filepath
     node_class_name     = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+    node_class_name     = kubernetes_manifest.karpenter_node_class_high_workload.manifest.metadata.name
   }
   depends_on = [
     kubernetes_manifest.karpenter_node_pools
@@ -939,7 +1094,8 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
       template = {
         spec = {
           nodeClassRef = {
-            name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+            # name = kubernetes_manifest.karpenter_node_class.manifest.metadata.name
+            name = each.value.nodeClassRef
           }
           requirements = [for req in each.value.requirements : {
             key      = req.key
@@ -959,7 +1115,8 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
     }
   }
   depends_on = [
-    kubernetes_manifest.karpenter_node_class
+    kubernetes_manifest.karpenter_node_class,
+    kubernetes_manifest.karpenter_node_class_high_workload
   ]
 }
 
@@ -1032,4 +1189,16 @@ module "s3_bucket_notification" {
   initiator_topic_arn = module.unity_initiator.initiator_topic_arn
   isl_bucket          = aws_s3_bucket.inbound_staging_location.id
   isl_bucket_prefix   = "STACAM/RawDP/"
+}
+
+resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
+  depends_on    = [aws_ssm_parameter.unity_proxy_airflow_ui]
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
+  input         = "{}"
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_ssm_parameter.unity_proxy_airflow_ui,
+      aws_ssm_parameter.unity_proxy_ogc_api
+    ]))
+  }
 }

@@ -47,6 +47,8 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue):
         f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,
         json={"conf": {"cwl_workflow": f"{cwl_workflow}", "cwl_args": f"{cwl_args}"}},
+        # nosec
+        verify=False,
     )
     return response
 
@@ -76,6 +78,8 @@ def poll_dag_run(response, airflow_api_url, airflow_api_auth):
     dag_run_response = requests.get(
         f"""{airflow_api_url}/api/v1/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
         auth=airflow_api_auth,
+        # nosec
+        verify=False,
     )
     assert dag_run_response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
     json = dag_run_response.json()

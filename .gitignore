@@ -247,3 +247,5 @@ terraform.rc
 
 /lambda/deployment_packages/*
 !/lambda/deployment_packages/.gitkeep
+
+**/*.cfg

@@ -21,7 +21,7 @@ do
    echo " "
    # register process
    echo "Registering process: $proc"
-   curl -X POST -H "Content-Type: application/json; charset=utf-8" --data '{"id":"'${proc}'", "version": "1.0.0"}'  "${WPST_API}/processes"
+   curl -k -X POST -H "Content-Type: application/json; charset=utf-8" --data '{"id":"'${proc}'", "version": "1.0.0"}'  "${WPST_API}/processes"
    # unregister process
    # echo "Unregistering process: $proc"
    # curl -X DELETE -H "Content-Type: application/json; charset=utf-8" "${WPST_API}/processes/${proc}"

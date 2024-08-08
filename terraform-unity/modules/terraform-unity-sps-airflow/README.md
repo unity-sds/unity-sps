@@ -44,6 +44,7 @@
 | [aws_iam_policy.airflow_worker_policy](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/iam_policy) | resource |
 | [aws_iam_role.airflow_worker_role](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.airflow_worker_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/lambda_invocation) | resource |
 | [aws_s3_bucket.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.code](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.config](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/s3_bucket) | resource |
@@ -57,11 +58,16 @@
 | [aws_security_group_rule.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.eks_egress_to_rds](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group_rule) | resource |
 | [aws_security_group_rule.rds_ingress_from_eks](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group_rule) | resource |
+| [aws_ssm_parameter.airflow_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.airflow_ui_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.ogc_processes_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.unity_proxy_airflow_ui](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.unity_proxy_ogc_api](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
@@ -69,6 +75,7 @@
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_manifest.karpenter_node_class](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
+| [kubernetes_manifest.karpenter_node_class_high_workload](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
 | [kubernetes_manifest.karpenter_node_pools](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
 | [kubernetes_namespace.airflow](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/namespace) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/namespace) | resource |
@@ -96,6 +103,7 @@
 | [aws_iam_role.cluster_iam_role](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/iam_role) | data source |
 | [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/security_group) | data source |
 | [aws_ssm_parameter.al2_eks_optimized_ami](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.ssl_cert_arn](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/ingress_v1) | data source |
@@ -111,7 +119,8 @@
 | <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | The name of the deployment. | `string` | n/a | yes |
 | <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>    git_sync = object({<br>      name = string<br>      tag  = string<br>    })<br>    redis = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
-| <a name="input_karpenter_node_pools"></a> [karpenter\_node\_pools](#input\_karpenter\_node\_pools) | Configuration for Karpenter node pools | <pre>map(object({<br>    requirements : list(object({<br>      key : string<br>      operator : string<br>      values : list(string)<br>    }))<br>    limits : object({<br>      cpu : string<br>      memory : string<br>    })<br>    disruption : object({<br>      consolidationPolicy : string<br>      consolidateAfter : string<br>    })<br>  }))</pre> | n/a | yes |
+| <a name="input_karpenter_node_classes"></a> [karpenter\_node\_classes](#input\_karpenter\_node\_classes) | n/a | <pre>map(object({<br>    volume_size = string<br>  }))</pre> | n/a | yes |
+| <a name="input_karpenter_node_pools"></a> [karpenter\_node\_pools](#input\_karpenter\_node\_pools) | Configuration for Karpenter node pools | <pre>map(object({<br>    requirements : list(object({<br>      key : string<br>      operator : string<br>      values : list(string)<br>    }))<br>    nodeClassRef : string<br>    limits : object({<br>      cpu : string<br>      memory : string<br>    })<br>    disruption : object({<br>      consolidationPolicy : string<br>      consolidateAfter : string<br>    })<br>  }))</pre> | n/a | yes |
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
 | <a name="input_mcp_ami_owner_id"></a> [mcp\_ami\_owner\_id](#input\_mcp\_ami\_owner\_id) | The ID of the MCP AMIs | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | n/a | yes |
