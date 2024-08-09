@@ -203,5 +203,7 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_resources"></a> [resources](#output\_resources) | SSM parameter IDs for SPS resources. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

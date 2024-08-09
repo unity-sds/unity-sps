@@ -381,6 +381,7 @@ resource "helm_release" "airflow" {
       unity_project            = var.project
       unity_venue              = var.venue
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
+      karpenter_node_pools     = join(",", var.karpenter_node_pools)
     })
   ]
   set_sensitive {

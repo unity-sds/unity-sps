@@ -51,12 +51,13 @@ module "unity-sps-airflow" {
   kubeconfig_filepath        = var.kubeconfig_filepath
   kubernetes_namespace       = kubernetes_namespace.service_area.metadata[0].name
   db_instance_identifier     = module.unity-sps-database.db_instance_identifier
-  db_secret_version          = module.unity-sps-database.db_secret_version
+  db_secret_arn              = module.unity-sps-database.db_secret_arn
   efs_file_system_id         = module.unity-sps-efs.file_system_id
   airflow_webserver_username = var.airflow_webserver_username
   airflow_webserver_password = var.airflow_webserver_password
   docker_images              = var.docker_images
   helm_charts                = var.helm_charts
+  karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
 }
 
 module "unity-sps-ogc-processes-api" {
@@ -67,12 +68,13 @@ module "unity-sps-ogc-processes-api" {
   release                    = var.release
   kubernetes_namespace       = kubernetes_namespace.service_area.metadata[0].name
   db_instance_identifier     = module.unity-sps-database.db_instance_identifier
-  db_secret_version          = module.unity-sps-database.db_secret_version
+  db_secret_arn              = module.unity-sps-database.db_secret_arn
   airflow_deployed_dags_pvc  = module.unity-sps-airflow.airflow_deployed_dags_pvc
   airflow_webserver_username = var.airflow_webserver_username
   airflow_webserver_password = var.airflow_webserver_password
   docker_images              = var.docker_images
   dag_catalog_repo           = var.dag_catalog_repo
+  karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
 }
 
 module "unity-sps-initiators" {

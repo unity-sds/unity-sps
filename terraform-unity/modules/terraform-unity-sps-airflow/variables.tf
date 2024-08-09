@@ -33,7 +33,7 @@ variable "db_instance_identifier" {
   type        = string
 }
 
-variable "db_secret_version" {
+variable "db_secret_arn" {
   description = "The version of the database secret in AWS Secrets Manager"
   type        = string
 }
@@ -82,4 +82,9 @@ variable "docker_images" {
       tag  = string
     })
   })
+}
+
+variable "karpenter_node_pools" {
+  description = "Names of the Karpenter node pools"
+  type        = list(string)
 }

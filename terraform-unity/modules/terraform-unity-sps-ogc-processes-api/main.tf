@@ -73,7 +73,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
                 match_expressions {
                   key      = "karpenter.sh/nodepool"
                   operator = "In"
-                  values   = ["airflow-core-components"]
+                  values   = compact([for pool in var.karpenter_node_pools : pool if pool == "airflow-core-components"])
                 }
                 match_expressions {
                   key      = "karpenter.sh/capacity-type"

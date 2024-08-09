@@ -49,5 +49,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_db_instance_identifier"></a> [db\_instance\_identifier](#output\_db\_instance\_identifier) | n/a |
-| <a name="output_db_secret_version"></a> [db\_secret\_version](#output\_db\_secret\_version) | n/a |
+| <a name="output_db_secret_arn"></a> [db\_secret\_arn](#output\_db\_secret\_arn) | n/a |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

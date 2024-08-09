@@ -34,7 +34,7 @@ data "aws_db_instance" "db" {
 }
 
 data "aws_secretsmanager_secret_version" "db" {
-  secret_id = var.db_secret_version
+  secret_id = var.db_secret_arn
 }
 
 data "aws_efs_file_system" "efs" {

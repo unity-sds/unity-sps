@@ -24,8 +24,7 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [kubernetes_manifest.karpenter_node_class](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
-| [kubernetes_manifest.karpenter_node_class_high_workload](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
+| [kubernetes_manifest.karpenter_node_classes](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
 | [kubernetes_manifest.karpenter_node_pools](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
 | [null_resource.remove_node_class_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.2/docs/resources/resource) | resource |
 | [aws_ami.al2_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ami) | data source |
@@ -49,5 +48,8 @@ No modules.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_karpenter_node_class_names"></a> [karpenter\_node\_class\_names](#output\_karpenter\_node\_class\_names) | Names of the Karpenter node classes |
+| <a name="output_karpenter_node_pools"></a> [karpenter\_node\_pools](#output\_karpenter\_node\_pools) | Names of the Karpenter node pools |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
