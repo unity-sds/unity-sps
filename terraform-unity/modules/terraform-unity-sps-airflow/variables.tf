@@ -68,18 +68,6 @@ variable "docker_images" {
     airflow = object({
       name = string
       tag  = string
-    }),
-    ogc_processes_api = object({
-      name = string
-      tag  = string
-    })
-    git_sync = object({
-      name = string
-      tag  = string
-    })
-    redis = object({
-      name = string
-      tag  = string
     })
   })
 }

@@ -55,7 +55,7 @@ module "unity-sps-airflow" {
   efs_file_system_id         = module.unity-sps-efs.file_system_id
   airflow_webserver_username = var.airflow_webserver_username
   airflow_webserver_password = var.airflow_webserver_password
-  docker_images              = var.docker_images
+  docker_images              = var.airflow_docker_images
   helm_charts                = var.helm_charts
   karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
 }
@@ -72,7 +72,7 @@ module "unity-sps-ogc-processes-api" {
   airflow_deployed_dags_pvc  = module.unity-sps-airflow.airflow_deployed_dags_pvc
   airflow_webserver_username = var.airflow_webserver_username
   airflow_webserver_password = var.airflow_webserver_password
-  docker_images              = var.docker_images
+  docker_images              = var.ogc_processes_docker_images
   dag_catalog_repo           = var.dag_catalog_repo
   karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
 }

@@ -51,10 +51,6 @@ variable "airflow_webserver_password" {
 variable "docker_images" {
   description = "Docker images for the associated services."
   type = object({
-    airflow = object({
-      name = string
-      tag  = string
-    }),
     ogc_processes_api = object({
       name = string
       tag  = string

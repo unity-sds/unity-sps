@@ -62,13 +62,26 @@ variable "helm_charts" {
   }
 }
 
-variable "docker_images" {
-  description = "Docker images for the associated services."
+variable "airflow_docker_images" {
+  description = "Docker images for the associated Airflow services."
   type = object({
     airflow = object({
       name = string
       tag  = string
-    }),
+    })
+  })
+  default = {
+    airflow = {
+      name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
+      tag  = "2.1.2"
+    }
+  }
+}
+
+
+variable "ogc_processes_docker_images" {
+  description = "Docker images for the associated OGC Processes API services."
+  type = object({
     ogc_processes_api = object({
       name = string
       tag  = string
@@ -83,10 +96,6 @@ variable "docker_images" {
     })
   })
   default = {
-    airflow = {
-      name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.1.2"
-    },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
       tag  = "1.0.0"
