@@ -30,6 +30,12 @@ variable "kubeconfig_filepath" {
   type        = string
 }
 
+variable "airflow_webserver_username" {
+  description = "The username for the Airflow webserver and UI."
+  type        = string
+  default     = "admin"
+}
+
 variable "airflow_webserver_password" {
   description = "The password for the Airflow webserver and UI."
   type        = string

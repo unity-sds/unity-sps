@@ -19,12 +19,7 @@ variable "release" {
 }
 
 variable "kubernetes_namespace" {
-  description = "The kubernetes namespace for Airflow resources."
-  type        = string
-}
-
-variable "kubeconfig_filepath" {
-  description = "The path to the kubeconfig file for the Kubernetes cluster."
+  description = "The kubernetes namespace for the API's resources."
   type        = string
 }
 
@@ -38,8 +33,8 @@ variable "db_secret_version" {
   type        = string
 }
 
-variable "efs_file_system_id" {
-  description = "The EFS file system ID"
+variable "airflow_deployed_dags_pvc" {
+  description = "The name of the PVC for Airflow deployed DAGs"
   type        = string
 }
 
@@ -51,15 +46,6 @@ variable "airflow_webserver_username" {
 variable "airflow_webserver_password" {
   description = "The password for the Airflow webserver and UI."
   type        = string
-}
-
-variable "helm_charts" {
-  description = "Helm charts for the associated services."
-  type = map(object({
-    repository = string
-    chart      = string
-    version    = string
-  }))
 }
 
 variable "docker_images" {
@@ -81,5 +67,14 @@ variable "docker_images" {
       name = string
       tag  = string
     })
+  })
+}
+
+variable "dag_catalog_repo" {
+  description = "Git repository that stores the catalog of Airflow DAGs."
+  type = object({
+    url                 = string
+    ref                 = string
+    dags_directory_path = string
   })
 }

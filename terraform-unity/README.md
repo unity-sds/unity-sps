@@ -159,23 +159,36 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 
 ## Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.50.0 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.29.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_unity-sps-airflow"></a> [unity-sps-airflow](#module\_unity-sps-airflow) | ./modules/terraform-unity-sps-airflow | n/a |
+| <a name="module_unity-sps-database"></a> [unity-sps-database](#module\_unity-sps-database) | ./modules/terraform-unity-sps-database | n/a |
+| <a name="module_unity-sps-efs"></a> [unity-sps-efs](#module\_unity-sps-efs) | ./modules/terraform-unity-sps-efs | n/a |
+| <a name="module_unity-sps-initiators"></a> [unity-sps-initiators](#module\_unity-sps-initiators) | ./modules/terraform-unity-sps-initiators | n/a |
+| <a name="module_unity-sps-karpenter-node-config"></a> [unity-sps-karpenter-node-config](#module\_unity-sps-karpenter-node-config) | ./modules/terraform-unity-sps-karpenter-node-config | n/a |
+| <a name="module_unity-sps-ogc-processes-api"></a> [unity-sps-ogc-processes-api](#module\_unity-sps-ogc-processes-api) | ./modules/terraform-unity-sps-ogc-processes-api | n/a |
 
 ## Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/namespace) | resource |
+| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/eks_cluster) | data source |
+| [aws_eks_cluster_auth.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/eks_cluster_auth) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | The password for the Airflow webserver and UI. | `string` | n/a | yes |
+| <a name="input_airflow_webserver_username"></a> [airflow\_webserver\_username](#input\_airflow\_webserver\_username) | The username for the Airflow webserver and UI. | `string` | `"admin"` | no |
 | <a name="input_dag_catalog_repo"></a> [dag\_catalog\_repo](#input\_dag\_catalog\_repo) | Git repository that stores the catalog of Airflow DAGs. | <pre>object({<br>    url                 = string<br>    ref                 = string<br>    dags_directory_path = string<br>  })</pre> | <pre>{<br>  "dags_directory_path": "airflow/dags",<br>  "ref": "develop",<br>  "url": "https://github.com/unity-sds/unity-sps.git"<br>}</pre> | no |
 | <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    }),<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>    git_sync = object({<br>      name = string<br>      tag  = string<br>    })<br>    redis = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | <pre>{<br>  "airflow": {<br>    "name": "ghcr.io/unity-sds/unity-sps/sps-airflow",<br>    "tag": "2.1.2"<br>  },<br>  "git_sync": {<br>    "name": "registry.k8s.io/git-sync/git-sync",<br>    "tag": "v4.2.3"<br>  },<br>  "ogc_processes_api": {<br>    "name": "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api",<br>    "tag": "1.0.0"<br>  },<br>  "redis": {<br>    "name": "redis",<br>    "tag": "7.2.4"<br>  }<br>}</pre> | no |
 | <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | <pre>{<br>  "airflow": {<br>    "chart": "airflow",<br>    "repository": "https://airflow.apache.org",<br>    "version": "1.13.1"<br>  },<br>  "keda": {<br>    "chart": "keda",<br>    "repository": "https://kedacore.github.io/charts",<br>    "version": "v2.14.2"<br>  }<br>}</pre> | no |
@@ -190,7 +203,5 @@ No resources.
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_resources"></a> [resources](#output\_resources) | SSM parameter IDs for pipeline resources. |
+No outputs.
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
