@@ -19,17 +19,6 @@ variable "service_area" {
   default     = "sps"
 }
 
-variable "deployment_name" {
-  description = "The name of the deployment."
-  type        = string
-}
-
-variable "counter" {
-  description = "Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead."
-  type        = string
-  default     = ""
-}
-
 variable "release" {
   description = "The software release version."
   type        = string
@@ -39,6 +28,12 @@ variable "release" {
 variable "kubeconfig_filepath" {
   description = "The path to the kubeconfig file for the Kubernetes cluster."
   type        = string
+}
+
+variable "airflow_webserver_username" {
+  description = "The username for the Airflow webserver and UI."
+  type        = string
+  default     = "admin"
 }
 
 variable "airflow_webserver_password" {
@@ -67,13 +62,26 @@ variable "helm_charts" {
   }
 }
 
-variable "docker_images" {
-  description = "Docker images for the associated services."
+variable "airflow_docker_images" {
+  description = "Docker images for the associated Airflow services."
   type = object({
     airflow = object({
       name = string
       tag  = string
-    }),
+    })
+  })
+  default = {
+    airflow = {
+      name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
+      tag  = "2.1.2"
+    }
+  }
+}
+
+
+variable "ogc_processes_docker_images" {
+  description = "Docker images for the associated OGC Processes API services."
+  type = object({
     ogc_processes_api = object({
       name = string
       tag  = string
@@ -88,10 +96,6 @@ variable "docker_images" {
     })
   })
   default = {
-    airflow = {
-      name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.1.2"
-    },
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
       tag  = "1.0.0"

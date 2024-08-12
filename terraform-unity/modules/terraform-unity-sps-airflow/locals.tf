@@ -1,7 +1,6 @@
 
 locals {
-  counter              = var.counter != "" ? var.counter : random_id.counter.hex
-  resource_name_prefix = join("-", compact([var.project, var.venue, var.service_area, "%s", var.deployment_name, local.counter]))
+  resource_name_prefix = join("-", compact([var.project, var.venue, var.service_area, "%s"]))
   common_tags = {
     Name        = ""
     Venue       = var.venue
@@ -14,8 +13,9 @@ locals {
     mission     = var.project
     Stack       = ""
   }
-  oidc_provider_url          = replace(data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")
-  airflow_webserver_username = "admin"
+  oidc_provider_url                   = replace(data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")
+  airflow_metadata_kubernetes_secret  = "airflow-metadata-secret"
+  airflow_webserver_kubernetes_secret = "airflow-webserver-secret"
   airflow_webserver_navbar_color = {
     "ops"     = "#bf4f4f"
     "prod"    = "#bf4f4f"

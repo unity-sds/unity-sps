@@ -1,22 +1,15 @@
-# S3 backend
 terraform {
   backend "s3" {
-    # full path to Terraform state file:
-    # s3://<bucket>/<key>
-    bucket  = ""
-    key     = ""
-    region  = "us-west-2"
-    encrypt = true
+    bucket               = "unity-unity-dev-bucket"
+    workspace_key_prefix = "sps/tfstates"
+    key                  = "terraform.tfstate"
+    region               = "us-west-2"
+    encrypt              = true
   }
 }
 
-resource "random_id" "counter" {
-  byte_length = 2
-}
-
 module "unity-eks" {
-
-  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.1.0"
+  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=eks-ami-updates"
   deployment_name = local.cluster_name
   nodegroups      = var.nodegroups
   aws_auth_roles = [{
