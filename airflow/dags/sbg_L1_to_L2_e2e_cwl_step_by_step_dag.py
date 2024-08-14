@@ -21,7 +21,7 @@ from unity_sps_utils import get_affinity
 from airflow import DAG
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_NAMESPACE = "airflow"
+POD_NAMESPACE = "sps"
 POD_LABEL = "sbg_task"
 SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
 

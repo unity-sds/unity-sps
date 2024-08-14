@@ -16,7 +16,7 @@ from airflow import DAG
 POD_TEMPLATE_FILE = "/opt/airflow/dags/docker_cwl_pod.yaml"
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_NAMESPACE = "airflow"
+POD_NAMESPACE = "sps"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).

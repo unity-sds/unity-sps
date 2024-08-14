@@ -5,7 +5,7 @@ from unity_sps_utils import get_affinity
 
 from airflow import DAG
 
-POD_NAMESPACE = "airflow"
+POD_NAMESPACE = "sps"
 POD_LABEL = "karpenter_test_task"
 
 default_args = {
