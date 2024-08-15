@@ -4,10 +4,6 @@ data "kubernetes_namespace" "service_area" {
   }
 }
 
-data "aws_ssm_parameter" "ssl_cert_arn" {
-  name = "/unity/account/network/ssl"
-}
-
 data "aws_ssm_parameter" "subnet_ids" {
   name = "/unity/cs/account/network/subnet_list"
 }
