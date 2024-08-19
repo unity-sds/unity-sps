@@ -140,5 +140,4 @@ cleanup_task = PythonOperator(
     task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
 )
 
-
-setup_task >> cwl_task >> cleanup_task
+setup_task.as_setup() >> cwl_task >> cleanup_task.as_teardown(setups=setup_task)
