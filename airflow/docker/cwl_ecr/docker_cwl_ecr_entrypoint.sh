@@ -57,8 +57,8 @@ done
 . /usr/share/cwl/venv/bin/activate
 
 # Log into AWS ECR repository
-IFS=. read account_id dkr ecr aws_region amazonaws com <<EOF 
-${ecr_login} 
+IFS=. read account_id dkr ecr aws_region amazonaws com <<EOF
+${ecr_login}
 EOF
 aws ecr get-login-password --region $aws_region | docker login --username AWS --password-stdin $ecr_login
 echo "Logged into: $ecr_login"

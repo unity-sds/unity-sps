@@ -37,9 +37,7 @@ NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 WORKING_DIR = "/scratch"
 
 # default parameters
-DEFAULT_CWL_WORKFLOW = (
-    "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/186-ecr-cwl-dag/demos/echo_message_ecr.cwl"
-)
+DEFAULT_CWL_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/186-ecr-cwl-dag/demos/echo_message_ecr.cwl"
 DEFAULT_CWL_ARGUMENTS = json.dumps({"message": "Hello Unity"})
 
 # KPO container requirements
@@ -125,25 +123,21 @@ def setup(ti=None, **context):
         node_pool = NODE_POOL_HIGH_WORKLOAD
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool", value=node_pool)
-    
+
     # grab ECR URI from airflow variable\
     ecr_uri = Variable.get("cwl_dag_ecr_uri")
     cwl_dag_args = {
         "message": context["params"]["cwl_args"],
         "cwltool:overrides": {
             context["params"]["cwl_workflow"]: {
-                "requirements": {
-                    "DockerRequirement": {
-                        "dockerPull": ecr_uri
-                    }
-                }
+                "requirements": {"DockerRequirement": {"dockerPull": ecr_uri}}
             }
-        }
+        },
     }
     logging.info(f"CWL DAG arguments: {cwl_dag_args['message']}")
     logging.info(f"CWL DAG ECR image: {cwl_dag_args['cwltool:overrides']}")
     ti.xcom_push(key="cwl_dag_arguments", value=json.dumps(cwl_dag_args))
-    
+
     # save ECR login URL
     ecr_login = ecr_uri.split("/")[0]
     logging.info(f"ECR Login: {ecr_login}")
@@ -163,10 +157,10 @@ cwl_task = SpsKubernetesPodOperator(
     get_logs=True,
     startup_timeout_seconds=1800,
     arguments=[
-        "{{ params.cwl_workflow }}", 
+        "{{ params.cwl_workflow }}",
         "{{ ti.xcom_pull(task_ids='Setup', key='cwl_dag_arguments') }}",
-        "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}"
-        ],
+        "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
+    ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
