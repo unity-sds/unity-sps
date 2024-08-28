@@ -9,7 +9,7 @@ data "aws_vpc" "cluster_vpc" {
 }
 
 data "aws_ssm_parameter" "subnet_ids" {
-  name = "/unity/cs/account/network/subnet_list"
+  name = "/unity/account/network/subnet_list"
 }
 
 data "kubernetes_namespace" "service_area" {
