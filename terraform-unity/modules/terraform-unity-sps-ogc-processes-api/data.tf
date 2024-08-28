@@ -5,7 +5,7 @@ data "kubernetes_namespace" "service_area" {
 }
 
 data "aws_ssm_parameter" "subnet_ids" {
-  name = "/unity/cs/account/network/subnet_list"
+  name = "/unity/account/network/subnet_list"
 }
 
 data "aws_db_instance" "db" {
