@@ -77,6 +77,7 @@ dag_default_args = {
 dag = DAG(
     dag_id="cwl_dag",
     description="CWL DAG",
+    dag_display_name="CWL DAG",
     tags=["CWL"],
     is_paused_upon_creation=False,
     catchup=False,
