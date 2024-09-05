@@ -13,6 +13,7 @@ import os
 import shutil
 from datetime import datetime
 
+from airflow.models import Variable
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
@@ -25,7 +26,8 @@ from airflow import DAG
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "sps"
 POD_LABEL = "cwl_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
+# SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:186-ecr-cwl-dag"    #TODO Update with next release
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
@@ -112,6 +114,11 @@ dag = DAG(
             enum=["10Gi", "50Gi", "100Gi", "200Gi", "300Gi"],
             title="Docker container storage",
         ),
+        "use_ecr": Param(
+            False,
+            type="boolean",
+            title="Log into AWS Elastic Container Registry (ECR)"
+        )
     },
 )
 
@@ -141,7 +148,22 @@ def setup(ti=None, **context):
         node_pool = NODE_POOL_HIGH_WORKLOAD
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool", value=node_pool)
-
+    
+    # select arguments and determine if ECR login is required
+    cwl_dag_args = json.loads(context["params"]["cwl_args"])
+    logging.info("Use ECR: %s", context["params"]["use_ecr"])
+    if context["params"]["use_ecr"]:
+        ecr_uri = Variable.get("cwl_dag_ecr_uri")
+        cwl_dag_args["cwltool:overrides"] = {
+            context["params"]["cwl_workflow"]: {
+                "requirements": {"DockerRequirement": {"dockerPull": ecr_uri}}
+            }
+        }
+        ecr_login = ecr_uri.split("/")[0]
+        ti.xcom_push(key="ecr_login", value=ecr_login)
+        logging.info("ECR login: %s", ecr_login)
+    ti.xcom_push(key="cwl_dag_arguments", value=json.dumps(cwl_dag_args))
+    logging.info("CWL DAG arguments: %s", cwl_dag_args)
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
@@ -155,7 +177,11 @@ cwl_task = SpsKubernetesPodOperator(
     in_cluster=True,
     get_logs=True,
     startup_timeout_seconds=1800,
-    arguments=["{{ params.cwl_workflow }}", "{{ params.cwl_args }}"],
+    arguments=[
+        "-w", "{{ params.cwl_workflow }}", 
+        "-j", "{{ ti.xcom_pull(task_ids='Setup', key='cwl_dag_arguments') }}",
+        "-e", "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}"
+    ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
