@@ -7,7 +7,9 @@
 #        (example: { "name": "John Doe" })
 #  OR b) The URL of a YAML or JSON file containing the job parameters
 #        (example: https://github.com/unity-sds/sbg-workflows/blob/main/L1-to-L2-e2e.dev.yml)
-# $3: optional path to an output JSON file that needs to be shared as Airflow "xcom" data
+# $3: the ECR login URL where the AWS account ID and region are specific to the Airflow installation
+#        (example: <aws_account_id>.dkr.ecr.<region>.amazonaws.com)
+# $4: optional path to an output JSON file that needs to be shared as Airflow "xcom" data
 
 # Must be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
 # that executes this script
@@ -16,7 +18,8 @@ WORKING_DIR="/scratch"
 set -ex
 cwl_workflow=$1
 job_args=$2
-json_output=$3
+ecr_login=$3
+json_output=$4
 
 # create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
@@ -48,9 +51,18 @@ do
   sleep 1
 done
 
+# Activate Python virtual environments for executables
+. /usr/share/cwl/venv/bin/activate
+
+# Log into AWS ECR repository
+IFS=. read account_id dkr ecr aws_region amazonaws com <<EOF
+${ecr_login}
+EOF
+aws ecr get-login-password --region $aws_region | docker login --username AWS --password-stdin $ecr_login
+echo "Logged into: $ecr_login"
+
 # Execute CWL workflow in working directory
 # List contents when done
-. /usr/share/cwl/venv/bin/activate
 pwd
 ls -lR
 cwl-runner --debug --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"

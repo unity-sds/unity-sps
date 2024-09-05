@@ -69,7 +69,6 @@ No modules.
 | [aws_efs_file_system.efs](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/efs_file_system) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/eks_cluster) | data source |
 | [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/secretsmanager_secret_version) | data source |
-| [aws_ssm_parameter.ssl_cert_arn](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/ingress_v1) | data source |
