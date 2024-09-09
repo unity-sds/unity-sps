@@ -573,9 +573,9 @@ cleanup_task = PythonOperator(
 )
 
 chain(
-    setup_task,
+    setup_task.as_setup(),
     preprocess_task,
     [isofit_task, reflect_correct_task],
     [resample_task, frcover_task],
-    cleanup_task,
+    cleanup_task.as_teardown(setups=setup_task),
 )
