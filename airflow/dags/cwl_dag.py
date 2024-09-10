@@ -151,13 +151,12 @@ def setup(ti=None, **context):
     cwl_dag_args = json.loads(context["params"]["cwl_args"])
     logging.info("Use ECR: %s", context["params"]["use_ecr"])
     if context["params"]["use_ecr"]:
-        ecr_uri = Variable.get("cwl_dag_ecr_uri")
-        cwl_dag_args["cwltool:overrides"] = {
-            context["params"]["cwl_workflow"]: {
-                "requirements": {"DockerRequirement": {"dockerPull": ecr_uri}}
-            }
-        }
-        ecr_login = ecr_uri.split("/")[0]
+        # cwl_dag_args["cwltool:overrides"] = {
+        #     context["params"]["cwl_workflow"]: {
+        #         "requirements": {"DockerRequirement": {"dockerPull": ecr_uri}}
+        #     }
+        # }
+        ecr_login = os.environ["AIRFLOW_VAR_CWL_DAG_ECR_URI"]
         ti.xcom_push(key="ecr_login", value=ecr_login)
         logging.info("ECR login: %s", ecr_login)
     ti.xcom_push(key="cwl_dag_arguments", value=json.dumps(cwl_dag_args))
