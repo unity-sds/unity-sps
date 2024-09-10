@@ -98,7 +98,7 @@ dag = DAG(
         "request_memory": Param(
             "4Gi",
             type="string",
-            enum=["8Gi", "16Gi", "32Gi", "64Gi", "128Gi", "256Gi"],
+            enum=["4Gi", "8Gi", "16Gi", "32Gi", "64Gi", "128Gi", "256Gi"],
             title="Docker container memory",
         ),
         "request_cpu": Param(
