@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[New Feature]: Review the SPS GitBook documentation](https://github.com/unity-sds/unity-sps/issues/118)
   - [[New Feature]: Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
   - [[New Feature]: Parametrize the SPS Integration Tests](https://github.com/unity-sds/unity-sps/issues/155)
+  - [[New Feature] Upgrade SPS to latest version of Airflow 2.10.0](https://github.com/unity-sds/unity-sps/issues/195)
 
 # [Unity Release 24.2] - 2024-07-01
 
@@ -71,7 +72,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[Task] Add TESTING.md file to SPS repo](https://github.com/unity-sds/unity-sps/issues/99)
 - EPIC: `SPS Infrastructure`
   - [[New Feature] Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
-  - [[New Feature] Upgrade SPS to latest version of Airflow 2.10.0](https://github.com/unity-sds/unity-sps/issues/195)
 
 ## Docker Containers
 
