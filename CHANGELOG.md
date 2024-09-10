@@ -71,6 +71,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[Task] Add TESTING.md file to SPS repo](https://github.com/unity-sds/unity-sps/issues/99)
 - EPIC: `SPS Infrastructure`
   - [[New Feature] Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
+  - [[New Feature] Upgrade SPS to latest version of Airflow 2.10.0](https://github.com/unity-sds/unity-sps/issues/195)
 
 ## Docker Containers
 
