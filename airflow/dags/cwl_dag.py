@@ -99,7 +99,7 @@ dag = DAG(
         "request_memory": Param(
             "4Gi",
             type="string",
-            enum=["8Gi", "16Gi", "32Gi", "64Gi", "128Gi", "256Gi"],
+            enum=["4Gi", "8Gi", "16Gi", "32Gi", "64Gi", "128Gi", "256Gi"],
             title="Docker container memory",
         ),
         "request_cpu": Param(
@@ -111,7 +111,7 @@ dag = DAG(
         "request_storage": Param(
             "10Gi",
             type="string",
-            enum=["10Gi", "50Gi", "100Gi", "200Gi", "300Gi"],
+            enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"],
             title="Docker container storage",
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),

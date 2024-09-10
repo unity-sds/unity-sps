@@ -127,7 +127,7 @@ variable "karpenter_node_classes" {
       volume_size = "30Gi"
     }
     "airflow-kubernetes-pod-operator-high-workload" = {
-      volume_size = "200Gi"
+      volume_size = "300Gi"
     }
   }
 }
