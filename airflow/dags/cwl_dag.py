@@ -155,7 +155,7 @@ def setup(ti=None, **context):
         #         "requirements": {"DockerRequirement": {"dockerPull": ecr_uri}}
         #     }
         # }
-        ecr_login = os.environ["AIRFLOW_VAR_CWL_DAG_ECR_URI"]
+        ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
         ti.xcom_push(key="ecr_login", value=ecr_login)
         logging.info("ECR login: %s", ecr_login)
     ti.xcom_push(key="cwl_dag_arguments", value=json.dumps(cwl_dag_args))
