@@ -143,7 +143,9 @@ resource "aws_iam_policy" "airflow_worker_policy" {
             "sqs:SendMessage",
             "sqs:ReceiveMessage",
             "sns:Publish",
+            "ecr:GetAuthorizationToken",
             "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchCheckLayerAvailability",
             "ecr:BatchGetImage",
             "secretsmanager:GetSecretValue",
             "ssm:GetParameters",
@@ -382,6 +384,7 @@ resource "helm_release" "airflow" {
       unity_venue              = var.venue
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
+      cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
     })
   ]
   set_sensitive {
