@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [Unity Release 24.3] - 2024-09-22
+
+## Tags
+
+- SPS Version 2.2.0
+- OGC API Version 1.1.0
+- OGC Python Client Version 1.1.0
+
+## Repositories
+
+- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.2.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/1.1.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/1.1.0>
+
+## Epics
+
+- EPIC: `Security`
+  - [[Bug]: Upgrade EKS 1.27 AMIs](https://github.com/unity-sds/unity-sps/issues/159)
+- EPIC: `Scaling`
+  - [[New Feature]: Increase ephemeral disk space for Airflow workers](https://github.com/unity-sds/unity-sps/issues/152)
+  - [[New Feature]: Enable users to select the EC2 type to execute a workload](https://github.com/unity-sds/unity-sps/issues/153)
+  - [[New Feature]: Set the DAG run status to "failed" if the main worker task failed](https://github.com/unity-sds/unity-sps/issues/189)
+- EPIC: `Airflow/WPS-T Integration`
+  - [[New Feature]: Create test to deploy, execute and undeploy the CWL DAG](https://github.com/unity-sds/unity-sps/issues/131)
+- EPIC: `Production Venue Deployments`
+  - [[New Feature]: Airflow HTTPD Proxy development and configuration](https://github.com/unity-sds/unity-sps/issues/125)
+  - [[New Feature]: Expose SPS health check endpoints](https://github.com/unity-sds/unity-sps/issues/127)
+- EPIC: `SPS Infrastructure`
+  - [[New Feature]: Update documentation for SPS deployment](https://github.com/unity-sds/unity-sps/issues/116)
+  - [[New Feature]: Review the SPS GitBook documentation](https://github.com/unity-sds/unity-sps/issues/118)
+  - [[New Feature]: Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
+  - [[New Feature]: Parametrize the SPS Integration Tests](https://github.com/unity-sds/unity-sps/issues/155)
 
 # [Unity Release 24.2] - 2024-07-01
 

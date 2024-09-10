@@ -73,7 +73,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.1.2"
+      tag  = "2.2.0-beta-1"
     }
   }
 }
@@ -127,7 +127,7 @@ variable "karpenter_node_classes" {
       volume_size = "30Gi"
     }
     "airflow-kubernetes-pod-operator-high-workload" = {
-      volume_size = "200Gi"
+      volume_size = "300Gi"
     }
   }
 }

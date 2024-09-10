@@ -26,9 +26,7 @@ from airflow import DAG
 POD_NAMESPACE = "sps"
 POD_LABEL = "cwl_task"
 # SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
-SPS_DOCKER_CWL_IMAGE = (
-    "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:186-ecr-cwl-dag"  # TODO Update with next release
-)
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0-beta-3"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
@@ -80,6 +78,7 @@ dag_default_args = {
 dag = DAG(
     dag_id="cwl_dag",
     description="CWL DAG",
+    dag_display_name="CWL DAG",
     tags=["CWL"],
     is_paused_upon_creation=False,
     catchup=False,
@@ -100,7 +99,7 @@ dag = DAG(
         "request_memory": Param(
             "4Gi",
             type="string",
-            enum=["8Gi", "16Gi", "32Gi", "64Gi", "128Gi", "256Gi"],
+            enum=["4Gi", "8Gi", "16Gi", "32Gi", "64Gi", "128Gi", "256Gi"],
             title="Docker container memory",
         ),
         "request_cpu": Param(
@@ -112,7 +111,7 @@ dag = DAG(
         "request_storage": Param(
             "10Gi",
             type="string",
-            enum=["10Gi", "50Gi", "100Gi", "200Gi", "300Gi"],
+            enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"],
             title="Docker container storage",
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),

@@ -72,7 +72,7 @@ fi
 # List contents when done
 pwd
 ls -lR
-cwl-runner --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
+cwl-runner --debug --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
 ls -lR
 
 # Optionally, save the requested output file to a location
