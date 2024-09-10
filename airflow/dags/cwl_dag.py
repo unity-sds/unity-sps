@@ -13,7 +13,6 @@ import os
 import shutil
 from datetime import datetime
 
-from airflow.models import Variable
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
