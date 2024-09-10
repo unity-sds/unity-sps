@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[New Feature]: Increase ephemeral disk space for Airflow workers](https://github.com/unity-sds/unity-sps/issues/152)
   - [[New Feature]: Enable users to select the EC2 type to execute a workload](https://github.com/unity-sds/unity-sps/issues/153)
   - [[New Feature]: Set the DAG run status to "failed" if the main worker task failed](https://github.com/unity-sds/unity-sps/issues/189)
+  - [[New Feature]: Demonstrate use of ECR within an Airflow DAG (https://github.com/unity-sds/unity-sps/issues/186)
 - EPIC: `Airflow/WPS-T Integration`
   - [[New Feature]: Create test to deploy, execute and undeploy the CWL DAG](https://github.com/unity-sds/unity-sps/issues/131)
 - EPIC: `Production Venue Deployments`
