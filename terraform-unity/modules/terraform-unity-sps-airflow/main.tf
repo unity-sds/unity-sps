@@ -528,8 +528,10 @@ EOT
   })
 }
 
+data "aws_lambda_functions" "lambda_check_all" {}
 
 resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
+  count         = contains(data.aws_lambda_functions.lambda_check_all.function_names, "unity-${var.venue}-httpdproxymanagement") ? 1 : 0
   function_name = "unity-${var.venue}-httpdproxymanagement"
   input         = "{}"
   triggers = {
