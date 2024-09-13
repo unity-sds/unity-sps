@@ -16,8 +16,8 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_s3_bucket_notification"></a> [s3\_bucket\_notification](#module\_s3\_bucket\_notification) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification | 413-submit-ogc |
-| <a name="module_unity_initiator"></a> [unity\_initiator](#module\_unity\_initiator) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator | 413-submit-ogc |
+| <a name="module_s3_bucket_notification"></a> [s3\_bucket\_notification](#module\_s3\_bucket\_notification) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification | unity-sps-2.2.0 |
+| <a name="module_unity_initiator"></a> [unity\_initiator](#module\_unity\_initiator) | git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator | unity-sps-2.2.0 |
 
 ## Resources
 
