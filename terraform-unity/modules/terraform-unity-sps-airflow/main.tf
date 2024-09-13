@@ -451,7 +451,7 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "airflow-ui"])))
+  name        = format("/%s", join("/", compact(["", "unity", var.project, var.venue, "component", "airflow-ui"])))
   description = "The URL of the Airflow UI."
   type        = "String"
   value = jsonencode({
@@ -482,7 +482,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
 }
 
 resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
-  name        = format("/%s", join("/", compact(["", var.project, var.project, var.venue, "component", "airflow-api"])))
+  name        = format("/%s", join("/", compact(["", "unity", var.project, var.venue, "component", "airflow-api"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
   value = jsonencode({
@@ -528,8 +528,10 @@ EOT
   })
 }
 
+data "aws_lambda_functions" "lambda_check_all" {}
 
 resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
+  count         = contains(data.aws_lambda_functions.lambda_check_all.function_names, "unity-${var.venue}-httpdproxymanagement") ? 1 : 0
   function_name = "unity-${var.venue}-httpdproxymanagement"
   input         = "{}"
   triggers = {
