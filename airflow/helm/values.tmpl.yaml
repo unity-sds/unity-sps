@@ -273,6 +273,8 @@ env:
     value: "${unity_cluster_name}"
   - name: "AIRFLOW_VAR_KARPENTER_NODE_POOLS"
     value: "${karpenter_node_pools}"
+  - name: "AIRFLOW_VAR_ECR_URI"
+    value: "${cwl_dag_ecr_uri}"
 
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |

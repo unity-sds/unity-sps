@@ -33,8 +33,8 @@ No modules.
 | [kubernetes_service.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/service) | resource |
 | [kubernetes_service.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/service) | resource |
 | [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/db_instance) | data source |
+| [aws_lambda_functions.lambda_check_all](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/lambda_functions) | data source |
 | [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/secretsmanager_secret_version) | data source |
-| [aws_ssm_parameter.ssl_cert_arn](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/namespace) | data source |
