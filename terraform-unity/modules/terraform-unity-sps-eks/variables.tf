@@ -18,7 +18,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.2"
+  default     = "24.3"
 }
 
 variable "nodegroups" {

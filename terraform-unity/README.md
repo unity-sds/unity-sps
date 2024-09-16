@@ -198,7 +198,7 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 | <a name="input_mcp_ami_owner_id"></a> [mcp\_ami\_owner\_id](#input\_mcp\_ami\_owner\_id) | The owner ID of the MCP AMIs | `string` | `"794625662971"` | no |
 | <a name="input_ogc_processes_docker_images"></a> [ogc\_processes\_docker\_images](#input\_ogc\_processes\_docker\_images) | Docker images for the associated OGC Processes API services. | <pre>object({<br>    ogc_processes_api = object({<br>      name = string<br>      tag  = string<br>    })<br>    git_sync = object({<br>      name = string<br>      tag  = string<br>    })<br>    redis = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | <pre>{<br>  "git_sync": {<br>    "name": "registry.k8s.io/git-sync/git-sync",<br>    "tag": "v4.2.3"<br>  },<br>  "ogc_processes_api": {<br>    "name": "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api",<br>    "tag": "1.0.0"<br>  },<br>  "redis": {<br>    "name": "redis",<br>    "tag": "7.2.4"<br>  }<br>}</pre> | no |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS. | `string` | `"unity"` | no |
-| <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | `"24.2"` | no |
+| <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | `"24.3"` | no |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed. | `string` | `"sps"` | no |
 | <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the resources will be deployed. | `string` | n/a | yes |
 
