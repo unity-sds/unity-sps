@@ -1,8 +1,7 @@
 import os
-from typing import Any, Dict
+from typing import Any
 
-# from airflow.auth.managers.fab.security_manager.override import FabAirflowSecurityManagerOverride
-from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride   # Based on warning when launching airflow webserver
+from airflow.providers.fab.auth_manager.security_manager.override import FabAirflowSecurityManagerOverride
 from flask_appbuilder.security.manager import AUTH_OAUTH
 
 # Cognito integration data
@@ -12,10 +11,10 @@ COGNITO_CLIENT_SECRET = os.environ["COGNITO_CLIENT_SECRET"]
 
 # Authentication constants
 AUTH_TYPE = AUTH_OAUTH
-AUTH_USER_REGISTRATION = True    # allow users not in the FAB DB
-AUTH_USER_REGISTRATION_ROLE = "Public"   # role given in addition to AUTH_ROLES
-AUTH_ROLES_SYNC_AT_LOGIN = False    # replace all user's roles each login
-AUTH_ROLES_MAPPING = {    # mapping of FAB roles to userinfo["role_keys"]
+AUTH_USER_REGISTRATION = True
+AUTH_USER_REGISTRATION_ROLE = "Public"
+AUTH_ROLES_SYNC_AT_LOGIN = False
+AUTH_ROLES_MAPPING = {
     "Unity_Viewer": ["User"],
     "Unity_Admin": ["Admin"],
 }
@@ -33,15 +32,16 @@ OAUTH_PROVIDERS = [
             "client_kwargs": {"scope": "email openid profile"},
             "access_token_url": f"{COGNITO_BASE_URL}/token",
             "authorize_url": f"{COGNITO_BASE_URL}/authorize",
-        }
+        },
     }
 ]
 
+
 # Security manager override
 class CognitoAuthorizer(FabAirflowSecurityManagerOverride):
-    
+
     def get_oauth_user_info(self, provider: str, resp: dict[str, Any]) -> dict[str, Any]:
-        
+
         if provider == "Cognito":
             me = self.appbuilder.sm.oauth_remotes[provider].get("userInfo")
             print(me)
@@ -50,7 +50,8 @@ class CognitoAuthorizer(FabAirflowSecurityManagerOverride):
                 "email": "admin@test.airflow.com",
                 "first_name": "Admin",
                 "last_name": "Admin",
-                "role_keys": ["Admin"]
+                "role_keys": ["Admin"],
             }
-    
+
+
 SECURITY_MANAGER_CLASS = CognitoAuthorizer
