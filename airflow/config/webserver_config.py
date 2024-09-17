@@ -10,6 +10,7 @@ from flask_appbuilder.security.manager import AUTH_OAUTH
 COGNITO_BASE_URL = os.environ["COGNITO_BASE_URL"]
 COGNITO_CLIENT_ID = os.environ["COGNITO_CLIENT_ID"]
 COGNITO_CLIENT_SECRET = os.environ["COGNITO_CLIENT_SECRET"]
+COGNITO_POOL_ID = os.environ["COGNITO_POOL_ID"]
 
 # COGNITO_URL = os.environ['COGNITO_URL']
 # CONSUMER_KEY = os.environ['CONSUMER_KEY']
@@ -19,9 +20,7 @@ COGNITO_CLIENT_SECRET = os.environ["COGNITO_CLIENT_SECRET"]
 # REDIRECT_URI = os.environ['REDIRECT_URI']
 REDIRECT_URI = "https://www.cnn.com/"
 
-# FIX<E?
-# JWKS_URI = ("https://cognito-idp.%s.amazonaws.com/%s/.well-known/jwks.json"
-#             % (os.environ['AWS_REGION'], os.environ['COGNITO_POOL_ID']))
+JWKS_URI = f"https://cognito-idp.us-west-2.amazonaws.com/{COGNITO_POOL_ID}/.well-known/jwks.json"
 
 # Authentication constants
 AUTH_TYPE = AUTH_OAUTH
@@ -65,7 +64,7 @@ OAUTH_PROVIDERS = [
             "base_url": os.path.join(COGNITO_BASE_URL, "oauth2/idpresponse"),
             "api_base_url": COGNITO_BASE_URL,
             "redirect_uri": REDIRECT_URI,
-            # 'jwks_uri': JWKS_URI,
+            "jwks_uri": JWKS_URI,
             "client_kwargs": {"scope": "email openid profile"},
             "access_token_url": os.path.join(COGNITO_BASE_URL, "oauth2/token"),
             "authorize_url": os.path.join(COGNITO_BASE_URL, "oauth2/authorize"),

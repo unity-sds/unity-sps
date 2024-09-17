@@ -306,3 +306,11 @@ extraEnv: |
     value: "10"
   - name: AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL
     value: "5"
+  - name: COGNITO_BASE_URL
+    value: ${cognito_base_url}
+  - name: COGNITO_CLIENT_ID
+    value: ${cognito_client_id}
+  - name: COGNITO_CLIENT_SECRET
+    value: ${cognito_client_secret}
+  - name: COGNITO_POOL_ID
+    value: ${cognito_pool_id}
