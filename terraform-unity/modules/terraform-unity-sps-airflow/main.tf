@@ -417,7 +417,7 @@ resource "aws_security_group" "airflow_ingress_sg" {
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
   for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
   security_group_id = aws_security_group.airflow_ingress_sg.id
-  description = "SecurityGroup ingress rule for JPL-local addresses"
+  description       = "SecurityGroup ingress rule for JPL-local addresses"
   ip_protocol       = "tcp"
   from_port         = local.load_balancer_port
   to_port           = local.load_balancer_port
@@ -437,6 +437,7 @@ data "aws_security_groups" "venue_proxy_sg" {
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
   count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
   security_group_id            = aws_security_group.airflow_ingress_sg.id
+  description                  = "SecurityGroup ingress rule for venue-services proxy"
   ip_protocol                  = "tcp"
   from_port                    = local.load_balancer_port
   to_port                      = local.load_balancer_port
