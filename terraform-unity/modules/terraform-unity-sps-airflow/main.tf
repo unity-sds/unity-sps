@@ -403,6 +403,58 @@ resource "helm_release" "airflow" {
   ]
 }
 
+resource "aws_security_group" "airflow_ingress_sg" {
+  name        = "${var.project}-${var.venue}-airflow-ingress-sg"
+  description = "SecurityGroup for Airflow LoadBalancer ingress"
+  vpc_id      = data.aws_vpc.cluster_vpc
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowLBSg")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule1" {
+  security_group_id = aws_security_group.airflow_ingress_sg.id
+  ip_protocol       = "tcp"
+  from_port         = 5000
+  to_port           = 5000
+  cidr_ipv4         = "128.149.0.0/16"
+}
+resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule2" {
+  security_group_id = aws_security_group.airflow_ingress_sg.id
+  ip_protocol       = "tcp"
+  from_port         = 5000
+  to_port           = 5000
+  cidr_ipv4         = "137.78.0.0/16"
+}
+resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule3" {
+  security_group_id = aws_security_group.airflow_ingress_sg.id
+  ip_protocol       = "tcp"
+  from_port         = 5000
+  to_port           = 5000
+  cidr_ipv4         = "137.79.0.0/16"
+}
+
+data "aws_security_groups" "venue_proxy_sg" {
+  filter {
+    name   = "group-name"
+    values = ["${var.project}-${var.venue}-ecs_service_sg"]
+  }
+  tags = {
+    Service = "U-CS"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
+  count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
+  security_group_id            = aws_security_group.airflow_ingress_sg.id
+  ip_protocol                  = "tcp"
+  from_port                    = 5000
+  to_port                      = 5000
+  referenced_security_group_id = data.aws_security_groups.venue_proxy_sg.ids[0]
+}
+
 resource "kubernetes_ingress_v1" "airflow_ingress" {
   metadata {
     name      = "airflow-ingress"
@@ -412,6 +464,7 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
       "alb.ingress.kubernetes.io/target-type"      = "ip"
       "alb.ingress.kubernetes.io/subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
       "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 5000}]"
+      "alb.ingress.kubernetes.io/security-groups"  = aws_security_group.airflow_ingress_sg.id
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
     }
   }
