@@ -4,3 +4,4 @@ RUN pip install cwltool==3.1.20240112164112
 RUN pip install boto3==1.34.89
 
 COPY airflow/plugins /opt/airflow/plugins
+COPY airflow/config/webserver_config.py /opt/airflow/.
