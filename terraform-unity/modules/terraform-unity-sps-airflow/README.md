@@ -49,9 +49,7 @@ No modules.
 | [aws_ssm_parameter.airflow_ui_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.unity_proxy_airflow_ui](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
-| [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_jpl_rule1](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
-| [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_jpl_rule2](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
-| [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_jpl_rule3](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
+| [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_jpl_rule](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_proxy_rule](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.13.1/docs/resources/release) | resource |

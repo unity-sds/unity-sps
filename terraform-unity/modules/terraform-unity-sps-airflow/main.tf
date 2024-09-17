@@ -414,26 +414,13 @@ resource "aws_security_group" "airflow_ingress_sg" {
   })
 }
 
-resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule1" {
+resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
+  for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
   security_group_id = aws_security_group.airflow_ingress_sg.id
   ip_protocol       = "tcp"
-  from_port         = 5000
-  to_port           = 5000
-  cidr_ipv4         = "128.149.0.0/16"
-}
-resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule2" {
-  security_group_id = aws_security_group.airflow_ingress_sg.id
-  ip_protocol       = "tcp"
-  from_port         = 5000
-  to_port           = 5000
-  cidr_ipv4         = "137.78.0.0/16"
-}
-resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule3" {
-  security_group_id = aws_security_group.airflow_ingress_sg.id
-  ip_protocol       = "tcp"
-  from_port         = 5000
-  to_port           = 5000
-  cidr_ipv4         = "137.79.0.0/16"
+  from_port         = local.load_balancer_port
+  to_port           = local.load_balancer_port
+  cidr_ipv4         = each.key
 }
 
 data "aws_security_groups" "venue_proxy_sg" {
@@ -450,8 +437,8 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
   count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
   security_group_id            = aws_security_group.airflow_ingress_sg.id
   ip_protocol                  = "tcp"
-  from_port                    = 5000
-  to_port                      = 5000
+  from_port                    = local.load_balancer_port
+  to_port                      = local.load_balancer_port
   referenced_security_group_id = data.aws_security_groups.venue_proxy_sg.ids[0]
 }
 
@@ -463,7 +450,7 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
       "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"      = "ip"
       "alb.ingress.kubernetes.io/subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
-      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": 5000}]"
+      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": ${local.load_balancer_port}}]"
       "alb.ingress.kubernetes.io/security-groups"  = aws_security_group.airflow_ingress_sg.id
       "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
     }

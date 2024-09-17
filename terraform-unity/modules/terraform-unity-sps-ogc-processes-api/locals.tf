@@ -13,4 +13,5 @@ locals {
     mission     = var.project
     Stack       = ""
   }
+  load_balancer_port = 5001
 }

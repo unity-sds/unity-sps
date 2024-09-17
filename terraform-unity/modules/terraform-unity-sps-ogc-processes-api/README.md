@@ -28,9 +28,7 @@ No modules.
 | [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.unity_proxy_ogc_api](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
-| [aws_vpc_security_group_ingress_rule.ogc_ingress_sg_jpl_rule1](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
-| [aws_vpc_security_group_ingress_rule.ogc_ingress_sg_jpl_rule2](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
-| [aws_vpc_security_group_ingress_rule.ogc_ingress_sg_jpl_rule3](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
+| [aws_vpc_security_group_ingress_rule.ogc_ingress_sg_jpl_rule](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.ogc_ingress_sg_proxy_rule](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
 | [kubernetes_deployment.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
