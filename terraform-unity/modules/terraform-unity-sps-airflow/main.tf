@@ -406,7 +406,7 @@ resource "helm_release" "airflow" {
 resource "aws_security_group" "airflow_ingress_sg" {
   name        = "${var.project}-${var.venue}-airflow-ingress-sg"
   description = "SecurityGroup for Airflow LoadBalancer ingress"
-  vpc_id      = data.aws_vpc.cluster_vpc
+  vpc_id      = data.aws_vpc.cluster_vpc.id
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "AirflowLBSg")
     Component = "airflow"

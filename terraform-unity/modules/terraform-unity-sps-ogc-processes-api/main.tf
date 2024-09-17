@@ -209,7 +209,7 @@ resource "kubernetes_service" "ogc_processes_api" {
 resource "aws_security_group" "ogc_ingress_sg" {
   name        = "${var.project}-${var.venue}-ogc-ingress-sg"
   description = "SecurityGroup for OGC API LoadBalancer ingress"
-  vpc_id      = data.aws_vpc.cluster_vpc
+  vpc_id      = data.aws_vpc.cluster_vpc.id
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "OgcLBSg")
     Component = "ogc"
