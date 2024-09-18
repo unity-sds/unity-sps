@@ -217,6 +217,7 @@ resource "aws_security_group" "ogc_ingress_sg" {
   })
 }
 
+#tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "ogc_ingress_sg_jpl_rule" {
   for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
   security_group_id = aws_security_group.ogc_ingress_sg.id
