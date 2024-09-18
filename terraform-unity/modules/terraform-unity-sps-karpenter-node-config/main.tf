@@ -2,7 +2,7 @@ resource "kubernetes_manifest" "karpenter_node_classes" {
   for_each = var.karpenter_node_classes
 
   manifest = {
-    apiVersion = "karpenter.k8s.aws/v1beta1"
+    apiVersion = "karpenter.k8s.aws/v1"
     kind       = "EC2NodeClass"
     metadata = {
       name = each.key
@@ -79,7 +79,7 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
   for_each = var.karpenter_node_pools
 
   manifest = {
-    apiVersion = "karpenter.sh/v1beta1"
+    apiVersion = "karpenter.sh/v1"
     kind       = "NodePool"
     metadata = {
       name = each.key
@@ -88,7 +88,9 @@ resource "kubernetes_manifest" "karpenter_node_pools" {
       template = {
         spec = {
           nodeClassRef = {
-            name = each.value.nodeClassRef
+            group = "karpenter.k8s.aws"
+            kind  = "EC2NodeClass"
+            name  = each.value.nodeClassRef
           }
           requirements = [for req in each.value.requirements : {
             key      = req.key
