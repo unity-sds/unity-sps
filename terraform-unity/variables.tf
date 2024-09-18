@@ -73,7 +73,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.2.0-beta-1"
+      tag  = "2.2.0"
     }
   }
 }
@@ -334,7 +334,7 @@ variable "dag_catalog_repo" {
   })
   default = {
     url                 = "https://github.com/unity-sds/unity-sps.git"
-    ref                 = "2.2.0-beta-1"
+    ref                 = "2.2.0"
     dags_directory_path = "airflow/dags"
   }
 }
