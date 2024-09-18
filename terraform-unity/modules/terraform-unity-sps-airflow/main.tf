@@ -449,12 +449,13 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
     name      = "airflow-ingress"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
-      "alb.ingress.kubernetes.io/scheme"           = "internet-facing"
-      "alb.ingress.kubernetes.io/target-type"      = "ip"
-      "alb.ingress.kubernetes.io/subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
-      "alb.ingress.kubernetes.io/listen-ports"     = "[{\"HTTP\": ${local.load_balancer_port}}]"
-      "alb.ingress.kubernetes.io/security-groups"  = aws_security_group.airflow_ingress_sg.id
-      "alb.ingress.kubernetes.io/healthcheck-path" = "/health"
+      "alb.ingress.kubernetes.io/scheme"                              = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"                         = "ip"
+      "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
+      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
+      "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg.id
+      "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
+      "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
     }
   }
   spec {
