@@ -78,10 +78,11 @@ logger = logging.getLogger()
 
 class CognitoSecurity(AirflowSecurityManager):
     def oauth_user_info(self, provider, response=None):
+        logger.info("Inside CognitoSecurity")
         # Q: aws_cognito or Cognito?
         if provider == "aws_cognito" and response:
 
-            logger.debug(response)
+            logger.info(response)
 
             res = self.appbuilder.sm.oauth_remotes[provider].get("oauth2/userInfo")
 
@@ -91,7 +92,7 @@ class CognitoSecurity(AirflowSecurityManager):
             me = json.loads(res._content)
             #
             decoded_token = self._azure_jwt_token_parse(response["id_token"])
-            logger.debug(" data: %s", decoded_token)
+            logger.info(" data: %s", decoded_token)
             return {
                 "username": me.get("username"),
                 "email": me.get("email"),
