@@ -4,6 +4,14 @@ data "kubernetes_namespace" "service_area" {
   }
 }
 
+data "aws_eks_cluster" "cluster" {
+  name = format(local.resource_name_prefix, "eks")
+}
+
+data "aws_vpc" "cluster_vpc" {
+  id = data.aws_eks_cluster.cluster.vpc_config[0].vpc_id
+}
+
 data "aws_ssm_parameter" "subnet_ids" {
   name = "/unity/account/network/subnet_list"
 }
