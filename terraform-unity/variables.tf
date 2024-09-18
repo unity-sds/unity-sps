@@ -22,7 +22,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.2"
+  default     = "24.3"
 }
 
 variable "kubeconfig_filepath" {
@@ -52,12 +52,12 @@ variable "helm_charts" {
     airflow = {
       repository = "https://airflow.apache.org"
       chart      = "airflow"
-      version    = "1.13.1"
+      version    = "1.15.0"
     },
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.14.2"
+      version    = "v2.15.1"
     }
   }
 }
@@ -78,7 +78,6 @@ variable "airflow_docker_images" {
   }
 }
 
-
 variable "ogc_processes_docker_images" {
   description = "Docker images for the associated OGC Processes API services."
   type = object({
@@ -98,15 +97,15 @@ variable "ogc_processes_docker_images" {
   default = {
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "1.0.0"
+      tag  = "2.0.0"
     }
     git_sync = {
       name = "registry.k8s.io/git-sync/git-sync"
-      tag  = "v4.2.3"
+      tag  = "v4.2.4"
     },
     redis = {
       name = "redis"
-      tag  = "7.2.4"
+      tag  = "7.4.0"
     }
   }
 }
@@ -335,7 +334,7 @@ variable "dag_catalog_repo" {
   })
   default = {
     url                 = "https://github.com/unity-sds/unity-sps.git"
-    ref                 = "develop"
+    ref                 = "2.2.0-beta-1"
     dags_directory_path = "airflow/dags"
   }
 }

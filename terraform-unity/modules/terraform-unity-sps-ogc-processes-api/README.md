@@ -4,15 +4,15 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.50.0 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.29.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.67.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.32.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.50.0 |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.29.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.67.0 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.32.0 |
 
 ## Modules
 
@@ -22,23 +22,23 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/lambda_invocation) | resource |
-| [aws_ssm_parameter.ogc_processes_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
-| [aws_ssm_parameter.unity_proxy_ogc_api](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
-| [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
-| [kubernetes_deployment.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
-| [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
-| [kubernetes_service.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/service) | resource |
-| [kubernetes_service.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/service) | resource |
-| [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/db_instance) | data source |
-| [aws_lambda_functions.lambda_check_all](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/lambda_functions) | data source |
-| [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/secretsmanager_secret_version) | data source |
-| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
-| [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/ingress_v1) | data source |
-| [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/namespace) | data source |
-| [kubernetes_persistent_volume_claim.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/persistent_volume_claim) | data source |
+| [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/lambda_invocation) | resource |
+| [aws_ssm_parameter.ogc_processes_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
+| [aws_ssm_parameter.unity_proxy_ogc_api](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
+| [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/deployment) | resource |
+| [kubernetes_deployment.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/deployment) | resource |
+| [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/ingress_v1) | resource |
+| [kubernetes_service.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
+| [kubernetes_service.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
+| [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/db_instance) | data source |
+| [aws_lambda_functions.lambda_check_all](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lambda_functions) | data source |
+| [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/secretsmanager_secret_version) | data source |
+| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
+| [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
+| [kubernetes_persistent_volume_claim.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/persistent_volume_claim) | data source |
 
 ## Inputs
 

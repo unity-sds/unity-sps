@@ -18,7 +18,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.2"
+  default     = "24.3"
 }
 
 variable "helm_charts" {
@@ -32,7 +32,7 @@ variable "helm_charts" {
     karpenter = {
       repository = "oci://public.ecr.aws/karpenter"
       chart      = "karpenter"
-      version    = "0.36.1"
+      version    = "0.37.3"
     }
   }
 }
