@@ -385,6 +385,10 @@ resource "helm_release" "airflow" {
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
+      cognito_base_url         = data.aws_ssm_parameter.cognito_base_url.value
+      cognito_client_id        = data.aws_ssm_parameter.cognito_client_id.value
+      cognito_client_secret    = data.aws_ssm_parameter.cognito_client_secret.value
+      cognito_pool_id          = data.aws_ssm_parameter.cognito_pool_id.value
     })
   ]
   set_sensitive {

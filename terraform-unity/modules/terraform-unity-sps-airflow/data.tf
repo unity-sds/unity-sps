@@ -36,3 +36,19 @@ data "aws_secretsmanager_secret_version" "db" {
 data "aws_efs_file_system" "efs" {
   file_system_id = var.efs_file_system_id
 }
+
+data "aws_ssm_parameter" "cognito_base_url" {
+  name = "/unity/dev/sps/cognito_base_url"
+}
+
+data "aws_ssm_parameter" "cognito_client_id" {
+  name = "/unity/dev/sps/cognito_client_id"
+}
+
+data "aws_ssm_parameter" "cognito_client_secret" {
+  name = "/unity/dev/sps/cognito_client_secret"
+}
+
+data "aws_ssm_parameter" "cognito_pool_id" {
+  name = "/unity/dev/sps/cognito_pool_id"
+}
