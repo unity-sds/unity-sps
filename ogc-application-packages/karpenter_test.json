@@ -1,0 +1,36 @@
+{
+  "executionUnit": {
+    "image": "busybox",
+    "type": "docker"
+  },
+  "processDescription": {
+    "description": "This process tests Karpenter node provisioning with different instance types.",
+    "id": "karpenter_test",
+    "inputs": {
+      "placeholder": {
+        "default": 1,
+        "description": "A placeholder parameter",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "integer"
+        },
+        "title": "Placeholder"
+      }
+    },
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputs": {
+      "result": {
+        "description": "The result of the Karpenter test execution",
+        "schema": {
+          "$ref": "some-ref"
+        },
+        "title": "Process Result"
+      }
+    },
+    "title": "Karpenter Test Process",
+    "version": "1.0.0"
+  }
+}
