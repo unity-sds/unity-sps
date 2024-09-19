@@ -13,23 +13,38 @@ variable "service_area" {
   type        = string
 }
 
-variable "deployment_name" {
-  description = "The name of the deployment."
-  type        = string
-}
-
-variable "counter" {
-  description = "Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead."
-  type        = string
-}
-
 variable "release" {
   description = "The software release version."
   type        = string
 }
 
+variable "kubernetes_namespace" {
+  description = "The kubernetes namespace for Airflow resources."
+  type        = string
+}
+
 variable "kubeconfig_filepath" {
   description = "The path to the kubeconfig file for the Kubernetes cluster."
+  type        = string
+}
+
+variable "db_instance_identifier" {
+  description = "The AWS DB instance identifier"
+  type        = string
+}
+
+variable "db_secret_arn" {
+  description = "The version of the database secret in AWS Secrets Manager"
+  type        = string
+}
+
+variable "efs_file_system_id" {
+  description = "The EFS file system ID"
+  type        = string
+}
+
+variable "airflow_webserver_username" {
+  description = "The username for the Airflow webserver and UI."
   type        = string
 }
 
@@ -53,51 +68,11 @@ variable "docker_images" {
     airflow = object({
       name = string
       tag  = string
-    }),
-    ogc_processes_api = object({
-      name = string
-      tag  = string
-    })
-    git_sync = object({
-      name = string
-      tag  = string
-    })
-    redis = object({
-      name = string
-      tag  = string
     })
   })
-}
-
-variable "mcp_ami_owner_id" {
-  description = "The ID of the MCP AMIs"
-  type        = string
 }
 
 variable "karpenter_node_pools" {
-  description = "Configuration for Karpenter node pools"
-  type = map(object({
-    requirements : list(object({
-      key : string
-      operator : string
-      values : list(string)
-    }))
-    limits : object({
-      cpu : string
-      memory : string
-    })
-    disruption : object({
-      consolidationPolicy : string
-      consolidateAfter : string
-    })
-  }))
-}
-
-variable "dag_catalog_repo" {
-  description = "Git repository that stores the catalog of Airflow DAGs."
-  type = object({
-    url                 = string
-    ref                 = string
-    dags_directory_path = string
-  })
+  description = "Names of the Karpenter node pools"
+  type        = list(string)
 }

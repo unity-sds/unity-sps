@@ -15,9 +15,9 @@ from unity_sps_utils import get_affinity
 from airflow import DAG
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_NAMESPACE = "airflow"
+POD_NAMESPACE = "sps"
 POD_LABEL = "sbg_preprocess_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -140,5 +140,4 @@ cleanup_task = PythonOperator(
     task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
 )
 
-
-setup_task >> cwl_task >> cleanup_task
+setup_task.as_setup() >> cwl_task >> cleanup_task.as_teardown(setups=setup_task)

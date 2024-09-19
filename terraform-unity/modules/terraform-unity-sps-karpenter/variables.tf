@@ -15,20 +15,10 @@ variable "service_area" {
   default     = "sps"
 }
 
-variable "deployment_name" {
-  description = "The name of the deployment."
-  type        = string
-}
-
-variable "counter" {
-  description = "Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead."
-  type        = string
-}
-
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.2"
+  default     = "24.3"
 }
 
 variable "helm_charts" {

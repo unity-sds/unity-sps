@@ -1,22 +1,30 @@
 #!/bin/sh
 # Script to execute a CWL workflow that includes Docker containers
 # The Docker engine is started before the CWL execution, and stopped afterwards.
-# $1: the CWL workflow URL
+# -w: the CWL workflow URL
 #     (example: https://github.com/unity-sds/sbg-workflows/blob/main/L1-to-L2-e2e.cwl)
-# $2: a) the CWL job parameters as a JSON formatted string
+# -j: a) the CWL job parameters as a JSON formatted string
 #        (example: { "name": "John Doe" })
 #  OR b) The URL of a YAML or JSON file containing the job parameters
 #        (example: https://github.com/unity-sds/sbg-workflows/blob/main/L1-to-L2-e2e.dev.yml)
-# $3: optional path to an output JSON file that needs to be shared as Airflow "xcom" data
+# -e: the ECR login URL where the AWS account ID and region are specific to the Airflow installation
+#        (example: <aws_account_id>.dkr.ecr.<region>.amazonaws.com) [optional]
+# -o: path to an output JSON file that needs to be shared as Airflow "xcom" data [optional]
 
 # Must be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
 # that executes this script
 WORKING_DIR="/scratch"
 
 set -ex
-cwl_workflow=$1
-job_args=$2
-json_output=$3
+while getopts w:j:e:o: flag
+do
+  case "${flag}" in
+    w) cwl_workflow=${OPTARG};;
+    j) job_args=${OPTARG};;
+    e) ecr_login=${OPTARG};;
+    o) json_output=${OPTARG};;
+  esac
+done
 
 # create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
@@ -48,12 +56,23 @@ do
   sleep 1
 done
 
+# Activate Python virtual environments for executables
+. /usr/share/cwl/venv/bin/activate
+
+# Log into AWS ECR repository
+if [ "$ecr_login" != "None" ]; then
+IFS=. read account_id dkr ecr aws_region amazonaws com <<EOF
+${ecr_login}
+EOF
+aws ecr get-login-password --region $aws_region | docker login --username AWS --password-stdin $ecr_login
+echo "Logged into: $ecr_login"
+fi
+
 # Execute CWL workflow in working directory
 # List contents when done
-. /usr/share/cwl/venv/bin/activate
 pwd
 ls -lR
-cwl-runner --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
+cwl-runner --debug --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
 ls -lR
 
 # Optionally, save the requested output file to a location

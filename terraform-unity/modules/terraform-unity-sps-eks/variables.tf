@@ -15,20 +15,10 @@ variable "service_area" {
   default     = "sps"
 }
 
-variable "deployment_name" {
-  description = "The name of the deployment."
-  type        = string
-}
-
-variable "counter" {
-  description = "Identifier used to uniquely distinguish resources. This is used in the naming convention of the resource. If left empty, a random hexadecimal value will be generated and used instead."
-  type        = string
-}
-
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.2"
+  default     = "24.3"
 }
 
 variable "nodegroups" {
@@ -56,7 +46,7 @@ variable "nodegroups" {
   }))
   default = {
     defaultGroup = {
-      instance_types = ["t3.large"]
+      instance_types = ["t3.xlarge"]
       min_size       = 1
       max_size       = 1
       desired_size   = 1

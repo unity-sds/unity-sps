@@ -14,6 +14,11 @@ set -ex
 # Components must be destroyed in the revers order:
 # destroy airflow > karpenter > eks
 
+# Note: the first time you run "deploy" on eks/karpenter/airflow, you don't already have the $TFVARS_FILENAME
+# in the proper directory, the script will stop because it cannot parse the file that was automatically generated.
+# Edit that file: remove the first and last line, and add the specific values for your deployment.
+# Then run the script again.
+
 # Note:
 # Must make sure we don't check in a new version of this script with a real AWS account number
 
@@ -29,7 +34,6 @@ export SERVICE_AREA=sps
 export VENUE=dev
 export DEPLOYMENT=luca
 export COUNTER=7
-export BUCKET=unity-unity-dev-bucket
 
 # the root directory of the "unity-sps" installation
 export UNITY_SPS_DIR=/Users/cinquini/PycharmProjects/unity-sps
@@ -57,8 +61,7 @@ export TFVARS_FILENAME=unity-${VENUE}-sps-${COMPONENT}-${DEPLOYMENT}-${COUNTER}.
 # initialize Terraform
 cd $tf_dir
 tfswitch 1.8.2
-export KEY=sps/tfstates/${PROJECT}-${VENUE}-${SERVICE_AREA}-${COMPONENT}-${DEPLOYMENT}-${COUNTER}.tfstate
-terraform init -reconfigure -backend-config="bucket=$BUCKET" -backend-config="key=$KEY"
+terraform init -reconfigure
 terraform get -update
 
 # if new cluster --> create new tfvars file

@@ -26,8 +26,8 @@ def pytest_addoption(parser):
         "--venue",
         action="store",
         default=None,
-        choices=("dev", "int", "ops"),
-        help="The venue in which the cluster will be deployed (dev, int, ops).",
+        choices=("dev", "test", "ops"),
+        help="The venue in which the cluster will be deployed (dev, test, ops).",
     )
     parser.addoption(
         "--developer",
@@ -77,6 +77,12 @@ def airflow_api_url(request):
 def ogc_processes_api_url(request):
     url = request.config.getoption("--ogc-processes-endpoint")
     return url
+
+
+@pytest.fixture(scope="session")
+def venue(request):
+    venue = request.config.getoption("--venue")
+    return venue
 
 
 @pytest.fixture(scope="session")
