@@ -73,7 +73,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.2.0-rc-1"
+      tag  = "2.2.0"
     }
   }
 }
@@ -98,7 +98,7 @@ variable "ogc_processes_docker_images" {
   default = {
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.0-rc-1"
+      tag  = "2.0.0"
     }
     git_sync = {
       name = "registry.k8s.io/git-sync/git-sync"
