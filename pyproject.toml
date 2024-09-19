@@ -46,12 +46,11 @@ test = [
     "backoff==2.2.1",
     "apache-airflow-providers-cncf-kubernetes==8.4.1",
     "unity_sps_ogc_processes_api_python_client @ git+https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python.git@2.0.0"
-
 ]
 experiment = []
 lambda-airflow-dag-trigger = [
     "requests==2.31.0",
-    "aws-lambda-powertools[parser]==2.36.0",
+    "aws-lambda-powertools[parser]==2.41.0",
 ]
 
 [tool.setuptools.packages.find]
