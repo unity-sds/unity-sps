@@ -10,14 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Tags
 
 - SPS Version 2.2.0
-- OGC API Version 1.1.0
-- OGC Python Client Version 1.1.0
+- OGC API Version 2.0.0
+- OGC Python Client Version 2.0.0
 
 ## Repositories
 
 - unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.2.0>
-- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/1.1.0>
-- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/1.1.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.0.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.0>
 
 ## Epics
 
@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[New Feature]: Demonstrate use of ECR within an Airflow DAG (https://github.com/unity-sds/unity-sps/issues/186)
 - EPIC: `Airflow/WPS-T Integration`
   - [[New Feature]: Create test to deploy, execute and undeploy the CWL DAG](https://github.com/unity-sds/unity-sps/issues/131)
+  - [[New Feature]: Enable execution of OGC data processing requests with arbitrary parameter values](https://github.com/unity-sds/unity-sps/issues/129)
 - EPIC: `Production Venue Deployments`
   - [[New Feature]: Airflow HTTPD Proxy development and configuration](https://github.com/unity-sds/unity-sps/issues/125)
   - [[New Feature]: Expose SPS health check endpoints](https://github.com/unity-sds/unity-sps/issues/127)
@@ -39,6 +40,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[New Feature]: Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
   - [[New Feature]: Parametrize the SPS Integration Tests](https://github.com/unity-sds/unity-sps/issues/155)
   - [[New Feature] Upgrade SPS to latest version of Airflow 2.10.0](https://github.com/unity-sds/unity-sps/issues/195)
+
+## Docker Containers
+
+- ghcr.io/unity-sds/unity-sps/sps-airflow:2.2.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.0.0
+
+## Documentation
+
+- For Administrators:
+  - [SPS Deployment with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-terraform)
+  - [Interacting with an Existing SPS Deployment](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/interacting-with-an-existing-sps-deployment)
+  - [SPS Airflow Custom Docker Image Build Instructions](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
+  - [SPS Post Deployment Operations](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-post-deployment-operations)
+- For Deverlopers:
+  - [Tutorial: Deploy, Execute, and Undeploy a Process using the OGC API - Processes](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/developers-guide/tutorial-deploy-execute-and-undeploy-a-process-using-the-ogc-api-processes)
+- For Users:
+  - [Tutorial: Register and Execute a CWL Workflow](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
 
 # [Unity Release 24.2] - 2024-07-01
 
@@ -72,6 +91,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[Task] Add TESTING.md file to SPS repo](https://github.com/unity-sds/unity-sps/issues/99)
 - EPIC: `SPS Infrastructure`
   - [[New Feature] Store SPS Terraform state on S3](https://github.com/unity-sds/unity-sps/issues/132)
+- EPIC: `SPS Security`
+  - [[Bug]: Upgrade EKS 1.27 AMIs](https://github.com/unity-sds/unity-sps/issues/159)
+  - [[Bug]: Upgrade to EKS 1.29 AMIs](https://github.com/unity-sds/unity-sps/issues/206)
 
 ## Docker Containers
 
