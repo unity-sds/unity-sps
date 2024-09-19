@@ -40,6 +40,11 @@ def main():
     Parses command-line arguments, reads process descriptions from JSON files,
     and registers each process with the OGC API.
 
+    Setup: pip install -e ".[develop, test]"
+
+    Invocation Syntax: python utils/deploy_ogc_app_packages.py <ogc_api_processes> <ogc_app_packages_dir>
+    Example invocation: python utils/deploy_ogc_app_packages.py http://k8s-sps-ogcproce-XXXXXX-XXXXXXX.us-west-2.elb.amazonaws.com:5001 .../unity-sps/ogc-application-packages
+
     Args:
         None
 
