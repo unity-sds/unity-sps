@@ -18,7 +18,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.2"
+  default     = "24.3"
 }
 
 variable "nodegroups" {
@@ -46,7 +46,7 @@ variable "nodegroups" {
   }))
   default = {
     defaultGroup = {
-      instance_types = ["t3.large"]
+      instance_types = ["t3.xlarge"]
       min_size       = 1
       max_size       = 1
       desired_size   = 1
