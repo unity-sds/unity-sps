@@ -1,0 +1,48 @@
+{
+  "executionUnit": {
+    "image": "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0-rc-1",
+    "type": "docker"
+  },
+  "processDescription": {
+    "description": "This process executes the SBG Preprocess Workflow using CWL.",
+    "id": "sbg_preprocess_cwl_dag",
+    "inputs": {
+      "cwl_args": {
+        "default": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml",
+        "description": "The SBG Pre-process YAML parameters URL",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "CWL Workflow Parameters"
+      },
+      "cwl_workflow": {
+        "default": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
+        "description": "The SBG Pre-process CWL workflow URL",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "CWL Workflow"
+      }
+    },
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputs": {
+      "result": {
+        "description": "The result of the SBG Preprocess Workflow execution",
+        "schema": {
+          "$ref": "some-ref"
+        },
+        "title": "Process Result"
+      }
+    },
+    "title": "SBG Preprocess CWL Workflow",
+    "version": "1.0.0"
+  }
+}
