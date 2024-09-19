@@ -13,6 +13,7 @@ locals {
     mission     = var.project
     Stack       = ""
   }
+  load_balancer_port                  = 5000
   oidc_provider_url                   = replace(data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "")
   airflow_metadata_kubernetes_secret  = "airflow-metadata-secret"
   airflow_webserver_kubernetes_secret = "airflow-webserver-secret"
