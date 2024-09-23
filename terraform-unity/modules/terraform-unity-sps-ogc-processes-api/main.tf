@@ -297,7 +297,7 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
 
 resource "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
   metadata {
-    name      = "ogc-processes-api-ingress"
+    name      = "ogc-processes-api-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
       "alb.ingress.kubernetes.io/scheme"                              = "internal"

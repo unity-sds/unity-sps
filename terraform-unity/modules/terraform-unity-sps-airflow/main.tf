@@ -495,7 +495,7 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
 
 resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
   metadata {
-    name      = "airflow-ingress"
+    name      = "airflow-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
       "alb.ingress.kubernetes.io/scheme"                              = "internal"
