@@ -361,8 +361,8 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "OGC API"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
+    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001/health"
+    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-ogc_processes_api")
