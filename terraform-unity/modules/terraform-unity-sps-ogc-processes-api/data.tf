@@ -36,3 +36,10 @@ data "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
   }
 }
+
+data "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
+  metadata {
+    name      = kubernetes_ingress_v1.ogc_processes_api_ingress_internal.metadata[0].name
+    namespace = data.kubernetes_namespace.service_area.metadata[0].name
+  }
+}

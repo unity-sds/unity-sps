@@ -24,6 +24,7 @@ No modules.
 |------|------|
 | [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/lambda_invocation) | resource |
 | [aws_security_group.ogc_ingress_sg](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group) | resource |
+| [aws_security_group.ogc_ingress_sg_internal](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group) | resource |
 | [aws_ssm_parameter.ogc_processes_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.ogc_processes_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/ssm_parameter) | resource |
@@ -33,6 +34,7 @@ No modules.
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
 | [kubernetes_deployment.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/deployment) | resource |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
+| [kubernetes_ingress_v1.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_service.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/service) | resource |
 | [kubernetes_service.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/service) | resource |
 | [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/db_instance) | data source |
@@ -43,6 +45,7 @@ No modules.
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/ingress_v1) | data source |
+| [kubernetes_ingress_v1.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/namespace) | data source |
 | [kubernetes_persistent_volume_claim.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/data-sources/persistent_volume_claim) | data source |
 

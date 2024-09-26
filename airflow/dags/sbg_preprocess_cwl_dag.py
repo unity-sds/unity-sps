@@ -39,13 +39,18 @@ DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflo
 
 # common parameters
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-    requests={"ephemeral-storage": "5Gi"},
+    requests={
+        "memory": "4Gi",
+        # "cpu": "8",
+        "ephemeral-storage": "10Gi",
+    },
 )
-INPUT_PROCESSING_LABELS = ["SBG", "CWL"]
+INPUT_PROCESSING_LABELS = ["SBG", "CWL", "Preprocess"]
 
 dag = DAG(
     dag_id="sbg_preprocess_cwl_dag",
     description="SBG Preprocess Workflow as CWL",
+    dag_display_name="CWL Preprocess DAG",
     tags=["SBG", "Unity", "SPS", "NASA", "JPL"],
     is_paused_upon_creation=False,
     catchup=False,
@@ -56,13 +61,13 @@ dag = DAG(
         "cwl_workflow": Param(
             DEFAULT_CWL_WORKFLOW,
             type="string",
-            title="CWL workflow",
+            title="SBG Preprocess workflow",
             description="The SBG Pre-process CWL workflow URL",
         ),
         "cwl_args": Param(
             DEFAULT_CWL_ARGUMENTS,
             type="string",
-            title="CWL workflow parameters",
+            title="SBG Preprocess workflow parameters",
             description="The SBG Pre-process YAML parameters URL",
         ),
     },
@@ -95,7 +100,7 @@ cwl_task = KubernetesPodOperator(
     in_cluster=True,
     get_logs=True,
     startup_timeout_seconds=1800,
-    arguments=["{{ params.cwl_workflow }}", "{{ params.cwl_args }}"],
+    arguments=["-w", "{{ params.cwl_workflow }}", "-j", "{{ params.cwl_args }}", "-e", "None"],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
     container_logs=True,
