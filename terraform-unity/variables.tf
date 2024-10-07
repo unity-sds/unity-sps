@@ -338,3 +338,23 @@ variable "dag_catalog_repo" {
     dags_directory_path = "airflow/dags"
   }
 }
+
+# tflint-ignore: terraform_unused_declarations
+variable "deployment_name" {
+  description = "The name of the deployment."
+  type        = string
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "tags" {
+  description = "Tags for the deployment (unused)"
+  type        = map(string)
+  default     = { empty = "" }
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "installprefix" {
+  description = "The install prefix for the service area (unused)"
+  type        = string
+  default     = ""
+}
