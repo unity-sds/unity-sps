@@ -105,8 +105,6 @@ def fetch_jwk(self, force=False):
 def map_roles(roles):
     """Map Cognito roles to Airflow roles."""
 
-    log.debug("ROLES: %s", roles)
-
     return list(set(AUTH_ROLES_MAPPING.get(role, "Public") for role in roles))
 
 
