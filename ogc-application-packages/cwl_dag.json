@@ -1,0 +1,74 @@
+{
+  "executionUnit": {
+    "image": "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.1.0",
+    "type": "docker"
+  },
+  "processDescription": {
+    "description": "This process executes any CWL workflow.",
+    "id": "cwl_dag",
+    "inputs": {
+      "cwl_args": {
+        "description": "The URL of the CWL workflow's YAML parameters file",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "CWL Workflow Parameters URL"
+      },
+      "cwl_workflow": {
+        "description": "The URL of the CWL workflow",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "CWL Workflow URL"
+      },
+      "request_cpu": {
+        "description": "The number of CPU cores requested for the job",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Requested CPU"
+      },
+      "request_memory": {
+        "default": "8Gi",
+        "description": "The amount of memory requested for the job",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Requested Memory"
+      },
+      "request_storage": {
+        "description": "The amount of storage requested for the job",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Requested Storage"
+      }
+    },
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputs": {
+      "result": {
+        "description": "The result of the SBG Preprocess Workflow execution",
+        "schema": {
+          "$ref": "some-ref"
+        },
+        "title": "Process Result"
+      }
+    },
+    "title": "Generic CWL Process",
+    "version": "1.0.0"
+  }
+}

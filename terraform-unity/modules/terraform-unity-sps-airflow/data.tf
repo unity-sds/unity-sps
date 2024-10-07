@@ -25,6 +25,13 @@ data "kubernetes_ingress_v1" "airflow_ingress" {
   }
 }
 
+data "kubernetes_ingress_v1" "airflow_ingress_internal" {
+  metadata {
+    name      = kubernetes_ingress_v1.airflow_ingress_internal.metadata[0].name
+    namespace = data.kubernetes_namespace.service_area.metadata[0].name
+  }
+}
+
 data "aws_db_instance" "db" {
   db_instance_identifier = var.db_instance_identifier
 }
