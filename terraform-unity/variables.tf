@@ -339,3 +339,23 @@ variable "dag_catalog_repo" {
     dags_directory_path = "airflow/dags"
   }
 }
+
+variable "cognito_client_id" {
+  description = "Cognito user pool client id for application."
+  type        = string
+}
+
+variable "cognito_client_secret" {
+  description = "Cognito user pool client secret for application."
+  type        = string
+}
+
+variable "cognito_base_url" {
+  description = "Cognito user pool URL."
+  type        = string
+}
+
+variable "cognito_user_pool_id" {
+  description = "Cognito user pool id."
+  type        = string
+}

@@ -58,6 +58,10 @@ module "unity-sps-airflow" {
   docker_images              = var.airflow_docker_images
   helm_charts                = var.helm_charts
   karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
+  cognito_client_id        = var.cognito_client_id
+  cognito_client_secret    = var.cognito_client_secret
+  cognito_base_url         = var.cognito_base_url
+  cognito_user_pool_id     = var.cognito_user_pool_id
 }
 
 module "unity-sps-ogc-processes-api" {
