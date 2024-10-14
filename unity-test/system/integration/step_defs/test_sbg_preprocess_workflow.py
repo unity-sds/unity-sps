@@ -53,18 +53,23 @@ def api_up_and_running():
 @when("I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
 def trigger_dag(airflow_api_url, airflow_api_auth, venue):
     # DAG parameters are venue dependent
+    cwl_workflow = SBG_PREPROCESS_PARAMETERS[venue]["cwl_workflow"]
+    cwl_args = SBG_PREPROCESS_PARAMETERS[venue]["cwl_args"]
+    request_memory = SBG_PREPROCESS_PARAMETERS[venue]["request_memory"]
+    request_cpu = SBG_PREPROCESS_PARAMETERS[venue]["request_cpu"]
+    request_storage = SBG_PREPROCESS_PARAMETERS[venue]["request_storage"]
+    use_ecr = False
     response = requests.post(
         f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,
-        json={"conf":
-                {
-                    "cwl_workflow": f"{SBG_PREPROCESS_PARAMETERS[venue]['cwl_workflow']}",
-                    "cwl_args": f"{SBG_PREPROCESS_PARAMETERS[venue]['cwl_args']}",
-                    "request_memory": f"{SBG_PREPROCESS_PARAMETERS[venue]['request_memory']}",
-                    "request_cpu": f"{SBG_PREPROCESS_PARAMETERS[venue]['request_cpu']}",
-                    "request_storage": f"{SBG_PREPROCESS_PARAMETERS[venue]['request_storage']}",
-                    "use_ecr": f"{SBG_PREPROCESS_PARAMETERS[venue]['use_ecr']}"
-                }
+        json={"conf": {
+            "cwl_workflow": f"{cwl_workflow}",
+            "cwl_args": f"{cwl_args}",
+            "request_memory": f"{request_memory}",
+            "request_cpu": f"{request_cpu}",
+            "request_storage": f"{request_storage}",
+            "use_ecr": use_ecr
+        }
         },
         # nosec
         verify=False,
