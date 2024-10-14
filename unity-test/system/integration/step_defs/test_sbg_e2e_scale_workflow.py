@@ -1,4 +1,4 @@
-# This test executes the SBG Preprocess CWL workflow.
+# This test executes the SBG End-To-End Scale CWL workflow.
 # The workflow parameters are contained in a YAML file which is venue-dependent.
 # The CWL DAG must already be deployed in Airflow,
 # and it is invoked via the Airflow API.
@@ -12,36 +12,26 @@ from pytest_bdd import given, scenario, then, when
 
 FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
-FEATURE_FILE: Path = FEATURES_DIR / "sbg_preprocess_workflow.feature"
+FEATURE_FILE: Path = FEATURES_DIR / "sbg_e2e_scale_workflow.feature"
 
 # DAG parameters are venue specific
 DAG_ID = "cwl_dag"
 DAG_PARAMETERS = {
     "dev": {
         "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-                        "/preprocess/sbg-preprocess-workflow.cwl",
-        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-                    "/sbg-preprocess-workflow.dev.yml",
-        "request_memory": "4Gi",
-        "request_cpu": "8",
-        "request_storage": "10Gi",
-        "use_ecr": False
-    },
-    "test": {
-        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-                        "/preprocess/sbg-preprocess-workflow.cwl",
+                        "/L1-to-L2-e2e.scale.cwl",
         "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-                    "/preprocess/sbg-preprocess-workflow.test.yml",
-        "request_memory": "4Gi",
-        "request_cpu": "8",
-        "request_storage": "10Gi",
+                    "/L1-to-L2-e2e.dev.scale.yml",
+        "request_memory": "64Gi",
+        "request_cpu": "32",
+        "request_storage": "100Gi",
         "use_ecr": False
-    },
+    }
 }
 
 
-@scenario(FEATURE_FILE, "Check SBG Preprocess Workflow")
-def test_check_sbg_preprocess_workflow():
+@scenario(FEATURE_FILE, "Check SBG End-To-End Scale Workflow")
+def test_check_sbg_e2e_scale_workflow():
     pass
 
 
@@ -50,7 +40,7 @@ def api_up_and_running():
     pass
 
 
-@when("I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
+@when("I trigger a dag run for the SBG End-To-End Scale dag", target_fixture="response")
 def trigger_dag(airflow_api_url, airflow_api_auth, venue):
     # DAG parameters are venue dependent
     cwl_workflow = DAG_PARAMETERS[venue]["cwl_workflow"]
@@ -58,7 +48,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue):
     request_memory = DAG_PARAMETERS[venue]["request_memory"]
     request_cpu = DAG_PARAMETERS[venue]["request_cpu"]
     request_storage = DAG_PARAMETERS[venue]["request_storage"]
-    use_ecr = False
+    use_ecr = True
     response = requests.post(
         f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,

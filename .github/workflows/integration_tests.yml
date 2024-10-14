@@ -66,8 +66,8 @@ jobs:
     - name: Check Integration Tests Results
       if: always()
       run: |
-        dev_status_airflow=${{ steps.mcp_venue_dev_integration_tests.outcome }}
-        # test_status_airflow=${{ steps.mcp_venue_test_integration_tests.outcome }}
+        dev_status=${{ steps.mcp_venue_dev_integration_tests.outcome }}
+        # test_status=${{ steps.mcp_venue_test_integration_tests.outcome }}
         echo "Dev Venue Integration Tests status: $dev_status"
         echo "Test Venue Integration Tests status: $test_status"
 
