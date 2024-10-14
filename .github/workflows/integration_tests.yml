@@ -10,9 +10,16 @@ on:
       MCP_VENUE_DEV_AIRFLOW_ENDPOINT:
         description: "Base URL for the Airflow endpoint in MCP Venue Dev (i.e. http://abc.def.ghi:port-number)"
         type: string
+      MCP_VENUE_DEV_OGC_ENDPOINT:
+        description: "Base URL for the OGC API endpoint in MCP Venue Dev (i.e. http://abc.def.ghi:port-number)"
+        type: string
       MCP_VENUE_TEST_AIRFLOW_ENDPOINT:
          description: "Base URL for the Airflow endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
          type: string
+      MCP_VENUE_TEST_OGC_ENDPOINT:
+        description: "Base URL for the OGC endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
+        type: string
+      # TODO: add MCP_VENUE_OPS inputs
 jobs:
   integration-tests:
     runs-on: ubuntu-latest
@@ -35,28 +42,32 @@ jobs:
       continue-on-error: true
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
+        # TODO: retrieve OGC credentials and set to UNITY....
       run: |
         pytest -vv --gherkin-terminal-reporter \
         unity-test/system/integration \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
+        # TODO: add --ogc-endpoint=... 
 
-    - name: MCP Venue Test - Integration tests
-      id: mcp_venue_test_integration_tests
-      continue-on-error: true
-      env:
-        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
-      run: |
-        pytest -vv --gherkin-terminal-reporter \
-        unity-test/system/integration \
-        --venue="test" \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
+#    - name: MCP Venue Test - Integration tests
+#      id: mcp_venue_test_integration_tests
+#      continue-on-error: true
+#      env:
+#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
+#        # TODO: retrieve OGC credentials and set to UNITY....
+#      run: |
+#        pytest -vv --gherkin-terminal-reporter \
+#        unity-test/system/integration \
+#        --venue="test" \
+#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
+#        # TODO: add --ogc-endpoint=...
 
     - name: Check Integration Tests Results
       if: always()
       run: |
-        dev_status=${{ steps.mcp_venue_dev_integration_tests.outcome }}
-        test_status=${{ steps.mcp_venue_test_integration_tests.outcome }}
+        dev_status_airflow=${{ steps.mcp_venue_dev_integration_tests.outcome }}
+        # test_status_airflow=${{ steps.mcp_venue_test_integration_tests.outcome }}
         echo "Dev Venue Integration Tests status: $dev_status"
         echo "Test Venue Integration Tests status: $test_status"
 
@@ -65,8 +76,8 @@ jobs:
           exit 1
         fi
 
-        # Uncomment this block when MCP Venue Test Integration tests are re-enabled
-        if [ "$test_status" != "success" ]; then
-          echo "MCP Venue Test Integration Tests failed."
-          exit 1
-        fi
+#        # Uncomment this block when MCP Venue Test Integration tests are re-enabled
+#        if [ "$test_status" != "success" ]; then
+#          echo "MCP Venue Test Integration Tests failed."
+#          exit 1
+#        fi

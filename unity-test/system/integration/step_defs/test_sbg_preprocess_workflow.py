@@ -1,6 +1,6 @@
 # This test executes the SBG Preprocess DAG as a CWL workflow.
 # The workflow parameters are contained in a YAML file which is venue-dependent.
-# The SBG Preprocess DAG must already be deployed in Airflow,
+# The CWL DAG must already be deployed in Airflow,
 # and it is invoked via the Airflow API.
 # The CWL task is executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
@@ -15,15 +15,27 @@ FEATURES_DIR = FILE_PATH.parent.parent / "features"
 FEATURE_FILE: Path = FEATURES_DIR / "sbg_preprocess_workflow.feature"
 
 # DAG parameters are venue specific
-DAG_ID = "sbg_preprocess_cwl_dag"
+DAG_ID = "cwl_dag"
 SBG_PREPROCESS_PARAMETERS = {
     "dev": {
-        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
-        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml",
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
+                        "/preprocess/sbg-preprocess-workflow.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
+                    "/sbg-preprocess-workflow.dev.yml",
+        "request_memory": "4Gi",
+        "request_cpu": "8",
+        "request_storage": "10Gi",
+        "use_ecr": False
     },
     "test": {
-        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
-        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.test.yml",
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
+                        "/preprocess/sbg-preprocess-workflow.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
+                    "/sbg-preprocess-workflow.test.yml",
+        "request_memory": "4Gi",
+        "request_cpu": "8",
+        "request_storage": "10Gi",
+        "use_ecr": False
     },
 }
 
@@ -41,12 +53,19 @@ def api_up_and_running():
 @when("I trigger a dag run for the SBG Preprocess dag", target_fixture="response")
 def trigger_dag(airflow_api_url, airflow_api_auth, venue):
     # DAG parameters are venue dependent
-    cwl_workflow = SBG_PREPROCESS_PARAMETERS[venue]["cwl_workflow"]
-    cwl_args = SBG_PREPROCESS_PARAMETERS[venue]["cwl_args"]
     response = requests.post(
         f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,
-        json={"conf": {"cwl_workflow": f"{cwl_workflow}", "cwl_args": f"{cwl_args}"}},
+        json={"conf":
+                {
+                    "cwl_workflow": f"{SBG_PREPROCESS_PARAMETERS[venue]['cwl_workflow']}",
+                    "cwl_args": f"{SBG_PREPROCESS_PARAMETERS[venue]['cwl_args']}",
+                    "request_memory": f"{SBG_PREPROCESS_PARAMETERS[venue]['request_memory']}",
+                    "request_cpu": f"{SBG_PREPROCESS_PARAMETERS[venue]['request_cpu']}",
+                    "request_storage": f"{SBG_PREPROCESS_PARAMETERS[venue]['request_storage']}",
+                    "use_ecr": f"{SBG_PREPROCESS_PARAMETERS[venue]['use_ecr']}"
+                }
+        },
         # nosec
         verify=False,
     )
@@ -81,7 +100,8 @@ def poll_dag_run(response, airflow_api_url, airflow_api_auth):
         # nosec
         verify=False,
     )
-    assert dag_run_response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
+    assert dag_run_response.status_code == 200, (f"Expected status code 2"
+                                                 f"00, but got {response.status_code}")
     json = dag_run_response.json()
     assert "state" in json, 'Expected "state" element in response'
     assert json["state"] == "success"
