@@ -386,10 +386,10 @@ resource "helm_release" "airflow" {
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
       webserver_config         = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
-      cognito_client_id        = var.cognito_client_id
-      cognito_client_secret    = var.cognito_client_secret
-      cognito_base_url         = var.cognito_base_url
-      cognito_user_pool_id     = var.cognito_user_pool_id
+      cognito_client_id        = data.aws_ssm_parameter.cognito_client_id.value
+      cognito_client_secret    = data.aws_ssm_parameter.cognito_client_secret.value
+      cognito_base_url         = data.aws_ssm_parameter.cognito_base_url.value
+      cognito_user_pool_id     = data.aws_ssm_parameter.cognito_user_pool_id.value
     })
   ]
   set_sensitive {

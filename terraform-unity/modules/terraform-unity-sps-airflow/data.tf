@@ -47,3 +47,19 @@ data "aws_efs_file_system" "efs" {
 data "aws_ssm_parameter" "ssl_cert_arn" {
   name = "/unity/account/network/ssl"
 }
+
+data "aws_ssm_parameter" "cognito_base_url" {
+  name = "/unity/shared-services/cognito/domain"
+}
+
+data "aws_ssm_parameter" "cognito_client_id" {
+  name = "/unity/dev/sps/cognito_client_id"
+}
+
+data "aws_ssm_parameter" "cognito_client_secret" {
+  name = "/unity/dev/sps/cognito_client_secret"
+}
+
+data "aws_ssm_parameter" "cognito_user_pool_id" {
+  name = "/unity/cs/security/shared-services-cognito-user-pool/user-pool-id"
+}
