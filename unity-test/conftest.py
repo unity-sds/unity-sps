@@ -5,6 +5,10 @@ import pytest
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
 
+from unity_sds_client.unity import Unity
+from unity_sds_client.unity_services import UnityServices
+from unity_sds_client.unity import UnityEnvironments
+
 # Load environment variables from .env file
 load_dotenv()
 
@@ -101,3 +105,33 @@ def eks_cluster_name(resource_name_template):
     name = resource_name_template.replace("{}", "")
     name = name.replace("--", "-")
     return name
+
+@pytest.fixture(scope='session')
+def ogc_processes(ogc_processes_api_url):
+    """
+    Retrieves the OGC processes available from the given endpoint.
+    """
+
+    # setup Unity venue
+    unity = Unity(UnityEnvironments.DEV)
+    unity.set_venue_id("")
+    process_service = unity.client(UnityServices.PROCESS_SERVICE)
+
+    # retrieve all OGC processes
+    process_service.endpoint = ogc_processes_api_url
+    procs = process_service.get_processes()
+    for p in procs:
+        print(p)
+    return procs
+
+
+@pytest.fixture(scope='session')
+def cwl_dag_process(ogc_processes):
+    """
+    Selects the CWL DAG from the list of available OGC processes.
+    """
+
+    for p in ogc_processes:
+        if p.id == "cwl_dag":
+            return p
+    return None

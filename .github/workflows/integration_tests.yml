@@ -10,13 +10,13 @@ on:
       MCP_VENUE_DEV_AIRFLOW_ENDPOINT:
         description: "Base URL for the Airflow endpoint in MCP Venue Dev (i.e. http://abc.def.ghi:port-number)"
         type: string
-      MCP_VENUE_DEV_OGC_ENDPOINT:
+      MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT:
         description: "Base URL for the OGC API endpoint in MCP Venue Dev (i.e. http://abc.def.ghi:port-number)"
         type: string
       MCP_VENUE_TEST_AIRFLOW_ENDPOINT:
          description: "Base URL for the Airflow endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
          type: string
-      MCP_VENUE_TEST_OGC_ENDPOINT:
+      MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT:
         description: "Base URL for the OGC endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
         type: string
       # TODO: add MCP_VENUE_OPS inputs
@@ -51,7 +51,7 @@ jobs:
         unity-test/system/integration/step_defs/test_sbg_e2e_scale_workflow_with_ogc_api.py \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
-        --ogc-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_ENDPOINT || vars.MCP_VENUE_DEV_OGC_ENDPOINT }}
+        --ogc-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
 
 #    - name: MCP Venue Test - Integration tests
 #      id: mcp_venue_test_integration_tests
@@ -65,7 +65,7 @@ jobs:
 #        unity-test/system/integration \
 #        --venue="test" \
 #        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
-#        --ogc-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_ENDPOINT || vars.MCP_VENUE_TEST_OGC_ENDPOINT }}
+#        --ogc-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
 
     - name: Check Integration Tests Results
       if: always()
