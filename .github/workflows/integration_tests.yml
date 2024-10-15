@@ -50,7 +50,7 @@ jobs:
         pytest -vv -s --gherkin-terminal-reporter \
         unity-test/system/integration/step_defs/test_sbg_e2e_scale_workflow_with_ogc_api.py \
         --venue="dev" \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_ENDPOINT || vars.MCP_VENUE_DEV_OGC_ENDPOINT }}
 
 #    - name: MCP Venue Test - Integration tests
@@ -64,8 +64,8 @@ jobs:
 #        pytest -vv -s --gherkin-terminal-reporter \
 #        unity-test/system/integration \
 #        --venue="test" \
-#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
-#        # TODO: add --ogc-endpoint=...
+#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
+#        --ogc-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_ENDPOINT || vars.MCP_VENUE_TEST_OGC_ENDPOINT }}
 
     - name: Check Integration Tests Results
       if: always()
