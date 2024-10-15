@@ -35,29 +35,33 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[test]"
-
+        pip install git+https://github.com/unity-sds/unity-monorepo.git@main#subdirectory=libs/unity-py
+        pip freeze
 
     - name: MCP Venue Dev - Integration tests
       id: mcp_venue_dev_integration_tests
       continue-on-error: true
       env:
         AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
-        # TODO: retrieve OGC credentials and set to UNITY....
+        UNITY_USER: ${{ secrets.UNITY_USER }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      # FIXME: run all tests not just one
       run: |
-        pytest -vv --gherkin-terminal-reporter \
-        unity-test/system/integration \
+        pytest -vv -s --gherkin-terminal-reporter \
+        unity-test/system/integration/step_defs/test_sbg_e2e_scale_workflow_with_ogc_api.py \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }}
-        # TODO: add --ogc-endpoint=... 
+        --ogc-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_ENDPOINT || vars.MCP_VENUE_DEV_OGC_ENDPOINT }}
 
 #    - name: MCP Venue Test - Integration tests
 #      id: mcp_venue_test_integration_tests
 #      continue-on-error: true
 #      env:
 #        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
-#        # TODO: retrieve OGC credentials and set to UNITY....
+#        UNITY_USER: ${{ secrets.UNITY_USER }}
+#        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 #      run: |
-#        pytest -vv --gherkin-terminal-reporter \
+#        pytest -vv -s --gherkin-terminal-reporter \
 #        unity-test/system/integration \
 #        --venue="test" \
 #        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }}
