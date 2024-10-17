@@ -48,7 +48,7 @@ jobs:
       # FIXME: run all tests not just one
       run: |
         pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_sbg_e2e_scale_workflow_with_ogc_api.py \
+        unity-test/system/integration/step_defs/test_sbg_e2e_scale_workflow_with_airflow_api.py \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}

@@ -12,7 +12,7 @@ from pytest_bdd import given, scenario, then, when
 
 FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
-FEATURE_FILE: Path = FEATURES_DIR / "sbg_e2e_scale_workflow.feature"
+FEATURE_FILE: Path = FEATURES_DIR / "sbg_e2e_scale_workflow_with_airflow_api.feature"
 
 # DAG parameters are venue specific
 DAG_ID = "cwl_dag"
@@ -30,8 +30,9 @@ DAG_PARAMETERS = {
 }
 
 
-@scenario(FEATURE_FILE, "Check SBG End-To-End Scale Workflow")
-def test_check_sbg_e2e_scale_workflow():
+@scenario(FEATURE_FILE,
+          "Successful execution of the SBG End-To-End Scale Workflow with the Airflow API")
+def test_successful_execution_of_sbg_e2e_scale_workflow_with_airflow_api():
     pass
 
 
@@ -85,7 +86,7 @@ def check_failed(e):
     max_time=3600,
     giveup=check_failed,
     jitter=None,
-    interval=1,
+    interval=5,
 )
 def poll_dag_run(response, airflow_api_url, airflow_api_auth):
     dag_json = response.json()
