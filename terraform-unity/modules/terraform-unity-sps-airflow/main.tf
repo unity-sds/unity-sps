@@ -638,8 +638,6 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
       ProxyPreserveHost On
       FallbackResource /management/index.html
-      RequestHeader setifempty "X-Forwarded-Proto" "http"
-      RequestHeader setifempty "X-Forwarded-Port" expr=%%{SERVER_PORT}
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
       Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/sps/$1|q"
     </LocationMatch>
