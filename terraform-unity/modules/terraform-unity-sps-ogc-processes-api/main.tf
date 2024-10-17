@@ -387,6 +387,8 @@ resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
       ProxyPassMatch "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
       ProxyPreserveHost On
       FallbackResource /management/index.html
+      RequestHeader setifempty "X-Forwarded-Proto" "http"
+      RequestHeader setifempty "X-Forwarded-Port" expr=%%{SERVER_PORT}
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
       Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/ogc/$1|q"
     </LocationMatch>
