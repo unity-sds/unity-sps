@@ -1,4 +1,5 @@
-# This test executes the SBG End-To-End Scale CWL workflow.
+# This test executes the SBG End-To-End workflow
+# using the CWL DAG submitted through the Airflow API.
 # The workflow parameters are contained in a YAML file which is venue-dependent.
 # The CWL DAG must already be deployed in Airflow,
 # and it is invoked via the Airflow API.
@@ -49,18 +50,19 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue):
     request_memory = DAG_PARAMETERS[venue]["request_memory"]
     request_cpu = DAG_PARAMETERS[venue]["request_cpu"]
     request_storage = DAG_PARAMETERS[venue]["request_storage"]
-    use_ecr = True
+    use_ecr = DAG_PARAMETERS[venue]["use_ecr"]
     response = requests.post(
         f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
         auth=airflow_api_auth,
-        json={"conf": {
-            "cwl_workflow": f"{cwl_workflow}",
-            "cwl_args": f"{cwl_args}",
-            "request_memory": f"{request_memory}",
-            "request_cpu": f"{request_cpu}",
-            "request_storage": f"{request_storage}",
-            "use_ecr": use_ecr
-        }
+        json={
+            "conf": {
+                "cwl_workflow": f"{cwl_workflow}",
+                "cwl_args": f"{cwl_args}",
+                "request_memory": f"{request_memory}",
+                "request_cpu": f"{request_cpu}",
+                "request_storage": f"{request_storage}",
+                "use_ecr": use_ecr
+             }
         },
         # nosec
         verify=False,
