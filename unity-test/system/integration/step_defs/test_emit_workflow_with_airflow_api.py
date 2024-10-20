@@ -25,6 +25,14 @@ DAG_PARAMETERS = {
         "request_cpu": "8",
         "request_storage": "100Gi",
         "use_ecr": False
+    },
+    "test": {
+        "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-test.json",
+        "request_memory": "16Gi",
+        "request_cpu": "8",
+        "request_storage": "100Gi",
+        "use_ecr": False
     }
 }
 
