@@ -48,18 +48,22 @@ data "aws_ssm_parameter" "ssl_cert_arn" {
   name = "/unity/account/network/ssl"
 }
 
+data "aws_ssm_parameter" "ss_acct_num" {
+  name = "/unity/shared-services/aws/account"
+}
+
 data "aws_ssm_parameter" "cognito_base_url" {
-  name = "/unity/shared-services/cognito/domain"
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.ss_acct_num.value}:parameter/unity/shared-services/cognito/base-url"
 }
 
 data "aws_ssm_parameter" "cognito_client_id" {
-  name = "/unity/dev/sps/cognito_client_id"
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.ss_acct_num.value}:parameter/unity/shared-services/cognito/airflow-ui-client-id"
 }
 
 data "aws_ssm_parameter" "cognito_client_secret" {
-  name = "/unity/dev/sps/cognito_client_secret"
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.ss_acct_num.value}:parameter/unity/shared-services/cognito/airflow-ui-client-secret"
 }
 
 data "aws_ssm_parameter" "cognito_user_pool_id" {
-  name = "/unity/cs/security/shared-services-cognito-user-pool/user-pool-id"
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.ss_acct_num.value}:parameter/unity/shared-services/cognito/user-pool-id"
 }
