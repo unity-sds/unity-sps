@@ -43,7 +43,3 @@ data "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
   }
 }
-
-data "aws_ssm_parameter" "ssl_cert_arn" {
-  name = "/unity/account/network/ssl"
-}

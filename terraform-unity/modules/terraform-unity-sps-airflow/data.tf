@@ -44,10 +44,6 @@ data "aws_efs_file_system" "efs" {
   file_system_id = var.efs_file_system_id
 }
 
-data "aws_ssm_parameter" "ssl_cert_arn" {
-  name = "/unity/account/network/ssl"
-}
-
 data "aws_ssm_parameter" "cognito_base_url" {
   name = "/unity/shared-services/cognito/domain"
 }
