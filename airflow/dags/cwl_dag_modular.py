@@ -299,7 +299,7 @@ def cleanup(**context):
     if os.path.exists(local_dir):
         dir_list = pathlib.Path(local_dir)
         dir_list = list(dir_list.rglob("*"))
-        logging.info("Directory listing: %s", dir_list)
+        for dir_item in dir_list: logging.info("Directory listing: %s", str(dir_item))
         shutil.rmtree(local_dir)
         logging.info(f"Deleted directory: {local_dir}")
     else:
