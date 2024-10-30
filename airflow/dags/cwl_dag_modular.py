@@ -70,6 +70,13 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     #    "ephemeral-storage": "30Gi"
     # },
 )
+STAGE_IN_CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
+    requests={
+        "memory": "4Gi",
+        "cpu": "4",
+        "ephemeral-storage": "{{ params.request_storage }}",
+    }
+)
 
 # Default DAG configuration
 dag_default_args = {
@@ -218,7 +225,7 @@ cwl_task_stage_in = SpsKubernetesPodOperator(
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
     container_security_context={"privileged": True},
-    container_resources=CONTAINER_RESOURCES,
+    container_resources=STAGE_IN_CONTAINER_RESOURCES,
     container_logs=True,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
