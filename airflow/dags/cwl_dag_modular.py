@@ -188,12 +188,9 @@ def setup(ti=None, **context):
     else:
         stage_in_workflow = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-unity/stage-in-workflow.cwl"
         ssm_client = boto3.client("ssm", region_name="us-west-2")
-        ss_acct_num = ssm_client.get_parameter(
-            Name="/unity/shared-services/aws/account",
-            WithDecryption=True
-        )
         unity_client_id = ssm_client.get_parameter(
-            Name=f"arn:aws:ssm:us-west-2:{ss_acct_num['Parameter']['Value']}:parameter/unity/shared-services/cognito/airflow-ui-client-id"
+            Name="/unity/dev/sps/cognito-uds-client-id",
+            WithDecryption=True
         )
         stage_in_args["unity_client_id"] = unity_client_id["Parameter"]["Value"]
 
