@@ -217,6 +217,17 @@ resource "aws_security_group" "ogc_ingress_sg" {
   })
 }
 
+resource "aws_security_group" "ogc_ingress_sg_internal" {
+  name        = "${var.project}-${var.venue}-ogc-internal-ingress-sg"
+  description = "SecurityGroup for OGC API LoadBalancer internal ingress"
+  vpc_id      = data.aws_vpc.cluster_vpc.id
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "OgcLBSg")
+    Component = "ogc"
+    Stack     = "ogc"
+  })
+}
+
 #tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "ogc_ingress_sg_jpl_rule" {
   for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
@@ -241,7 +252,7 @@ data "aws_security_groups" "venue_proxy_sg" {
 #tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "ogc_ingress_sg_proxy_rule" {
   count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
-  security_group_id            = aws_security_group.ogc_ingress_sg.id
+  security_group_id            = aws_security_group.ogc_ingress_sg_internal.id
   description                  = "SecurityGroup ingress rule for venue-services proxy"
   ip_protocol                  = "tcp"
   from_port                    = local.load_balancer_port
@@ -285,6 +296,41 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
   wait_for_load_balancer = true
 }
 
+resource "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
+  metadata {
+    name      = "ogc-processes-api-ingress-internal"
+    namespace = data.kubernetes_namespace.service_area.metadata[0].name
+    annotations = {
+      "alb.ingress.kubernetes.io/scheme"                              = "internal"
+      "alb.ingress.kubernetes.io/target-type"                         = "ip"
+      "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
+      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
+      "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.ogc_ingress_sg_internal.id
+      "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
+      "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+    }
+  }
+  spec {
+    ingress_class_name = "alb"
+    rule {
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = kubernetes_service.ogc_processes_api.metadata[0].name
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  wait_for_load_balancer = true
+}
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "ui_url"])))
@@ -316,8 +362,8 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "OGC API"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
+    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001/health"
+    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-ogc_processes_api")
@@ -339,7 +385,7 @@ resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
       ProxyPassReverse "/"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/ogc/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
+      ProxyPassMatch "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001/$1"
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
