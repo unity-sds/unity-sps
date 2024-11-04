@@ -14,11 +14,11 @@ import pathlib
 import shutil
 from datetime import datetime
 
+import boto3
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.utils.trigger_rule import TriggerRule
-import boto3
 from kubernetes.client import models as k8s
 from unity_sps_utils import SpsKubernetesPodOperator, get_affinity
 
@@ -130,15 +130,15 @@ dag = DAG(
             DEFAULT_STAC_JSON_URL,
             type="string",
             title="STAC JSON URL",
-            description="The URL to the STAC JSON document"
+            description="The URL to the STAC JSON document",
         ),
         "input_location": Param(
             DEFAULT_INPUT_LOCATION,
             type="string",
             enum=["daac", "unity"],
             title="Input data location",
-            description="Indicate whether input data should be retrieved from a DAAC or Unity"
-        )
+            description="Indicate whether input data should be retrieved from a DAAC or Unity",
+        ),
     },
 )
 
@@ -177,10 +177,7 @@ def setup(ti=None, **context):
         logging.info("ECR login: %s", ecr_login)
 
     # define stage in arguments
-    stage_in_args = {
-        "download_dir": f"input",
-        "stac_json": context["params"]["stac_json_url"]
-    }
+    stage_in_args = {"download_dir": "input", "stac_json": context["params"]["stac_json_url"]}
 
     # select stage in workflow based on input location
     if context["params"]["input_location"] == "daac":
@@ -189,8 +186,7 @@ def setup(ti=None, **context):
         stage_in_workflow = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-unity/stage-in-workflow.cwl"
         ssm_client = boto3.client("ssm", region_name="us-west-2")
         unity_client_id = ssm_client.get_parameter(
-            Name="/unity/dev/sps/cognito-uds-client-id",
-            WithDecryption=True
+            Name="/unity/dev/sps/cognito-uds-client-id", WithDecryption=True
         )
         stage_in_args["unity_client_id"] = unity_client_id["Parameter"]["Value"]
 
@@ -199,6 +195,7 @@ def setup(ti=None, **context):
 
     ti.xcom_push(key="stage_in_args", value=stage_in_args)
     logging.info("Stage in arguments selected: %s", stage_in_args)
+
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
@@ -303,7 +300,8 @@ def cleanup(**context):
     if os.path.exists(local_dir):
         dir_list = pathlib.Path(local_dir)
         dir_list = list(dir_list.rglob("*"))
-        for dir_item in dir_list: logging.info("Directory listing: %s", str(dir_item))
+        for dir_item in dir_list:
+            logging.info("Directory listing: %s", str(dir_item))
         shutil.rmtree(local_dir)
         logging.info(f"Deleted directory: {local_dir}")
     else:
@@ -314,4 +312,6 @@ cleanup_task = PythonOperator(
     task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
 )
 
-chain(setup_task.as_setup(), cwl_task_stage_in, cwl_task_processing, cleanup_task.as_teardown(setups=setup_task))
+chain(
+    setup_task.as_setup(), cwl_task_stage_in, cwl_task_processing, cleanup_task.as_teardown(setups=setup_task)
+)
