@@ -4,17 +4,17 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.50.0 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.29.0 |
-| <a name="requirement_null"></a> [null](#requirement\_null) | 3.2.2 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.67.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.32.0 |
+| <a name="requirement_null"></a> [null](#requirement\_null) | 3.2.3 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.62.0 |
-| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.29.0 |
-| <a name="provider_null"></a> [null](#provider\_null) | 3.2.2 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.67.0 |
+| <a name="provider_kubernetes"></a> [kubernetes](#provider\_kubernetes) | 2.32.0 |
+| <a name="provider_null"></a> [null](#provider\_null) | 3.2.3 |
 
 ## Modules
 
@@ -24,14 +24,14 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [kubernetes_manifest.karpenter_node_classes](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
-| [kubernetes_manifest.karpenter_node_pools](https://registry.terraform.io/providers/hashicorp/kubernetes/2.29.0/docs/resources/manifest) | resource |
-| [null_resource.remove_node_class_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.2/docs/resources/resource) | resource |
-| [aws_ami.al2_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ami) | data source |
-| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/eks_cluster) | data source |
-| [aws_iam_role.cluster_iam_role](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/iam_role) | data source |
-| [aws_ssm_parameter.al2_eks_optimized_ami](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
-| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
+| [kubernetes_manifest.karpenter_node_classes](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/manifest) | resource |
+| [kubernetes_manifest.karpenter_node_pools](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/manifest) | resource |
+| [null_resource.remove_node_class_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.3/docs/resources/resource) | resource |
+| [aws_ami.al2_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ami) | data source |
+| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
+| [aws_iam_role.cluster_iam_role](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/iam_role) | data source |
+| [aws_ssm_parameter.al2_eks_optimized_ami](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 
 ## Inputs
 
