@@ -4,15 +4,15 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.50.0 |
-| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.29.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.67.0 |
+| <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.32.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | 3.6.1 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.50.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.67.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | 3.6.1 |
 
 ## Modules
@@ -23,17 +23,17 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_db_instance.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/db_instance) | resource |
-| [aws_db_subnet_group.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/db_subnet_group) | resource |
-| [aws_secretsmanager_secret.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/secretsmanager_secret) | resource |
-| [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/secretsmanager_secret_version) | resource |
-| [aws_security_group.rds_sg](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group) | resource |
-| [aws_security_group_rule.eks_egress_to_rds](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group_rule) | resource |
-| [aws_security_group_rule.rds_ingress_from_eks](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/security_group_rule) | resource |
+| [aws_db_instance.sps_db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/db_instance) | resource |
+| [aws_db_subnet_group.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/db_subnet_group) | resource |
+| [aws_secretsmanager_secret.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/secretsmanager_secret) | resource |
+| [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/secretsmanager_secret_version) | resource |
+| [aws_security_group.rds_sg](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
+| [aws_security_group_rule.eks_egress_to_rds](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group_rule) | resource |
+| [aws_security_group_rule.rds_ingress_from_eks](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group_rule) | resource |
 | [random_password.db](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/password) | resource |
-| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/eks_cluster) | data source |
-| [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/security_group) | data source |
-| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
+| [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/security_group) | data source |
+| [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 
 ## Inputs
 

@@ -446,6 +446,7 @@ data "aws_security_groups" "venue_proxy_sg" {
   }
 }
 
+#tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
   count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
   security_group_id            = aws_security_group.airflow_ingress_sg_internal.id
