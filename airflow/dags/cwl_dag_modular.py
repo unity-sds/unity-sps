@@ -15,29 +15,26 @@ import shutil
 from datetime import datetime
 
 import boto3
+import unity_sps_utils
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import SpsKubernetesPodOperator, get_affinity
 
 from airflow import DAG
 
-# The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_NAMESPACE = "sps"
-POD_LABEL = "cwl_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0"
-
-NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
-NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
+# Task constants
+UNITY_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-unity/stage-in-workflow.cwl"
+DAAC_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in-workflow.cwl"
+LOCAL_DIR = "/shared-task-data"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
 # This is fixed to the EFS /scratch directory in this DAG.
 WORKING_DIR = "/scratch"
 
-# default parameters
+# Default parameters
 DEFAULT_CWL_WORKFLOW = (
     "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
 )
@@ -150,13 +147,13 @@ def setup(ti=None, **context):
     """
     context = get_current_context()
     dag_run_id = context["dag_run"].run_id
-    local_dir = f"/shared-task-data/{dag_run_id}"
+    local_dir = f"{LOCAL_DIR}/{dag_run_id}"
     logging.info(f"Creating directory: {local_dir}")
     os.makedirs(local_dir, exist_ok=True)
     logging.info(f"Created directory: {local_dir}")
 
     # select the node pool based on what resources were requested
-    node_pool = NODE_POOL_DEFAULT
+    node_pool = unity_sps_utils.NODE_POOL_DEFAULT
     storage = context["params"]["request_storage"]  # 100Gi
     storage = int(storage[0:-2])  # 100
     memory = context["params"]["request_memory"]  # 32Gi
@@ -165,7 +162,7 @@ def setup(ti=None, **context):
 
     logging.info(f"Requesting storage={storage}Gi memory={memory}Gi CPU={cpu}")
     if (storage > 30) or (memory > 32) or (cpu > 8):
-        node_pool = NODE_POOL_HIGH_WORKLOAD
+        node_pool = unity_sps_utils.NODE_POOL_HIGH_WORKLOAD
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool_processing", value=node_pool)
 
@@ -181,14 +178,18 @@ def setup(ti=None, **context):
 
     # select stage in workflow based on input location
     if context["params"]["input_location"] == "daac":
-        stage_in_workflow = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in-workflow.cwl"
+        stage_in_workflow = DAAC_STAGE_IN_WORKFLOW
     else:
-        stage_in_workflow = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-unity/stage-in-workflow.cwl"
+        stage_in_workflow = UNITY_STAGE_IN_WORKFLOW
         ssm_client = boto3.client("ssm", region_name="us-west-2")
+        ss_acct_num = ssm_client.get_parameter(Name=unity_sps_utils.SS_ACT_NUM, WithDecryption=True)[
+            "Parameter"
+        ]["Value"]
         unity_client_id = ssm_client.get_parameter(
-            Name="/unity/dev/sps/cognito-uds-client-id", WithDecryption=True
-        )
-        stage_in_args["unity_client_id"] = unity_client_id["Parameter"]["Value"]
+            Name=f"arn:aws:ssm:us-west-2:{ss_acct_num}:parameter{unity_sps_utils.DS_CLIENT_ID_PARAM}",
+            WithDecryption=True,
+        )["Parameter"]["Value"]
+        stage_in_args["unity_client_id"] = unity_client_id
 
     ti.xcom_push(key="stage_in_workflow", value=stage_in_workflow)
     logging.info("Stage In workflow selected: %s", stage_in_workflow)
@@ -200,12 +201,12 @@ def setup(ti=None, **context):
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
 
-cwl_task_stage_in = SpsKubernetesPodOperator(
+cwl_task_stage_in = unity_sps_utils.SpsKubernetesPodOperator(
     retries=0,
     task_id="cwl_task_stage_in",
-    namespace=POD_NAMESPACE,
+    namespace=unity_sps_utils.POD_NAMESPACE,
     name="cwl-task-pod",
-    image=SPS_DOCKER_CWL_IMAGE,
+    image=unity_sps_utils.SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
@@ -231,26 +232,26 @@ cwl_task_stage_in = SpsKubernetesPodOperator(
         )
     ],
     dag=dag,
-    node_selector={"karpenter.sh/nodepool": NODE_POOL_DEFAULT},
-    labels={"app": POD_LABEL},
+    node_selector={"karpenter.sh/nodepool": unity_sps_utils.NODE_POOL_DEFAULT},
+    labels={"app": unity_sps_utils.POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     # note: 'affinity' cannot yet be templated
-    affinity=get_affinity(
+    affinity=unity_sps_utils.get_affinity(
         capacity_type=["spot"],
         # instance_type=["t3.2xlarge"],
-        anti_affinity_label=POD_LABEL,
+        anti_affinity_label=unity_sps_utils.POD_LABEL,
     ),
     on_finish_action="keep_pod",
     is_delete_operator_pod=False,
 )
 
 
-cwl_task_processing = SpsKubernetesPodOperator(
+cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     retries=0,
     task_id="cwl_task_processing",
-    namespace=POD_NAMESPACE,
+    namespace=unity_sps_utils.POD_NAMESPACE,
     name="cwl-task-pod",
-    image=SPS_DOCKER_CWL_IMAGE,
+    image=unity_sps_utils.SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
@@ -277,13 +278,13 @@ cwl_task_processing = SpsKubernetesPodOperator(
     ],
     dag=dag,
     node_selector={"karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool_processing')}}"},
-    labels={"app": POD_LABEL},
+    labels={"app": unity_sps_utils.POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     # note: 'affinity' cannot yet be templated
-    affinity=get_affinity(
+    affinity=unity_sps_utils.get_affinity(
         capacity_type=["spot"],
         # instance_type=["t3.2xlarge"],
-        anti_affinity_label=POD_LABEL,
+        anti_affinity_label=unity_sps_utils.POD_LABEL,
     ),
     on_finish_action="keep_pod",
     is_delete_operator_pod=False,
@@ -296,7 +297,7 @@ def cleanup(**context):
     from the Kubernetes PersistentVolume
     """
     dag_run_id = context["dag_run"].run_id
-    local_dir = f"/shared-task-data/{dag_run_id}"
+    local_dir = f"{LOCAL_DIR}/{dag_run_id}"
     if os.path.exists(local_dir):
         dir_list = pathlib.Path(local_dir)
         dir_list = list(dir_list.rglob("*"))
