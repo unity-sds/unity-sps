@@ -10,7 +10,7 @@ terraform {
 
 module "karpenter" {
   source                            = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version                           = "20.8.5"
+  version                           = "20.24.1"
   cluster_name                      = local.cluster_name
   iam_policy_name                   = format(local.resource_name_prefix, "karpenter")
   iam_policy_use_name_prefix        = false

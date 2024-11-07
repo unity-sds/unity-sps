@@ -6,13 +6,13 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.47.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.67.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.47.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.67.0 |
 
 ## Modules
 
@@ -24,8 +24,8 @@
 
 | Name | Type |
 |------|------|
-| [aws_iam_role_policy.sps_airflow_eks_inline_policy](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/resources/iam_role_policy) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.47.0/docs/data-sources/caller_identity) | data source |
+| [aws_iam_role_policy.sps_airflow_eks_inline_policy](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/iam_role_policy) | resource |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/caller_identity) | data source |
 
 ## Inputs
 
