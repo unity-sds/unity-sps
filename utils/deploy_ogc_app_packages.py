@@ -13,7 +13,6 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 
 def register_process(api_instance, proc, ogcapppkg_instance):
     """
-    Register a process with the OGC API.
 
     Args:
         api_instance: The API client instance.
@@ -22,6 +21,7 @@ def register_process(api_instance, proc, ogcapppkg_instance):
 
     Returns:
         None
+    Register a process with the OGC API.
     """
     try:
         # Deploy a process
