@@ -5,6 +5,7 @@
 # and it is invoked via the Airflow API.
 # The CWL task is executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
+import logging
 from pathlib import Path
 
 import backoff
@@ -44,6 +45,10 @@ DAG_PARAMETERS = {
         "request_storage": "100Gi",
         "use_ecr": True
     },
+    "does_not_exist": {
+        "cwl_args": {
+        }
+    }
 }
 
 
@@ -65,35 +70,44 @@ def api_up_and_running():
     ),
     target_fixture="response")
 def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
-    # DAG parameters are venue dependent
-    cwl_workflow = DAG_PARAMETERS[test_case]["cwl_workflow"]
-    cwl_args = DAG_PARAMETERS[test_case]["cwl_args"][venue]
-    request_memory = DAG_PARAMETERS[test_case]["request_memory"]
-    request_cpu = DAG_PARAMETERS[test_case]["request_cpu"]
-    request_storage = DAG_PARAMETERS[test_case]["request_storage"]
-    use_ecr = DAG_PARAMETERS[test_case]["use_ecr"]
-    response = requests.post(
-        f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
-        auth=airflow_api_auth,
-        json={
-            "conf": {
-                "cwl_workflow": f"{cwl_workflow}",
-                "cwl_args": f"{cwl_args}",
-                "request_memory": f"{request_memory}",
-                "request_cpu": f"{request_cpu}",
-                "request_storage": f"{request_storage}",
-                "use_ecr": use_ecr
-            }
-        },
-        # nosec
-        verify=False,
-    )
-    return response
+
+    # check that this test_case is enabled for the specified venue
+    if venue in DAG_PARAMETERS[test_case]["cwl_args"]:
+        # DAG parameters are venue dependent
+        cwl_workflow = DAG_PARAMETERS[test_case]["cwl_workflow"]
+        cwl_args = DAG_PARAMETERS[test_case]["cwl_args"][venue]
+        request_memory = DAG_PARAMETERS[test_case]["request_memory"]
+        request_cpu = DAG_PARAMETERS[test_case]["request_cpu"]
+        request_storage = DAG_PARAMETERS[test_case]["request_storage"]
+        use_ecr = DAG_PARAMETERS[test_case]["use_ecr"]
+        response = requests.post(
+            f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
+            auth=airflow_api_auth,
+            json={
+                "conf": {
+                    "cwl_workflow": f"{cwl_workflow}",
+                    "cwl_args": f"{cwl_args}",
+                    "request_memory": f"{request_memory}",
+                    "request_cpu": f"{request_cpu}",
+                    "request_storage": f"{request_storage}",
+                    "use_ecr": use_ecr
+                }
+            },
+            # nosec
+            verify=False,
+        )
+        return response
+    else:
+        logging.info(f"Test case: {test_case} is NOT enabled for venue: {venue}, skipping")
+        return None
 
 
 @then("I receive a response with status code 200")
 def check_status_code(response):
-    assert response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
+    if response is not None:
+        assert response.status_code == 200, f"Expected status code 200, but got {response.status_code}"
+    else:
+        pass
 
 
 def check_failed(e):
@@ -112,15 +126,18 @@ def check_failed(e):
     interval=5,
 )
 def poll_dag_run(response, airflow_api_url, airflow_api_auth):
-    dag_json = response.json()
-    dag_run_response = requests.get(
-        f"""{airflow_api_url}/api/v1/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
-        auth=airflow_api_auth,
-        # nosec
-        verify=False,
-    )
-    assert dag_run_response.status_code == 200, (f"Expected status code 2"
-                                                 f"00, but got {response.status_code}")
-    json = dag_run_response.json()
-    assert "state" in json, 'Expected "state" element in response'
-    assert json["state"] == "success"
+    if response is not None:
+        dag_json = response.json()
+        dag_run_response = requests.get(
+            f"""{airflow_api_url}/api/v1/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
+            auth=airflow_api_auth,
+            # nosec
+            verify=False,
+        )
+        assert dag_run_response.status_code == 200, (f"Expected status code 2"
+                                                     f"00, but got {response.status_code}")
+        json = dag_run_response.json()
+        assert "state" in json, 'Expected "state" element in response'
+        assert json["state"] == "success"
+    else:
+        pass

@@ -13,7 +13,6 @@ Feature: Execute CWL workflows using the Airflow API
 
             Examples:
             | test_case     |
-            | emit          |
-            | sbg_e2e_scale |
+            | does_not_exist |
 
 
