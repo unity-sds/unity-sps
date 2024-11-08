@@ -21,21 +21,36 @@ DAG_PARAMETERS = {
     "emit": {
         "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
         "cwl_args": {
-            "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json",
-            "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-test.json",
+            "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
+                   "/test/emit-ghg-dev.json",
+            "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
+                    "/test/emit-ghg-test.json",
         },
         "request_memory": "16Gi",
         "request_cpu": "8",
         "request_storage": "100Gi",
         "use_ecr": False
     },
+    "sbg_e2e_scale": {
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
+                        "/L1-to-L2-e2e.scale.cwl",
+        "cwl_args": {
+            "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
+                   "/L1-to-L2-e2e.dev.scale.yml",
+            "test": "",
+        },
+        "request_memory": "64Gi",
+        "request_cpu": "32",
+        "request_storage": "100Gi",
+        "use_ecr": True
+    },
 }
 
 
 
 @scenario(FEATURE_FILE,
-          "Execute CWL workflows using the Airflow API")
-def test_successful_execution_of_cwl_workflows_using_the_airflow_api():
+          "Successful execution of a CWL workflow with the Airflow API")
+def test_successful_execution_of_a_cwl_workflow_with_the_airflow_api():
     pass
 
 
@@ -52,7 +67,7 @@ def api_up_and_running():
 def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
     # DAG parameters are venue dependent
     cwl_workflow = DAG_PARAMETERS[test_case]["cwl_workflow"]
-    cwl_args = DAG_PARAMETERS[test_case]["cwl_args"]["venue"]
+    cwl_args = DAG_PARAMETERS[test_case]["cwl_args"][venue]
     request_memory = DAG_PARAMETERS[test_case]["request_memory"]
     request_cpu = DAG_PARAMETERS[test_case]["request_cpu"]
     request_storage = DAG_PARAMETERS[test_case]["request_storage"]
