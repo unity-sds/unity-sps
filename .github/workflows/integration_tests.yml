@@ -49,10 +49,11 @@ jobs:
       # OK: test_sbg_e2e_scale_workflow_with_airflow_api.py
       # OK: test_sbg_e2e_scale_workflow_with_ogc_api.py
       # OK: test_emit_workflow_with_airflow_api.py
-      # ??: test_emit_workflow_with_ogc_api.py
+      # OK: test_emit_workflow_with_ogc_api.py
+      # ??: test_cwl_workflows_with_airflow_api.py
       run: |
         pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_emit_workflow_with_ogc_api.py  \
+        unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py  \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
