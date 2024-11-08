@@ -5,7 +5,6 @@
 # and it is invoked via the Airflow API.
 # The CWL task is executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
-import logging
 from pathlib import Path
 
 import backoff
@@ -98,7 +97,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
         )
         return response
     else:
-        logging.info(f"Test case: {test_case} is NOT enabled for venue: {venue}, skipping")
+        print(f"Test case: {test_case} is NOT enabled for venue: {venue}, skipping")
         return None
 
 

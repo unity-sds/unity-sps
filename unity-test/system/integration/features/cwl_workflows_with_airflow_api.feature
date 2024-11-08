@@ -12,7 +12,9 @@ Feature: Execute CWL workflows using the Airflow API
             And I see an eventual successful dag run
 
             Examples:
-            | test_case     |
+            | test_case      |
             | does_not_exist |
+            | sbg_e2e_scale  |
+            | emit           |
 
 
