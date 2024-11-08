@@ -26,7 +26,7 @@ DAG_PARAMETERS = {
         "request_memory": "64Gi",
         "request_cpu": "32",
         "request_storage": "100Gi",
-        "use_ecr": False
+        "use_ecr": True
     }
 }
 
