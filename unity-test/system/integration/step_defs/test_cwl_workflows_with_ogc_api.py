@@ -26,10 +26,12 @@ FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_ogc_api.feature"
 # DAG parameters are venue specific
 DAG_ID = "cwl_dag"
 DATA = {
-    "dev": {
+    "emit": {
       "inputs": {
         "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
-        "cwl_args": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json",
+        "cwl_args": {
+            "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json"
+        },
         "request_memory": "16Gi",
         "request_cpu": "8",
         "request_storage": "100Gi",
@@ -41,21 +43,6 @@ DATA = {
         }
       }
     },
-    "test": {
-        "inputs": {
-            "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
-            "cwl_args": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-test.json",
-            "request_memory": "16Gi",
-            "request_cpu": "8",
-            "request_storage": "100Gi",
-            "use_ecr": False
-        },
-        "outputs": {
-            "result": {
-                "transmissionMode": "reference"
-            }
-        }
-    }
 }
 
 
@@ -81,7 +68,11 @@ def trigger_process(cwl_dag_process, venue, test_case):
     print(cwl_dag_process)
     assert cwl_dag_process is not None
 
-    job = cwl_dag_process.execute(DATA[venue])
+    payload = DATA[test_case]
+    # choose the "cwl_args" specific to the current venue
+    payload["inputs"]["cwl_args"] = payload["inputs"]["cwl_args"][venue]
+    print(payload)
+    job = cwl_dag_process.execute(payload)
     assert job is not None
     return job
 
