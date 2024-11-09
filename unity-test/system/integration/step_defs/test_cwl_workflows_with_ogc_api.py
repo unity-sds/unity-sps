@@ -43,6 +43,11 @@ DATA = {
         }
       }
     },
+    "does_not_exist": {
+        "inputs": {
+            "cwl_args": {}
+        }
+    }
 }
 
 
@@ -54,7 +59,6 @@ def test_successful_execution_of_a_cwl_workflow_with_the_ogc_api():
 
 @given("the OGC API is up and running")
 def api_up_and_running(ogc_processes):
-
     assert ogc_processes is not None and len(ogc_processes) > 0
 
 
@@ -68,18 +72,28 @@ def trigger_process(cwl_dag_process, venue, test_case):
     print(cwl_dag_process)
     assert cwl_dag_process is not None
 
-    payload = DATA[test_case]
-    # choose the "cwl_args" specific to the current venue
-    payload["inputs"]["cwl_args"] = payload["inputs"]["cwl_args"][venue]
-    print(payload)
-    job = cwl_dag_process.execute(payload)
-    assert job is not None
-    return job
+    # check that this test_case is enabled for the specified venue
+    if venue in DATA[test_case]["inputs"]["cwl_args"]:
+        payload = DATA[test_case]
+        # choose the "cwl_args" specific to the current venue
+        payload["inputs"]["cwl_args"] = payload["inputs"]["cwl_args"][venue]
+        print(payload)
+        job = cwl_dag_process.execute(payload)
+        assert job is not None
+        return job
+
+    else:
+        print(f"Test case: {test_case} is NOT enabled for venue: {venue}, skipping")
+        return None
+
 
 @then("the job starts executing")
 def check_job_started(job):
-    status = job.get_status().status
-    assert status in [JobStatus.ACCEPTED, JobStatus.RUNNING]
+    if job is not None:
+        status = job.get_status().status
+        assert status in [JobStatus.ACCEPTED, JobStatus.RUNNING]
+    else:
+        pass
 
 def check_failed(e):
     if isinstance(e, AssertionError):
@@ -98,10 +112,13 @@ def check_failed(e):
 )
 def check_process_execution_and_termination(job):
 
-    status = job.get_status().status
-    while status in [JobStatus.ACCEPTED, JobStatus.RUNNING]:
-        print(f"Job: {job.id} status: {job.get_status().status}")
+    if job is not None:
         status = job.get_status().status
+        while status in [JobStatus.ACCEPTED, JobStatus.RUNNING]:
+            print(f"Job: {job.id} status: {job.get_status().status}")
+            status = job.get_status().status
 
-    print(f"Job: {job.id} status: {job.get_status().status}")
-    assert job.get_status().status == JobStatus.SUCCESSFUL
+        print(f"Job: {job.id} status: {job.get_status().status}")
+        assert job.get_status().status == JobStatus.SUCCESSFUL
+    else:
+        pass
