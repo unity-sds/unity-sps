@@ -16,5 +16,3 @@ Feature: Execute CWL workflows using the Airflow API
             | sbg_preprocess |
             | emit           |
             | sbg_e2e_scale  |
-
-
