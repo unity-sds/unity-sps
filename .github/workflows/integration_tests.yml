@@ -47,7 +47,7 @@ jobs:
         UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
       run: |
         pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py  \
+        unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py  \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
