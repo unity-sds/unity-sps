@@ -44,10 +44,6 @@ DAG_PARAMETERS = {
         "request_storage": "100Gi",
         "use_ecr": True
     },
-    "does_not_exist": {
-        "cwl_args": {
-        }
-    },
     "sbg_preprocess": {
         "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
                         "/preprocess/sbg-preprocess-workflow.cwl",
