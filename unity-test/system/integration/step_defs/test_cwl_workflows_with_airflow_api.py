@@ -47,7 +47,21 @@ DAG_PARAMETERS = {
     "does_not_exist": {
         "cwl_args": {
         }
-    }
+    },
+    "sbg_preprocess": {
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
+                        "/preprocess/sbg-preprocess-workflow.cwl",
+        "cwl_args": {
+            "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
+                   "/sbg-preprocess-workflow.dev.yml",
+            "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
+                    "/sbg-preprocess-workflow.test.yml",
+        },
+        "request_memory": "4Gi",
+        "request_cpu": "8",
+        "request_storage": "10Gi",
+        "use_ecr": False
+    },
 }
 
 
