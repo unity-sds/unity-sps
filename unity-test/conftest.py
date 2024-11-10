@@ -4,10 +4,8 @@ import boto3
 import pytest
 from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth
-
-from unity_sds_client.unity import Unity
+from unity_sds_client.unity import Unity, UnityEnvironments
 from unity_sds_client.unity_services import UnityServices
-from unity_sds_client.unity import UnityEnvironments
 
 # Load environment variables from .env file
 load_dotenv()
@@ -106,7 +104,8 @@ def eks_cluster_name(resource_name_template):
     name = name.replace("--", "-")
     return name
 
-@pytest.fixture(scope='session')
+
+@pytest.fixture(scope="session")
 def ogc_processes(ogc_processes_api_url):
     """
     Retrieves the OGC processes available from the given endpoint.
@@ -125,10 +124,10 @@ def ogc_processes(ogc_processes_api_url):
     return procs
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def cwl_dag_process(ogc_processes):
     """
-    Selects the CWL DAG from the list of available OGC processes.
+    Selects the CWL DAG from the list of available OGC processes
     """
 
     for p in ogc_processes:
