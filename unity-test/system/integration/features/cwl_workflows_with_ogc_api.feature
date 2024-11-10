@@ -13,7 +13,6 @@ Feature: Execute CWL workflows using the OGC API
 
             Examples:
             | test_case      |
-            | does_not_exist |
-            | emit           |
+            | sbg_preprocess |
 
 
