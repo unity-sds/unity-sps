@@ -5,6 +5,17 @@ Module containing common utilities for the Unity Science Processing System.
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
+# Shared constants
+POD_NAMESPACE = "sps"  # The Kubernetes namespace within which the Pod is run (it must already exist)
+POD_LABEL = "cwl_task"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0"
+
+NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
+NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
+
+DS_CLIENT_ID_PARAM = "/unity/shared-services/cognito/hysds-ui-client-id"
+SS_ACT_NUM = "/unity/shared-services/aws/account"
+
 
 class SpsKubernetesPodOperator(KubernetesPodOperator):
     """
