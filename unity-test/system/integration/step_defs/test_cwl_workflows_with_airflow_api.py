@@ -23,8 +23,9 @@ DAG_PARAMETERS = {
         "cwl_args": {
             "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
             "/test/emit-ghg-dev.json",
-            "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
-            "/test/emit-ghg-test.json",
+            "test": "",
+            # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
+            # "/test/emit-ghg-test.json",
         },
         "request_memory": "16Gi",
         "request_cpu": "8",
