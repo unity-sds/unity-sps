@@ -74,7 +74,12 @@ jobs:
         echo "Dev Venue Integration Tests status: $dev_status"
         echo "Test Venue Integration Tests status: $test_status"
 
+        if [ "$dev_status" != "success" ]; then
+          echo "MCP Venue Dev Integration Tests failed."
+        fi
         if [ "$test_status" != "success" ]; then
           echo "MCP Venue Test Integration Tests failed."
+        fi
+        if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ]; then
           exit 1
         fi
