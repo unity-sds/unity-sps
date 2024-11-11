@@ -38,19 +38,19 @@ jobs:
         pip install git+https://github.com/unity-sds/unity-monorepo.git@main#subdirectory=libs/unity-py
         pip freeze
 
-#    - name: MCP Venue Dev - Integration tests
-#      id: mcp_venue_dev_integration_tests
-#      continue-on-error: true
-#      env:
-#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
-#        UNITY_USER: ${{ secrets.UNITY_USER }}
-#        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#      run: |
-#        pytest -vv -s --gherkin-terminal-reporter \
-#        unity-test/system/integration  \
-#        --venue="dev" \
-#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
+    - name: MCP Venue Dev - Integration tests
+      id: mcp_venue_dev_integration_tests
+      continue-on-error: true
+      env:
+        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
+        UNITY_USER: ${{ secrets.UNITY_USER }}
+        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      run: |
+        pytest -vv -s --gherkin-terminal-reporter \
+        unity-test/system/integration  \
+        --venue="dev" \
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
+        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue Test - Integration tests
       id: mcp_venue_test_integration_tests
@@ -69,9 +69,9 @@ jobs:
     - name: Check Integration Tests Results
       if: always()
       run: |
-        # dev_status=${{ steps.mcp_venue_dev_integration_tests.outcome }}
+        dev_status=${{ steps.mcp_venue_dev_integration_tests.outcome }}
         test_status=${{ steps.mcp_venue_test_integration_tests.outcome }}
-        # echo "Dev Venue Integration Tests status: $dev_status"
+        echo "Dev Venue Integration Tests status: $dev_status"
         echo "Test Venue Integration Tests status: $test_status"
 
         if [ "$test_status" != "success" ]; then

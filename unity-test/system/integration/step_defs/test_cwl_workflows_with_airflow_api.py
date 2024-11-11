@@ -23,7 +23,6 @@ DAG_PARAMETERS = {
         "cwl_args": {
             "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
             "/test/emit-ghg-dev.json",
-            "test": "",
             # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
             # "/test/emit-ghg-test.json",
         },
@@ -38,7 +37,6 @@ DAG_PARAMETERS = {
         "cwl_args": {
             "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
             "/L1-to-L2-e2e.dev.scale.yml",
-            "test": "",
         },
         "request_memory": "64Gi",
         "request_cpu": "32",

@@ -56,7 +56,6 @@ DATA = {
             "cwl_args": {
                 "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
                 "/L1-to-L2-e2e.dev.scale.yml",
-                "test": "",
             },
             "request_memory": "64Gi",
             "request_cpu": "32",
