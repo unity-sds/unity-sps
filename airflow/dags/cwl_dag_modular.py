@@ -21,6 +21,8 @@ from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
+import requests
+import yaml
 
 from airflow import DAG
 
@@ -28,6 +30,7 @@ from airflow import DAG
 UNITY_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-unity/stage-in-workflow.cwl"
 DAAC_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in-workflow.cwl"
 LOCAL_DIR = "/shared-task-data"
+DOWNLOAD_DIR = "input"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -140,25 +143,23 @@ dag = DAG(
 )
 
 
-def setup(ti=None, **context):
+def create_local_dir(dag_run_id):
     """
-    Task that creates the working directory on the shared volume
-    and parses the input parameter values.
+    Create local directory for working DAG data.
     """
-    context = get_current_context()
-    dag_run_id = context["dag_run"].run_id
     local_dir = f"{LOCAL_DIR}/{dag_run_id}"
-    logging.info(f"Creating directory: {local_dir}")
     os.makedirs(local_dir, exist_ok=True)
     logging.info(f"Created directory: {local_dir}")
 
-    # select the node pool based on what resources were requested
+
+def select_node_pool(ti, request_storage, request_memory, request_cpu):
+    """
+    Select node pool based on resources requested in input parameters.
+    """
     node_pool = unity_sps_utils.NODE_POOL_DEFAULT
-    storage = context["params"]["request_storage"]  # 100Gi
-    storage = int(storage[0:-2])  # 100
-    memory = context["params"]["request_memory"]  # 32Gi
-    memory = int(memory[0:-2])  # 32
-    cpu = int(context["params"]["request_cpu"])  # 8
+    storage = int(request_storage[0:-2])  # 100Gi -> 100
+    memory = int(request_memory[0:-2])  # 32Gi -> 32
+    cpu = int(request_cpu)  # 8
 
     logging.info(f"Requesting storage={storage}Gi memory={memory}Gi CPU={cpu}")
     if (storage > 30) or (memory > 32) or (cpu > 8):
@@ -166,18 +167,24 @@ def setup(ti=None, **context):
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool_processing", value=node_pool)
 
-    # select "use_ecr" argument and determine if ECR login is required
-    logging.info("Use ECR: %s", context["params"]["use_ecr"])
-    if context["params"]["use_ecr"]:
+
+def select_ecr(ti, use_ecr):
+    """
+    Determine if ECR login is required.
+    """
+    logging.info("Use ECR: %s", use_ecr)
+    if use_ecr:
         ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
         ti.xcom_push(key="ecr_login", value=ecr_login)
         logging.info("ECR login: %s", ecr_login)
 
-    # define stage in arguments
-    stage_in_args = {"download_dir": "input", "stac_json": context["params"]["stac_json_url"]}
 
-    # select stage in workflow based on input location
-    if context["params"]["input_location"] == "daac":
+def select_stage_in(ti, stac_json_url, input_location):
+    """
+    Determine stage in workflow and required arguments.
+    """
+    stage_in_args = {"download_dir": DOWNLOAD_DIR, "stac_json": stac_json_url}
+    if input_location == "daac":
         stage_in_workflow = DAAC_STAGE_IN_WORKFLOW
     else:
         stage_in_workflow = UNITY_STAGE_IN_WORKFLOW
@@ -196,6 +203,57 @@ def setup(ti=None, **context):
 
     ti.xcom_push(key="stage_in_args", value=stage_in_args)
     logging.info("Stage in arguments selected: %s", stage_in_args)
+
+
+def select_process(ti, dag_run_id, cwl_args):
+    """
+    Determine process task CWL arguments.
+    """
+    input_dir = f"{WORKING_DIR}/{DOWNLOAD_DIR}"
+    if cwl_args.endswith("yml") or cwl_args.endswith("yaml"):
+        yaml_data = requests.get(cwl_args, headers={"User-Agent":"SPS/Airflow"}).text
+        json_data = yaml.safe_load(yaml_data)
+    else:
+        json_data = json.loads(cwl_args)
+    json_data["input"] = {
+        "class": "Directory",
+        "path": input_dir
+    }
+    ti.xcom_push(key="cwl_args", value=json.dumps(json_data))
+    logging.info("Modified CWL args for processing task.")
+
+
+def setup(ti=None, **context):
+    """
+    Task that creates the working directory on the shared volume
+    and parses the input parameter values.
+    """
+    context = get_current_context()
+
+    # create local working directory
+    dag_run_id = context["dag_run"].run_id
+    create_local_dir(dag_run_id)
+
+    # select the node pool based on what resources were requested
+    select_node_pool(
+        ti,
+        context["params"]["request_storage"],
+        context["params"]["request_memory"],
+        context["params"]["request_cpu"],
+    )
+
+    # select "use_ecr" argument and determine if ECR login is required
+    select_ecr(ti, context["params"]["use_ecr"])
+
+    # define stage in arguments
+    select_stage_in(
+        ti,
+        context["params"]["stac_json_url"],
+        context["params"]["input_location"],
+    )
+
+    # define process arguments
+    select_process(ti, dag_run_id, context["params"]["cwl_args"])
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
@@ -260,7 +318,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "-w",
         "{{ params.cwl_workflow }}",
         "-j",
-        "{{ params.cwl_args }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='cwl_args') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
