@@ -29,6 +29,7 @@ from airflow import DAG
 # Task constants
 UNITY_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-unity/stage-in-workflow.cwl"
 DAAC_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in-workflow.cwl"
+HTTP_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_in_workflow.cwl"
 LOCAL_DIR = "/shared-task-data"
 DOWNLOAD_DIR = "input"
 
@@ -135,7 +136,7 @@ dag = DAG(
         "input_location": Param(
             DEFAULT_INPUT_LOCATION,
             type="string",
-            enum=["daac", "unity"],
+            enum=["daac", "unity", "http"],
             title="Input data location",
             description="Indicate whether input data should be retrieved from a DAAC or Unity",
         ),
@@ -186,7 +187,7 @@ def select_stage_in(ti, stac_json_url, input_location):
     stage_in_args = {"download_dir": DOWNLOAD_DIR, "stac_json": stac_json_url}
     if input_location == "daac":
         stage_in_workflow = DAAC_STAGE_IN_WORKFLOW
-    else:
+    elif input_location == "unity":
         stage_in_workflow = UNITY_STAGE_IN_WORKFLOW
         ssm_client = boto3.client("ssm", region_name="us-west-2")
         ss_acct_num = ssm_client.get_parameter(Name=unity_sps_utils.SS_ACT_NUM, WithDecryption=True)[
@@ -197,6 +198,8 @@ def select_stage_in(ti, stac_json_url, input_location):
             WithDecryption=True,
         )["Parameter"]["Value"]
         stage_in_args["unity_client_id"] = unity_client_id
+    else:
+        stage_in_workflow = HTTP_STAGE_IN_WORKFLOW
 
     ti.xcom_push(key="stage_in_workflow", value=stage_in_workflow)
     logging.info("Stage In workflow selected: %s", stage_in_workflow)
