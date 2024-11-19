@@ -15,14 +15,14 @@ import shutil
 from datetime import datetime
 
 import boto3
+import requests
 import unity_sps_utils
+import yaml
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-import requests
-import yaml
 
 from airflow import DAG
 
@@ -214,14 +214,11 @@ def select_process(ti, dag_run_id, cwl_args):
     """
     input_dir = f"{WORKING_DIR}/{DOWNLOAD_DIR}"
     if cwl_args.endswith("yml") or cwl_args.endswith("yaml"):
-        yaml_data = requests.get(cwl_args, headers={"User-Agent":"SPS/Airflow"}).text
+        yaml_data = requests.get(cwl_args, headers={"User-Agent": "SPS/Airflow"}).text
         json_data = yaml.safe_load(yaml_data)
     else:
         json_data = json.loads(cwl_args)
-    json_data["input"] = {
-        "class": "Directory",
-        "path": input_dir
-    }
+    json_data["input"] = {"class": "Directory", "path": input_dir}
     ti.xcom_push(key="cwl_args", value=json.dumps(json_data))
     logging.info("Modified CWL args for processing task.")
 
