@@ -26,6 +26,7 @@
 | [aws_s3_bucket.code](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.config](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket.inbound_staging_location](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket_policy.ssl_s3_policy](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket_policy) | resource |
 | [aws_s3_object.isl_stacam_rawdp_folder](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_object) | resource |
 | [aws_s3_object.router_config](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_object) | resource |
 | [aws_ssm_parameter.airflow_api_url](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |

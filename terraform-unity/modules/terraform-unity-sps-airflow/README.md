@@ -40,6 +40,7 @@ No modules.
 | [aws_iam_role_policy_attachment.airflow_worker_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/lambda_invocation) | resource |
 | [aws_s3_bucket.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket) | resource |
+| [aws_s3_bucket_policy.airflow_logs_s3_policy](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket_policy) | resource |
 | [aws_security_group.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
 | [aws_security_group.airflow_ingress_sg](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
 | [aws_security_group.airflow_ingress_sg_internal](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |

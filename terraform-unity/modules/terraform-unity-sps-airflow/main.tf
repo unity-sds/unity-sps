@@ -124,6 +124,33 @@ resource "aws_s3_bucket" "airflow_logs" {
   })
 }
 
+resource "aws_s3_bucket_policy" "airflow_logs_s3_policy" {
+  bucket = aws_s3_bucket.airflow_logs.id
+  policy = jsonencode(
+    {
+      "Id" : "ExamplePolicy",
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Sid" : "AllowSSLRequestsOnly",
+          "Action" : "s3:*",
+          "Effect" : "Deny",
+          "Resource" : [
+            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs")),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs"), "*")
+          ],
+          "Condition" : {
+            "Bool" : {
+              "aws:SecureTransport" : "false"
+            }
+          },
+          "Principal" : "*"
+        }
+      ]
+    }
+  )
+}
+
 resource "aws_iam_policy" "airflow_worker_policy" {
   name        = format(local.resource_name_prefix, "AirflowWorkerPolicy")
   description = "Policy for Airflow Workers to access AWS services"
