@@ -8,7 +8,7 @@ from kubernetes.client import models as k8s
 # Shared constants
 POD_NAMESPACE = "sps"  # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_LABEL = "cwl_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.3.0"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
