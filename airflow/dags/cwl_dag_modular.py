@@ -3,8 +3,12 @@ DAG to execute a generic CWL workflow.
 
 The Airflow KubernetesPodOperator starts a Docker container that includes the Docker engine and the CWL libraries.
 The "cwl-runner" tool is invoked to execute the CWL workflow.
-Parameter cwl_workflow: the URL of the CWL workflow to execute.
-Parameter args_as_json: JSON string contained the specific values for the workflow specific inputs.
+Parameter stage_in_args: The stage in job parameters encoded as a JSON string
+Parameter process_workflow: the URL of the CWL workflow to execute.
+Parameter process_args: JSON string contained the specific values for the processing workflow specific inputs.
+Parameter stage_out_args: The stage out job parameters encoded as a JSON string or URL of JSON/YAML file.
+Parameter stage_out_bucket: The S3 bucket to stage data out to.
+Parameter collection_id: The output collection identifier for processed data.
 """
 
 import json
@@ -39,22 +43,22 @@ LOCAL_DIR = "/shared-task-data"
 WORKING_DIR = "/scratch"
 
 # Default parameters
-DEFAULT_CWL_WORKFLOW = (
-    "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
+DEFAULT_PROCESS_WORKFLOW = (
+    "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl"
 )
-DEFAULT_CWL_ARGUMENTS = json.dumps({"message": "Hello Unity"})
+DEFAULT_PROCESS_ARGS = json.dumps({"example_argument_empty": ""})
 DEFAULT_STAGE_IN_ARGS = "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/test/ogc_app_package/stage_in.yml"
 DEFAULT_STAGE_OUT_ARGS = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_out.yaml"
 DEFAULT_STAGE_OUT_BUCKET = "unity-dev-unity-unity-data"
 DEFAULT_COLLECTION_ID = "example-app-collection___3"
 
 # Alternative arguments to execute SBG Pre-Process
-# DEFAULT_CWL_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
-# DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml"
+# DEFAULT_PROCESS_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
+# DEFAULT_PROCESS_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml"
 
 # Alternative arguments to execute SBG end-to-end
-# DEFAULT_CWL_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.cwl"
-# DEFAULT_CWL_ARGUMENTS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.dev.yml"
+# DEFAULT_PROCESS_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.cwl"
+# DEFAULT_PROCESS_ARGS = "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/L1-to-L2-e2e.dev.yml"
 
 # Alternative arguments to execute SBG end-to-end
 # unity_sps_sbg_debug.txt
@@ -93,14 +97,43 @@ dag = DAG(
     max_active_tasks=30,
     default_args=dag_default_args,
     params={
-        "cwl_workflow": Param(
-            DEFAULT_CWL_WORKFLOW, type="string", title="CWL workflow", description="The CWL workflow URL"
-        ),
-        "cwl_args": Param(
-            DEFAULT_CWL_ARGUMENTS,
+        "stage_in_args": Param(
+            DEFAULT_STAGE_IN_ARGS,
             type="string",
-            title="CWL workflow parameters",
-            description=("The job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"),
+            title="Stage in workflow parameters",
+            description="The stage in job parameters encoded as a JSON string or the URL of a JSON or YAML file",
+        ),
+        "process_workflow": Param(
+            DEFAULT_PROCESS_WORKFLOW,
+            type="string",
+            title="Processing workflow",
+            description="The processing workflow URL",
+        ),
+        "process_args": Param(
+            DEFAULT_PROCESS_ARGS,
+            type="string",
+            title="Processing workflow parameters",
+            description=(
+                "The processing job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"
+            ),
+        ),
+        "stage_out_args": Param(
+            DEFAULT_STAGE_OUT_ARGS,
+            type="string",
+            title="Stage out workflow parameters",
+            description="The stage out job parameters encoded as a JSON string, or the URL of a JSON or YAML file",
+        ),
+        "stage_out_bucket": Param(
+            DEFAULT_STAGE_OUT_BUCKET,
+            type="string",
+            title="Stage out S3 bucket",
+            description="S3 bucket to stage data out to",
+        ),
+        "collection_id": Param(
+            DEFAULT_COLLECTION_ID,
+            type="string",
+            title="Output collection identifier",
+            description="Collection identifier to use for output (processed) data",
         ),
         "request_memory": Param(
             "4Gi",
@@ -121,32 +154,6 @@ dag = DAG(
             title="Docker container storage",
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
-        "stage_in_args": Param(
-            DEFAULT_STAGE_IN_ARGS,
-            type="string",
-            title="Stage in workflow parameters",
-            description="The stage in job parameters encoded as a JSON string,"
-            "or the URL of a JSON or YAML file",
-        ),
-        "stage_out_args": Param(
-            DEFAULT_STAGE_OUT_ARGS,
-            type="string",
-            title="Stage out workflow parameters",
-            description="The stage out job parameters encoded as a JSON string,"
-            "or the URL of a JSON or YAML file",
-        ),
-        "stage_out_bucket": Param(
-            DEFAULT_STAGE_OUT_BUCKET,
-            type="string",
-            title="Stage out S3 bucket",
-            description="S3 bucket to stage data out to",
-        ),
-        "collection_id": Param(
-            DEFAULT_COLLECTION_ID,
-            type="string",
-            title="Output collection identifier",
-            description="Collection identifier to use for output (processed) data",
-        ),
     },
 )
 
@@ -194,11 +201,13 @@ def select_stage_out(ti):
     api_key = ssm_client.get_parameter(
         Name=unity_sps_utils.SPS_CLOUDTAMER_API_KEY_PARAM, WithDecryption=True
     )["Parameter"]["Value"]
+    logging.info("Retrieved Cloudtamer API key.")
     ti.xcom_push(key="api_key", value=api_key)
 
     account_id = ssm_client.get_parameter(
         Name=unity_sps_utils.SPS_CLOUDTAMER_ACCOUNT_ID, WithDecryption=True
     )["Parameter"]["Value"]
+    logging.info("Retrieved AWS account identifier.")
     ti.xcom_push(key="account_id", value=account_id)
 
 
@@ -243,13 +252,15 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     startup_timeout_seconds=1800,
     arguments=[
         "-i",
-        "{{ params.stage_in_args }}",
-        "-k",
         STAGE_IN_WORKFLOW,
+        "-k",
+        "{{ params.stage_in_args }}",
         "-w",
-        "{{ params.cwl_workflow }}",
+        "{{ params.process_workflow }}",
         "-j",
-        "{{ params.cwl_args }}",
+        "{{ params.process_args }}",
+        "-f",
+        STAGE_OUT_WORKFLOW,
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
         "-c",
@@ -257,7 +268,8 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "-b",
         "{{ params.stage_out_bucket }}",
         "-a",
-        "{{ ti.xcom_pull(task_ids='Setup', key='api_key') }}" "-s",
+        "{{ ti.xcom_pull(task_ids='Setup', key='api_key') }}",
+        "-s",
         "{{ ti.xcom_pull(task_ids='Setup', key='account_id') }}",
     ],
     container_security_context={"privileged": True},
