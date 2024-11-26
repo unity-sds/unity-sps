@@ -60,13 +60,14 @@ get_aws_credentials() {
 }
 
 set -ex
-while getopts i:k:w:j:e:o:c:b:a:s: flag
+while getopts i:k:w:j:e:o:c:b:a:s:f: flag
 do
   case "${flag}" in
     i) cwl_workflow_stage_in=${OPTARG};;
     k) job_args_stage_in=${OPTARG};;
     w) cwl_workflow_process=${OPTARG};;
     j) job_args_process=${OPTARG};;
+    f) cwl_workflow_stage_out=${OPTARG};;
     e) ecr_login=${OPTARG};;
     o) json_output=${OPTARG};;
     c) collection_id=${OPTARG};;
@@ -116,7 +117,7 @@ echo "Logged into: $ecr_login"
 fi
 
 # Stage in operations
-stage_in=$(cwltool --outdir stage_in --copy-output stage_in.cwl test/ogc_app_package/stage_in.yml)
+stage_in=$(cwltool --outdir $cwl_workflow_stage_in --copy-output stage_in.cwl test/ogc_app_package/stage_in.yml)
 
 # Get directory that contains downloads
 stage_in_dir=$(echo $stage_in | jq '.stage_in_download_dir.basename')
@@ -133,7 +134,7 @@ echo "Editing process $job_args_process"
 ./entrypoint_utils.py -j $job_args_process -i $stage_in_dir -d $collection_id
 
 # Process operations
-process=$(cwltool process.cwl $job_args_process)
+process=$(cwltool $cwl_workflow_process $job_args_process)
 
 # Get directory that contains processed files
 process_dir=$(echo $process | jq '.output.basename')
@@ -146,7 +147,7 @@ credentials="$(get_aws_credentials "$api_key" "$aws_account_id")"
 aws_key="$(cut -d ',' -f 1 <<< $credentials)"
 aws_secret="$(cut -d ',' -f 2 <<< $credentials)"
 aws_token="$(cut -d ',' -f 3 <<< $credentials)"
-stage_out=$(cwltool stage_out.cwl \
+stage_out=$(cwltool $cwl_workflow_stage_out \
                   --output_dir $process_dir \
                   --staging_bucket $bucket \
                   --collection_id $collection_id \
