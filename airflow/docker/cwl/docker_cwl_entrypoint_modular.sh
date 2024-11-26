@@ -117,7 +117,7 @@ echo "Logged into: $ecr_login"
 fi
 
 # Stage in operations
-stage_in=$(cwltool --outdir $cwl_workflow_stage_in --copy-output stage_in.cwl test/ogc_app_package/stage_in.yml)
+stage_in=$(cwltool --outdir stage_in --copy-output $cwl_workflow_stage_in $job_args_stage_in)
 
 # Get directory that contains downloads
 stage_in_dir=$(echo $stage_in | jq '.stage_in_download_dir.basename')
