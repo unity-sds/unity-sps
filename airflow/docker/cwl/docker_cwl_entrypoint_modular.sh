@@ -127,11 +127,11 @@ ls -l $stage_in_dir/
 
 # Remove extraneous directory in front of catalog.json
 echo "Editing stage in catalog.json"
-./entrypoint_utils.py -c "$stage_in_dir/catalog.json"
+./docker_cwl_entrypoint_utils.py -c "$stage_in_dir/catalog.json"
 
 # Add input directory and output collection into process job arguments
 echo "Editing process $job_args_process"
-./entrypoint_utils.py -j $job_args_process -i $stage_in_dir -d $collection_id
+./docker_cwl_entrypoint_utils.py -j $job_args_process -i $stage_in_dir -d $collection_id
 
 # Process operations
 process=$(cwltool $cwl_workflow_process $job_args_process)
