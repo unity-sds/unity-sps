@@ -15,8 +15,9 @@ NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
 DS_CLIENT_ID_PARAM = "/unity/shared-services/cognito/hysds-ui-client-id"
 SS_ACT_NUM = "/unity/shared-services/aws/account"
-SPS_CLOUDTAMER_API_KEY_PARAM = "/unity-nikki-1/dev/sps/processing/cloudtamer-api-key"
-SPS_CLOUDTAMER_ACCOUNT_ID = "/unity-nikki-1/dev/sps/processing/cloudtamer-account-id"
+DS_STAGE_OUT_AWS_KEY = "/unity-nikki-1/dev/sps/processing/aws-key"
+DS_STAGE_OUT_AWS_SECRET = "/unity-nikki-1/dev/sps/processing/aws-secret"
+DS_STAGE_OUT_AWS_TOKEN = "/unity-nikki-1/dev/sps/processing/aws-token"
 
 
 class SpsKubernetesPodOperator(KubernetesPodOperator):

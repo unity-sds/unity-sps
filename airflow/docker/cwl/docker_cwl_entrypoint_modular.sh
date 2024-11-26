@@ -40,27 +40,8 @@ get_job_args() {
   echo $job_args_file
 }
 
-get_aws_credentials() {
-  local cloudtamer_api_key=$1
-  local aws_account_id=$2
-  response=$(
-    curl -s \
-    -XPOST \
-        -H "accept: application/json" \
-        -H "Authorization: Bearer ${cloudtamer_api_key}" \
-        -H "Content-Type: application/json" \
-        "${CLOUDTAMER_API_URL}/temporary-credentials" \
-        -d "{\"account_number\": \"$aws_account_id\",\"iam_role_name\": \"$CLOUDTAMER_ROLE\"}"
-  )
-
-  access_key_id=$(echo $response | jq -r .data.access_key)
-  secret_access_key=$(echo $response | jq -r .data.secret_access_key)
-  session_token=$(echo $response | jq -r .data.session_token)
-  echo $access_key_id,$secret_access_key,$session_token
-}
-
 set -ex
-while getopts i:k:w:j:e:o:c:b:a:s:f: flag
+while getopts i:k:w:j:e:o:c:b:a:s:f:t: flag
 do
   case "${flag}" in
     i) cwl_workflow_stage_in=${OPTARG};;
@@ -72,8 +53,9 @@ do
     o) json_output=${OPTARG};;
     c) collection_id=${OPTARG};;
     b) bucket=${OPTARG};;
-    a) api_key=${OPTARG};;
-    s) aws_account_id=${OPTARG};;
+    a) aws_key=${OPTARG};;
+    s) aws_secret=${OPTARG};;
+    t) aws_token=${OPTARG};;
   esac
 done
 
@@ -127,11 +109,11 @@ ls -l $stage_in_dir/
 
 # Remove extraneous directory in front of catalog.json
 echo "Editing stage in catalog.json"
-./docker_cwl_entrypoint_utils.py -c "$stage_in_dir/catalog.json"
+/usr/share/cwl/docker_cwl_entrypoint_utils.py -c "$stage_in_dir/catalog.json"
 
 # Add input directory and output collection into process job arguments
 echo "Editing process $job_args_process"
-./docker_cwl_entrypoint_utils.py -j $job_args_process -i $stage_in_dir -d $collection_id
+/usr/share/cwl/docker_cwl_entrypoint_utils.py -j $job_args_process -i $stage_in_dir -d $collection_id
 
 # Process operations
 process=$(cwltool $cwl_workflow_process $job_args_process)
@@ -143,10 +125,6 @@ echo "Process output directory: $process_dir"
 ls -l $process_dir
 
 # Stage out operations
-credentials="$(get_aws_credentials "$api_key" "$aws_account_id")"
-aws_key="$(cut -d ',' -f 1 <<< $credentials)"
-aws_secret="$(cut -d ',' -f 2 <<< $credentials)"
-aws_token="$(cut -d ',' -f 3 <<< $credentials)"
 stage_out=$(cwltool $cwl_workflow_stage_out \
                   --output_dir $process_dir \
                   --staging_bucket $bucket \

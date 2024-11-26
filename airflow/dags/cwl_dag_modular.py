@@ -33,7 +33,7 @@ STAGE_IN_WORKFLOW = (
     "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/stage_in.cwl"
 )
 STAGE_OUT_WORKFLOW = (
-    "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/stage_out.cwl"
+    "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_out.cwl"
 )
 LOCAL_DIR = "/shared-task-data"
 
@@ -198,17 +198,23 @@ def select_stage_out(ti):
     """Retrieve API key and account id from SSM parameter store."""
     ssm_client = boto3.client("ssm", region_name="us-west-2")
 
-    api_key = ssm_client.get_parameter(
-        Name=unity_sps_utils.SPS_CLOUDTAMER_API_KEY_PARAM, WithDecryption=True
+    aws_key = ssm_client.get_parameter(
+        Name=unity_sps_utils.DS_STAGE_OUT_AWS_KEY, WithDecryption=True
     )["Parameter"]["Value"]
-    logging.info("Retrieved Cloudtamer API key.")
-    ti.xcom_push(key="api_key", value=api_key)
+    logging.info("Retrieved stage out AWS access key.")
+    ti.xcom_push(key="aws_key", value=aws_key)
 
-    account_id = ssm_client.get_parameter(
-        Name=unity_sps_utils.SPS_CLOUDTAMER_ACCOUNT_ID, WithDecryption=True
+    aws_secret = ssm_client.get_parameter(
+        Name=unity_sps_utils.DS_STAGE_OUT_AWS_SECRET, WithDecryption=True
     )["Parameter"]["Value"]
-    logging.info("Retrieved AWS account identifier.")
-    ti.xcom_push(key="account_id", value=account_id)
+    logging.info("Retrieved stage out AWS access secret.")
+    ti.xcom_push(key="aws_secret", value=aws_secret)
+
+    aws_token = ssm_client.get_parameter(
+        Name=unity_sps_utils.DS_STAGE_OUT_AWS_TOKEN, WithDecryption=True
+    )["Parameter"]["Value"]
+    logging.info("Retrieved stage out AWS access token.")
+    ti.xcom_push(key="aws_token", value=aws_token)
 
 
 def setup(ti=None, **context):
@@ -268,9 +274,11 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "-b",
         "{{ params.stage_out_bucket }}",
         "-a",
-        "{{ ti.xcom_pull(task_ids='Setup', key='api_key') }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='aws_key') }}",
         "-s",
-        "{{ ti.xcom_pull(task_ids='Setup', key='account_id') }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='aws_secret') }}",
+        "-t",
+        "{{ ti.xcom_pull(task_ids='Setup', key='aws_token') }}"
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
