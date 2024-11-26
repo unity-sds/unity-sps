@@ -8,13 +8,15 @@ from kubernetes.client import models as k8s
 # Shared constants
 POD_NAMESPACE = "sps"  # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_LABEL = "cwl_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:220-stage-in-task"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
 DS_CLIENT_ID_PARAM = "/unity/shared-services/cognito/hysds-ui-client-id"
 SS_ACT_NUM = "/unity/shared-services/aws/account"
+SPS_CLOUDTAMER_API_KEY_PARAM = "/unity-nikki-1/dev/sps/processing/cloudtamer-api-key"
+SPS_CLOUDTAMER_ACCOUNT_ID = "/unity-nikki-1/dev/sps/processing/cloudtamer-account-id"
 
 
 class SpsKubernetesPodOperator(KubernetesPodOperator):

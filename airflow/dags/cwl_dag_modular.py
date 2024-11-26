@@ -15,9 +15,7 @@ import shutil
 from datetime import datetime
 
 import boto3
-import requests
 import unity_sps_utils
-import yaml
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
@@ -27,11 +25,13 @@ from kubernetes.client import models as k8s
 from airflow import DAG
 
 # Task constants
-UNITY_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-unity/stage-in-workflow.cwl"
-DAAC_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in-workflow.cwl"
-HTTP_STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_in_workflow.cwl"
+STAGE_IN_WORKFLOW = (
+    "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/stage_in.cwl"
+)
+STAGE_OUT_WORKFLOW = (
+    "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/stage_out.cwl"
+)
 LOCAL_DIR = "/shared-task-data"
-DOWNLOAD_DIR = "input"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -43,9 +43,10 @@ DEFAULT_CWL_WORKFLOW = (
     "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
 )
 DEFAULT_CWL_ARGUMENTS = json.dumps({"message": "Hello Unity"})
-DEFAULT_STAC_JSON_URL = "https://cmr.earthdata.nasa.gov/stac/LPCLOUD/collections/EMITL1BRAD_001/items?limit=2"
-DEFAULT_INPUT_LOCATION = "daac"
-
+DEFAULT_STAGE_IN_ARGS = "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/test/ogc_app_package/stage_in.yml"
+DEFAULT_STAGE_OUT_ARGS = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_out.yaml"
+DEFAULT_STAGE_OUT_BUCKET = "unity-dev-unity-unity-data"
+DEFAULT_COLLECTION_ID = "example-app-collection___3"
 
 # Alternative arguments to execute SBG Pre-Process
 # DEFAULT_CWL_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
@@ -70,13 +71,6 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     #    # "memory": "22Gi",
     #    "ephemeral-storage": "30Gi"
     # },
-)
-STAGE_IN_CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
-    requests={
-        "memory": "4Gi",
-        "cpu": "4",
-        "ephemeral-storage": "{{ params.request_storage }}",
-    }
 )
 
 # Default DAG configuration
@@ -127,18 +121,31 @@ dag = DAG(
             title="Docker container storage",
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
-        "stac_json_url": Param(
-            DEFAULT_STAC_JSON_URL,
+        "stage_in_args": Param(
+            DEFAULT_STAGE_IN_ARGS,
             type="string",
-            title="STAC JSON URL",
-            description="The URL to the STAC JSON document",
+            title="Stage in workflow parameters",
+            description="The stage in job parameters encoded as a JSON string,"
+            "or the URL of a JSON or YAML file",
         ),
-        "input_location": Param(
-            DEFAULT_INPUT_LOCATION,
+        "stage_out_args": Param(
+            DEFAULT_STAGE_OUT_ARGS,
             type="string",
-            enum=["daac", "unity", "http"],
-            title="Input data location",
-            description="Indicate whether input data should be retrieved from a DAAC or Unity",
+            title="Stage out workflow parameters",
+            description="The stage out job parameters encoded as a JSON string,"
+            "or the URL of a JSON or YAML file",
+        ),
+        "stage_out_bucket": Param(
+            DEFAULT_STAGE_OUT_BUCKET,
+            type="string",
+            title="Stage out S3 bucket",
+            description="S3 bucket to stage data out to",
+        ),
+        "collection_id": Param(
+            DEFAULT_COLLECTION_ID,
+            type="string",
+            title="Output collection identifier",
+            description="Collection identifier to use for output (processed) data",
         ),
     },
 )
@@ -180,47 +187,19 @@ def select_ecr(ti, use_ecr):
         logging.info("ECR login: %s", ecr_login)
 
 
-def select_stage_in(ti, stac_json_url, input_location):
-    """
-    Determine stage in workflow and required arguments.
-    """
-    stage_in_args = {"download_dir": DOWNLOAD_DIR, "stac_json": stac_json_url}
-    if input_location == "daac":
-        stage_in_workflow = DAAC_STAGE_IN_WORKFLOW
-    elif input_location == "unity":
-        stage_in_workflow = UNITY_STAGE_IN_WORKFLOW
-        ssm_client = boto3.client("ssm", region_name="us-west-2")
-        ss_acct_num = ssm_client.get_parameter(Name=unity_sps_utils.SS_ACT_NUM, WithDecryption=True)[
-            "Parameter"
-        ]["Value"]
-        unity_client_id = ssm_client.get_parameter(
-            Name=f"arn:aws:ssm:us-west-2:{ss_acct_num}:parameter{unity_sps_utils.DS_CLIENT_ID_PARAM}",
-            WithDecryption=True,
-        )["Parameter"]["Value"]
-        stage_in_args["unity_client_id"] = unity_client_id
-    else:
-        stage_in_workflow = HTTP_STAGE_IN_WORKFLOW
+def select_stage_out(ti):
+    """Retrieve API key and account id from SSM parameter store."""
+    ssm_client = boto3.client("ssm", region_name="us-west-2")
 
-    ti.xcom_push(key="stage_in_workflow", value=stage_in_workflow)
-    logging.info("Stage In workflow selected: %s", stage_in_workflow)
+    api_key = ssm_client.get_parameter(
+        Name=unity_sps_utils.SPS_CLOUDTAMER_API_KEY_PARAM, WithDecryption=True
+    )["Parameter"]["Value"]
+    ti.xcom_push(key="api_key", value=api_key)
 
-    ti.xcom_push(key="stage_in_args", value=stage_in_args)
-    logging.info("Stage in arguments selected: %s", stage_in_args)
-
-
-def select_process(ti, dag_run_id, cwl_args):
-    """
-    Determine process task CWL arguments.
-    """
-    input_dir = f"{WORKING_DIR}/{DOWNLOAD_DIR}"
-    if cwl_args.endswith("yml") or cwl_args.endswith("yaml"):
-        yaml_data = requests.get(cwl_args, headers={"User-Agent": "SPS/Airflow"}).text
-        json_data = yaml.safe_load(yaml_data)
-    else:
-        json_data = json.loads(cwl_args)
-    json_data["input"] = {"class": "Directory", "path": input_dir}
-    ti.xcom_push(key="cwl_args", value=json.dumps(json_data))
-    logging.info("Modified CWL args for processing task.")
+    account_id = ssm_client.get_parameter(
+        Name=unity_sps_utils.SPS_CLOUDTAMER_ACCOUNT_ID, WithDecryption=True
+    )["Parameter"]["Value"]
+    ti.xcom_push(key="account_id", value=account_id)
 
 
 def setup(ti=None, **context):
@@ -245,63 +224,11 @@ def setup(ti=None, **context):
     # select "use_ecr" argument and determine if ECR login is required
     select_ecr(ti, context["params"]["use_ecr"])
 
-    # define stage in arguments
-    select_stage_in(
-        ti,
-        context["params"]["stac_json_url"],
-        context["params"]["input_location"],
-    )
-
-    # define process arguments
-    select_process(ti, dag_run_id, context["params"]["cwl_args"])
+    # retrieve stage out aws api key and account id
+    select_stage_out(ti)
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
-
-
-cwl_task_stage_in = unity_sps_utils.SpsKubernetesPodOperator(
-    retries=0,
-    task_id="cwl_task_stage_in",
-    namespace=unity_sps_utils.POD_NAMESPACE,
-    name="cwl-task-pod",
-    image=unity_sps_utils.SPS_DOCKER_CWL_IMAGE,
-    service_account_name="airflow-worker",
-    in_cluster=True,
-    get_logs=True,
-    startup_timeout_seconds=1800,
-    arguments=[
-        "-w",
-        "{{ ti.xcom_pull(task_ids='Setup', key='stage_in_workflow') }}",
-        "-j",
-        "{{ ti.xcom_pull(task_ids='Setup', key='stage_in_args') }}",
-        "-e",
-        "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
-    ],
-    container_security_context={"privileged": True},
-    container_resources=STAGE_IN_CONTAINER_RESOURCES,
-    container_logs=True,
-    volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
-        )
-    ],
-    dag=dag,
-    node_selector={"karpenter.sh/nodepool": unity_sps_utils.NODE_POOL_DEFAULT},
-    labels={"app": unity_sps_utils.POD_LABEL},
-    annotations={"karpenter.sh/do-not-disrupt": "true"},
-    # note: 'affinity' cannot yet be templated
-    affinity=unity_sps_utils.get_affinity(
-        capacity_type=["spot"],
-        # instance_type=["t3.2xlarge"],
-        anti_affinity_label=unity_sps_utils.POD_LABEL,
-    ),
-    on_finish_action="keep_pod",
-    is_delete_operator_pod=False,
-)
 
 
 cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
@@ -315,12 +242,23 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     get_logs=True,
     startup_timeout_seconds=1800,
     arguments=[
+        "-i",
+        "{{ params.stage_in_args }}",
+        "-k",
+        STAGE_IN_WORKFLOW,
         "-w",
         "{{ params.cwl_workflow }}",
         "-j",
-        "{{ ti.xcom_pull(task_ids='Setup', key='cwl_args') }}",
+        "{{ params.cwl_args }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
+        "-c",
+        "{{ params.collection_id }}",
+        "-b",
+        "{{ params.stage_out_bucket }}",
+        "-a",
+        "{{ ti.xcom_pull(task_ids='Setup', key='api_key') }}" "-s",
+        "{{ ti.xcom_pull(task_ids='Setup', key='account_id') }}",
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -371,6 +309,5 @@ cleanup_task = PythonOperator(
     task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
 )
 
-chain(
-    setup_task.as_setup(), cwl_task_stage_in, cwl_task_processing, cleanup_task.as_teardown(setups=setup_task)
-)
+
+chain(setup_task.as_setup(), cwl_task_processing, cleanup_task.as_teardown(setups=setup_task))
