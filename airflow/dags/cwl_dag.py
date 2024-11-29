@@ -24,7 +24,10 @@ from airflow import DAG
 
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "sps"
-POD_LABEL = "cwl_task"
+
+# unique pod label to assure each jkob runs on its own pod
+POD_LABEL = "cwl_task" + datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+
 SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.3.0"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
