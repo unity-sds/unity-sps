@@ -54,6 +54,7 @@ jobs:
         echo "Tests Status: $tests_status"
         if [ "$tests_status" != "success" ]; then
           echo "Integration Tests with Airflow API on MCP Venue Dev failed."
+          exit 1
         fi
 
   cwl-dags-with-ogc-api-on-dev-venue:
@@ -79,7 +80,7 @@ jobs:
         unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py  \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PR }}
+        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
 
     - name: Check Tests Results
       if: always()
@@ -88,6 +89,7 @@ jobs:
         echo "Tests Status: $tests_status"
         if [ "$tests_status" != "success" ]; then
           echo "Integration Tests with OGC API on MCP Venue Dev failed."
+          exit 1
         fi
 
   cwl-dags-with-airflow-api-on-test-venue:
@@ -122,6 +124,7 @@ jobs:
         echo "Tests Status: $tests_status"
         if [ "$tests_status" != "success" ]; then
           echo "Integration Tests with Airflow API on MCP Venue Test failed."
+          exit 1
         fi
 
   cwl-dags-with-ogc-api-on-test-venue:
@@ -156,4 +159,5 @@ jobs:
         echo "Tests Status: $tests_status"
         if [ "$tests_status" != "success" ]; then
           echo "Integration Tests with OGC API on MCP Venue Test failed."
+          exit 1
         fi
