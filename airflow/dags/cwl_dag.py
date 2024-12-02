@@ -158,7 +158,7 @@ def setup(ti=None, **context):
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
 cwl_task = SpsKubernetesPodOperator(
-    retries=0,
+    retries=1,
     task_id="cwl_task",
     namespace=POD_NAMESPACE,
     name="cwl-task-pod",

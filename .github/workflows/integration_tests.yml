@@ -22,7 +22,7 @@ on:
       # TODO: add MCP_VENUE_OPS inputs
 jobs:
 
-  cwl-dags-with-airflow-api-on-dev-venue:
+  Dev-Venue-Airflow-API:
     runs-on: ubuntu-latest
 
     steps:
@@ -57,7 +57,7 @@ jobs:
           exit 1
         fi
 
-  cwl-dags-with-ogc-api-on-dev-venue:
+  Dev-Venue-OGC-API:
     runs-on: ubuntu-latest
 
     steps:
@@ -92,7 +92,7 @@ jobs:
           exit 1
         fi
 
-  cwl-dags-with-airflow-api-on-test-venue:
+  Test-Venue-Airflow-API:
     runs-on: ubuntu-latest
 
     steps:
@@ -127,7 +127,7 @@ jobs:
           exit 1
         fi
 
-  cwl-dags-with-ogc-api-on-test-venue:
+  Test-Venue-OGC-API:
     runs-on: ubuntu-latest
 
     steps:
