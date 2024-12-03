@@ -130,6 +130,9 @@ webserverSecretKeySecretName: ${webserver_secret_name}
 webserver:
   replicas: 3
 
+  webserverConfig: |-
+    ${webserver_config}
+
   startupProbe:
     timeoutSeconds: 20
     failureThreshold: 60 # Number of tries before giving up (10 minutes with periodSeconds of 10)
