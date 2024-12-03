@@ -412,6 +412,11 @@ resource "helm_release" "airflow" {
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
+      webserver_config         = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
+      cognito_client_id        = data.aws_ssm_parameter.cognito_client_id.value
+      cognito_client_secret    = data.aws_ssm_parameter.cognito_client_secret.value
+      cognito_base_url         = data.aws_ssm_parameter.cognito_base_url.value
+      cognito_user_pool_id     = data.aws_ssm_parameter.cognito_user_pool_id.value
     })
   ]
   set_sensitive {
@@ -492,10 +497,12 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
       "alb.ingress.kubernetes.io/scheme"                              = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"                         = "ip"
       "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
-      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
+      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTPS\": ${local.load_balancer_port}}]"
       "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg.id
       "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
       "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+      "alb.ingress.kubernetes.io/certificate-arn"                     = data.aws_ssm_parameter.ssl_cert_arn.value
+      "alb.ingress.kubernetes.io/ssl-policy"                          = "ELBSecurityPolicy-TLS13-1-2-2021-06"
     }
   }
   spec {
@@ -529,10 +536,12 @@ resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
       "alb.ingress.kubernetes.io/scheme"                              = "internal"
       "alb.ingress.kubernetes.io/target-type"                         = "ip"
       "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
-      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
+      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTPS\": ${local.load_balancer_port}}]"
       "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
       "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
       "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+      "alb.ingress.kubernetes.io/certificate-arn"                     = data.aws_ssm_parameter.ssl_cert_arn.value
+      "alb.ingress.kubernetes.io/ssl-policy"                          = "ELBSecurityPolicy-TLS13-1-2-2021-06"
     }
   }
   spec {
@@ -562,7 +571,7 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+  value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_ui")
     Component = "SSM"
@@ -576,8 +585,8 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow UI"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000"
+    "healthCheckUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/health"
+    "landingPageUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_ui")
@@ -593,7 +602,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+  value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
     Component = "SSM"
@@ -607,8 +616,8 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow API"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+    "healthCheckUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1/health"
+    "landingPageUrl" : "https://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_api")
