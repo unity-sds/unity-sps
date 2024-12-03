@@ -338,7 +338,7 @@ resource "aws_ssm_parameter" "ogc_processes_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "ui_url"])))
   description = "The URL of the OGC Proccesses API Docs UI."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
+  value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
     Component = "SSM"
@@ -350,7 +350,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
+  value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_api")
     Component = "SSM"
