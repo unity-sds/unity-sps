@@ -15,3 +15,4 @@ Feature: Execute CWL workflows using the Airflow API
             | test_case      |
             | EMIT           |
             | SBG_E2E_SCALE  |
+            | SBG_PREPROCESS |

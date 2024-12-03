@@ -47,8 +47,8 @@ DAG_PARAMETERS = {
         "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
         "/preprocess/sbg-preprocess-workflow.cwl",
         "cwl_args": {
-            "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-            "/sbg-preprocess-workflow.dev.yml",
+            # "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
+            # "/sbg-preprocess-workflow.dev.yml",
             "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
             "/sbg-preprocess-workflow.test.yml",
         },
