@@ -15,10 +15,6 @@
 # -a: Cloudtamer API key with permissions to retrieve temporary AWS credentials
 # -s: AWS account ID to retrieve credentials for
 
-# API credential retrieval
-CLOUDTAMER_API_URL="https://login.mcp.nasa.gov/api/v3"
-CLOUDTAMER_ROLE="mcp-tenantOperator"
-
 # Must be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
 # that executes this script
 WORKING_DIR="/scratch"

@@ -6,7 +6,6 @@ The "cwl-runner" tool is invoked to execute the CWL workflow.
 Parameter stage_in_args: The stage in job parameters encoded as a JSON string
 Parameter process_workflow: the URL of the CWL workflow to execute.
 Parameter process_args: JSON string contained the specific values for the processing workflow specific inputs.
-Parameter stage_out_args: The stage out job parameters encoded as a JSON string or URL of JSON/YAML file.
 Parameter stage_out_bucket: The S3 bucket to stage data out to.
 Parameter collection_id: The output collection identifier for processed data.
 """
@@ -116,12 +115,6 @@ dag = DAG(
             description=(
                 "The processing job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"
             ),
-        ),
-        "stage_out_args": Param(
-            DEFAULT_STAGE_OUT_ARGS,
-            type="string",
-            title="Stage out workflow parameters",
-            description="The stage out job parameters encoded as a JSON string, or the URL of a JSON or YAML file",
         ),
         "stage_out_bucket": Param(
             DEFAULT_STAGE_OUT_BUCKET,
