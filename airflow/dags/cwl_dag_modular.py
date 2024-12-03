@@ -31,9 +31,7 @@ from airflow import DAG
 STAGE_IN_WORKFLOW = (
     "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/stage_in.cwl"
 )
-STAGE_OUT_WORKFLOW = (
-    "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_out.cwl"
-)
+STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_out.cwl"
 LOCAL_DIR = "/shared-task-data"
 
 # The path of the working directory where the CWL workflow is executed
@@ -191,21 +189,21 @@ def select_stage_out(ti):
     """Retrieve API key and account id from SSM parameter store."""
     ssm_client = boto3.client("ssm", region_name="us-west-2")
 
-    aws_key = ssm_client.get_parameter(
-        Name=unity_sps_utils.DS_STAGE_OUT_AWS_KEY, WithDecryption=True
-    )["Parameter"]["Value"]
+    aws_key = ssm_client.get_parameter(Name=unity_sps_utils.DS_STAGE_OUT_AWS_KEY, WithDecryption=True)[
+        "Parameter"
+    ]["Value"]
     logging.info("Retrieved stage out AWS access key.")
     ti.xcom_push(key="aws_key", value=aws_key)
 
-    aws_secret = ssm_client.get_parameter(
-        Name=unity_sps_utils.DS_STAGE_OUT_AWS_SECRET, WithDecryption=True
-    )["Parameter"]["Value"]
+    aws_secret = ssm_client.get_parameter(Name=unity_sps_utils.DS_STAGE_OUT_AWS_SECRET, WithDecryption=True)[
+        "Parameter"
+    ]["Value"]
     logging.info("Retrieved stage out AWS access secret.")
     ti.xcom_push(key="aws_secret", value=aws_secret)
 
-    aws_token = ssm_client.get_parameter(
-        Name=unity_sps_utils.DS_STAGE_OUT_AWS_TOKEN, WithDecryption=True
-    )["Parameter"]["Value"]
+    aws_token = ssm_client.get_parameter(Name=unity_sps_utils.DS_STAGE_OUT_AWS_TOKEN, WithDecryption=True)[
+        "Parameter"
+    ]["Value"]
     logging.info("Retrieved stage out AWS access token.")
     ti.xcom_push(key="aws_token", value=aws_token)
 
@@ -271,7 +269,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "-s",
         "{{ ti.xcom_pull(task_ids='Setup', key='aws_secret') }}",
         "-t",
-        "{{ ti.xcom_pull(task_ids='Setup', key='aws_token') }}"
+        "{{ ti.xcom_pull(task_ids='Setup', key='aws_token') }}",
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
