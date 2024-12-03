@@ -52,12 +52,12 @@ variable "helm_charts" {
     airflow = {
       repository = "https://airflow.apache.org"
       chart      = "airflow"
-      version    = "1.13.1"
+      version    = "1.15.0"
     },
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.14.2"
+      version    = "v2.15.1"
     }
   }
 }
@@ -73,11 +73,10 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.2.0"
+      tag  = "2.3.0"
     }
   }
 }
-
 
 variable "ogc_processes_docker_images" {
   description = "Docker images for the associated OGC Processes API services."
@@ -335,7 +334,7 @@ variable "dag_catalog_repo" {
   })
   default = {
     url                 = "https://github.com/unity-sds/unity-sps.git"
-    ref                 = "develop"
+    ref                 = "2.2.0"
     dags_directory_path = "airflow/dags"
   }
 }

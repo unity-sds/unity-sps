@@ -28,6 +28,39 @@ resource "aws_s3_bucket" "config" {
   })
 }
 
+resource "aws_s3_bucket_policy" "ssl_s3_policy" {
+  for_each = toset([
+    "isl",
+    "code",
+    "config"
+  ])
+  bucket = format(local.resource_name_prefix, each.key)
+  policy = jsonencode(
+    {
+      "Id" : "ExamplePolicy",
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Sid" : "AllowSSLRequestsOnly",
+          "Action" : "s3:*",
+          "Effect" : "Deny",
+          "Resource" : [
+            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, each.key)),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, each.key), "*")
+          ],
+          "Condition" : {
+            "Bool" : {
+              "aws:SecureTransport" : "false"
+            }
+          },
+          "Principal" : "*"
+        }
+      ]
+    }
+  )
+}
+
+
 resource "aws_s3_object" "router_config" {
   bucket = aws_s3_bucket.config.id
   key    = "routers/srl_router.yaml"

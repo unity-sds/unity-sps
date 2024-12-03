@@ -32,7 +32,7 @@ variable "helm_charts" {
     karpenter = {
       repository = "oci://public.ecr.aws/karpenter"
       chart      = "karpenter"
-      version    = "0.36.1"
+      version    = "1.0.2"
     }
   }
 }

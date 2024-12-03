@@ -124,6 +124,33 @@ resource "aws_s3_bucket" "airflow_logs" {
   })
 }
 
+resource "aws_s3_bucket_policy" "airflow_logs_s3_policy" {
+  bucket = aws_s3_bucket.airflow_logs.id
+  policy = jsonencode(
+    {
+      "Id" : "ExamplePolicy",
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Sid" : "AllowSSLRequestsOnly",
+          "Action" : "s3:*",
+          "Effect" : "Deny",
+          "Resource" : [
+            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs")),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs"), "*")
+          ],
+          "Condition" : {
+            "Bool" : {
+              "aws:SecureTransport" : "false"
+            }
+          },
+          "Principal" : "*"
+        }
+      ]
+    }
+  )
+}
+
 resource "aws_iam_policy" "airflow_worker_policy" {
   name        = format(local.resource_name_prefix, "AirflowWorkerPolicy")
   description = "Policy for Airflow Workers to access AWS services"
@@ -446,6 +473,7 @@ data "aws_security_groups" "venue_proxy_sg" {
   }
 }
 
+#tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
   count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
   security_group_id            = aws_security_group.airflow_ingress_sg_internal.id
