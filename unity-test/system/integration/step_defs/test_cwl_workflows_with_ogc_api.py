@@ -117,7 +117,7 @@ def check_failed(e):
 @backoff.on_exception(
     backoff.constant,
     (AssertionError, requests.exceptions.HTTPError),
-    max_time=3600,
+    max_time=1,
     giveup=check_failed,
     jitter=None,
     interval=5,
