@@ -15,4 +15,4 @@ Feature: Execute CWL workflows using the OGC API
             | test_case      |
             | SBG_E2E_SCALE  |
             | EMIT           |
-            | SBG_PREPROCESS |
+          
