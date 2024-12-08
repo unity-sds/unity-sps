@@ -44,7 +44,7 @@ DATA = {
             },
             # r7i.xlarge
             "request_memory": "32Gi",
-            "request_cpu": "4",
+            # "request_cpu": "4",
             "request_storage": "10Gi",
             "use_ecr": False,
         },
