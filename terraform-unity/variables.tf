@@ -343,6 +343,7 @@ variable "dag_catalog_repo" {
 variable "deployment_name" {
   description = "The name of the deployment."
   type        = string
+  default     = ""
 }
 
 # tflint-ignore: terraform_unused_declarations
