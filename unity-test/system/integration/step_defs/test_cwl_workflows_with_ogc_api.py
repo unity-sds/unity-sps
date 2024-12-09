@@ -10,6 +10,7 @@ from pathlib import Path
 import backoff
 from pytest_bdd import given, parsers, scenario, then, when
 from unity_sds_client.resources.job_status import JobStatus
+from unity_sds_client.unity_exception import UnityException
 from unity_sps_ogc_processes_api_python_client.exceptions import ApiException, ServiceException
 
 FILE_PATH = Path(__file__)
@@ -117,7 +118,7 @@ def check_failed(e):
 @then("I see an eventual successful job")
 @backoff.on_exception(
     backoff.constant,
-    (AssertionError, ApiException, ServiceException),
+    (AssertionError, ApiException, ServiceException, UnityException),
     max_time=3600,
     giveup=check_failed,
     jitter=None,
