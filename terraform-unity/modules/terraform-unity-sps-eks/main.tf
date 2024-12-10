@@ -9,8 +9,10 @@ terraform {
 }
 
 module "unity-eks" {
-  source          = "git@github.com:unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.2.0-hotfix"
+  source          = "git::https://github.com/unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.4.0"
   deployment_name = local.cluster_name
+  project         = var.project
+  venue           = var.venue
   nodegroups      = var.nodegroups
   aws_auth_roles = [{
     rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/mcp-tenantOperator"

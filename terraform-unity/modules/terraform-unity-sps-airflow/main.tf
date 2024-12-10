@@ -636,7 +636,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       Redirect "/${var.project}/${var.venue}/sps/home"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
+      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
@@ -654,8 +654,8 @@ EOT
 data "aws_lambda_functions" "lambda_check_all" {}
 
 resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
-  count         = contains(data.aws_lambda_functions.lambda_check_all.function_names, "unity-${var.venue}-httpdproxymanagement") ? 1 : 0
-  function_name = "unity-${var.venue}-httpdproxymanagement"
+  count         = contains(data.aws_lambda_functions.lambda_check_all.function_names, "${var.project}-${var.venue}-httpdproxymanagement") ? 1 : 0
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
   input         = "{}"
   triggers = {
     redeployment = sha1(jsonencode([
