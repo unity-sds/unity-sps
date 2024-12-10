@@ -130,6 +130,7 @@ webserverSecretKeySecretName: ${webserver_secret_name}
 webserver:
   replicas: 3
 
+  # PR 244: DISABLE AIRRLOW AUTHENTICATION (https://github.com/unity-sds/unity-sps/pull/244)
   webserverConfig: |-
     ${webserver_config}
 
