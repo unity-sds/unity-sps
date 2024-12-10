@@ -14,11 +14,9 @@ SPS_DOCKER_CWL_IMAGE_MODULAR = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl-modul
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
-DS_CLIENT_ID_PARAM = "/unity/shared-services/cognito/hysds-ui-client-id"
-SS_ACT_NUM = "/unity/shared-services/aws/account"
-DS_STAGE_OUT_AWS_KEY = "/unity-nikki-1/dev/sps/processing/aws-key"
-DS_STAGE_OUT_AWS_SECRET = "/unity-nikki-1/dev/sps/processing/aws-secret"
-DS_STAGE_OUT_AWS_TOKEN = "/unity-nikki-1/dev/sps/processing/aws-token"
+SPS_PROJECT_PARAM = "/unity/unity-nikki-1/dev/project-name"
+SPS_VENUE_PARAM = "/unity/unity-nikki-1/dev/venue-name"
+DS_S3_BUCKET_PARAM = "/unity/unity-nikki-1/dev/ds/staging/s3/bucket-name"
 
 
 class SpsKubernetesPodOperator(KubernetesPodOperator):

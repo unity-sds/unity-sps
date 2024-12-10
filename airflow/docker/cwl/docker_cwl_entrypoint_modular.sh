@@ -1,23 +1,23 @@
 #!/bin/sh
 # Script to execute a CWL workflow that includes Docker containers
 # The Docker engine is started before the CWL execution, and stopped afterwards.
-# -w: the CWL workflow URL
+# -i: The CWL workflow URL for the stage in task
+# -s: STAC JSON URL or JSON data that describes input data requiring download
+# -w: the CWL workflow URL for the process task
 #     (example: https://github.com/unity-sds/sbg-workflows/blob/main/L1-to-L2-e2e.cwl)
-# -j: a) the CWL job parameters as a JSON formatted string
+# -j: a) the CWL process job parameters as a JSON formatted string
 #        (example: { "name": "John Doe" })
 #  OR b) The URL of a YAML or JSON file containing the job parameters
 #        (example: https://github.com/unity-sds/sbg-workflows/blob/main/L1-to-L2-e2e.dev.yml)
+# -o: The CWL workflow URL for the stage out task
+# -d: The CWL stage out job parameters as a JSON formatted string
 # -e: the ECR login URL where the AWS account ID and region are specific to the Airflow installation
 #        (example: <aws_account_id>.dkr.ecr.<region>.amazonaws.com) [optional]
-# -o: path to an output JSON file that needs to be shared as Airflow "xcom" data [optional]
-# -c: collection identifier for process task created collection and stage out task upload
-# -b: stage out s3 bucket to upload processed data to
-# -a: Cloudtamer API key with permissions to retrieve temporary AWS credentials
-# -s: AWS account ID to retrieve credentials for
+# -f: path to an output JSON file that needs to be shared as Airflow "xcom" data [optional]
 
-# Must be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
-# that executes this script
-WORKING_DIR="/scratch"
+# Can be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
+# that executes this script to execute on EFS.
+WORKING_DIR="/data"    # Set to EBS directory
 
 get_job_args() {
   local job_args=$1
@@ -37,38 +37,23 @@ get_job_args() {
 }
 
 set -ex
-while getopts i:k:w:j:e:o:c:b:a:s:f:t: flag
+while getopts i:s:w:j:o:d:e:f: flag
 do
   case "${flag}" in
     i) cwl_workflow_stage_in=${OPTARG};;
-    k) job_args_stage_in=${OPTARG};;
+    s) stac_json=${OPTARG};;
     w) cwl_workflow_process=${OPTARG};;
     j) job_args_process=${OPTARG};;
-    f) cwl_workflow_stage_out=${OPTARG};;
+    o) cwl_workflow_stage_out=${OPTARG};;
+    d) job_args_stage_out=${OPTARG};;
     e) ecr_login=${OPTARG};;
-    o) json_output=${OPTARG};;
-    c) collection_id=${OPTARG};;
-    b) bucket=${OPTARG};;
-    a) aws_key=${OPTARG};;
-    s) aws_secret=${OPTARG};;
-    t) aws_token=${OPTARG};;
+    f) json_output=${OPTARG};;
   esac
 done
 
 # create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
 cd $WORKING_DIR
-
-# stage in job args
-rm -f ./job_args_stage_in.json
-job_args_stage_in="$(get_job_args "$job_args_stage_in" stage_in)"
-echo JOB_ARGS_STAGE_IN $job_args_stage_in
-echo "Executing the CWL workflow: $cwl_workflow_stage_in with json arguments: $job_args_stage_in and working directory: $WORKING_DIR"
-
-# process job args
-rm -rf ./job_args_process.json
-job_args_process="$(get_job_args "$job_args_process" process)"
-echo "Executing the CWL workflow: $cwl_workflow_process with json arguments: $job_args_process and working directory: $WORKING_DIR"
 
 echo "JSON XCOM output: ${json_output}"
 
@@ -95,41 +80,52 @@ echo "Logged into: $ecr_login"
 fi
 
 # Stage in operations
-stage_in=$(cwltool --outdir stage_in --copy-output $cwl_workflow_stage_in $job_args_stage_in)
+echo "Executing the CWL workflow: $cwl_workflow_stage_in with STAC JSON: $stac_json and working directory: $WORKING_DIR"
+stage_in=$(cwltool --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --stac_json $stac_json)
 
-# Get directory that contains downloads
-stage_in_dir=$(echo $stage_in | jq '.stage_in_download_dir.basename')
-stage_in_dir="$PWD/stage_in/$(echo "$stage_in_dir" | tr -d '"')"
+# Retrieve directory that contains downloaded granules
+stage_in_dir=$(echo $stage_in | jq '.download_dir.path')
+stage_in_dir=$(echo "$stage_in_dir" | tr -d '"')
 echo "Stage in download directory: $stage_in_dir"
 ls -l $stage_in_dir/
 
-# Remove extraneous directory in front of catalog.json
-echo "Editing stage in catalog.json"
-/usr/share/cwl/docker_cwl_entrypoint_utils.py -c "$stage_in_dir/catalog.json"
+# Format process job args
+rm -rf ./job_args_process.json
+job_args_process="$(get_job_args "$job_args_process" process)"
 
-# Add input directory and output collection into process job arguments
-echo "Editing process $job_args_process"
-/usr/share/cwl/docker_cwl_entrypoint_utils.py -j $job_args_process -i $stage_in_dir -d $collection_id
+# Add granule directory into process job arguments
+echo "Updating process arguments with input directory: $job_args_process"
+job_args_process_updated=./job_args_process_updated.json
+cat $job_args_process | jq --arg data_dir $stage_in_dir '. += {"input": {"class": "Directory", "path": $data_dir}}' > $job_args_process_updated
+mv $job_args_process_updated $job_args_process
+echo "Executing the CWL workflow: $cwl_workflow_process with json arguments: $job_args_process and working directory: $WORKING_DIR"
 
 # Process operations
-process=$(cwltool $cwl_workflow_process $job_args_process)
+process=$(cwltool --outdir process $cwl_workflow_process $job_args_process)
+echo $process
 
 # Get directory that contains processed files
-process_dir=$(echo $process | jq '.output.basename')
-process_dir="$PWD/$(echo "$process_dir" | tr -d '"')"
+process_dir=$(echo $process | jq '.output.path')
+process_dir=$(echo "$process_dir" | tr -d '"')
 echo "Process output directory: $process_dir"
 ls -l $process_dir
 
+# Add process directory into stage out job arguments
+echo "Editing stage out arguments: $job_args_stage_out"
+echo $job_args_stage_out | jq --arg data_dir $process_dir '. += {"sample_output_data": {"class": "Directory", "path": $data_dir}}' > ./job_args_stage_out.json
+echo "Executing the CWL workflow: $cwl_workflow_stage_out with json arguments: job_args_stage_out.json and working directory: $WORKING_DIR"
+
 # Stage out operations
-stage_out=$(cwltool $cwl_workflow_stage_out \
-                  --output_dir $process_dir \
-                  --staging_bucket $bucket \
-                  --collection_id $collection_id \
-                  --aws_access_key_id $aws_key \
-                  --aws_secret_access_key $aws_secret \
-                  --aws_session_token $aws_token)
-stage_out=$(echo "$stage_out" | jq 'map(.path)' | tr -d "[]\",\\t ")
-echo "Stage out files: $stage_out"
+stage_out=$(cwltool --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
+
+# Report on stage out
+successful_features=$(echo "$stage_out" | jq '.successful_features.path' | tr -d "[]\",\\t ")
+successful_features=$(cat $successful_features | jq '.')
+echo Successful features: $successful_features
+
+failed_features=$(echo "$stage_out" | jq '.failed_features.path' | tr -d "[]\",\\t ")
+failed_features=$(cat $failed_features | jq '.')
+echo Failed features: $failed_features
 
 # Optionally, save the requested output file to a location
 # where it will be picked up by the Airflow XCOM mechanism

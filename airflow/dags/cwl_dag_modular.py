@@ -28,9 +28,7 @@ from kubernetes.client import models as k8s
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = (
-    "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/stage_in.cwl"
-)
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_in.cwl"
 STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_out.cwl"
 LOCAL_DIR = "/shared-task-data"
 
@@ -40,14 +38,11 @@ LOCAL_DIR = "/shared-task-data"
 WORKING_DIR = "/scratch"
 
 # Default parameters
+DEFAULT_STAC_JSON = "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/main/test/stage_in/stage_in_results.json"
 DEFAULT_PROCESS_WORKFLOW = (
     "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl"
 )
 DEFAULT_PROCESS_ARGS = json.dumps({"example_argument_empty": ""})
-DEFAULT_STAGE_IN_ARGS = "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/test/ogc_app_package/stage_in.yml"
-DEFAULT_STAGE_OUT_ARGS = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/219-process-task/demos/cwl_dag_stage_out.yaml"
-DEFAULT_STAGE_OUT_BUCKET = "unity-dev-unity-unity-data"
-DEFAULT_COLLECTION_ID = "example-app-collection___3"
 
 # Alternative arguments to execute SBG Pre-Process
 # DEFAULT_PROCESS_WORKFLOW =  "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl"
@@ -94,11 +89,11 @@ dag = DAG(
     max_active_tasks=30,
     default_args=dag_default_args,
     params={
-        "stage_in_args": Param(
-            DEFAULT_STAGE_IN_ARGS,
+        "stac_json": Param(
+            DEFAULT_STAC_JSON,
             type="string",
-            title="Stage in workflow parameters",
-            description="The stage in job parameters encoded as a JSON string or the URL of a JSON or YAML file",
+            title="STAC JSON",
+            description="STAC JSON data to download granules encoded as a JSON string or the URL of a JSON or YAML file",
         ),
         "process_workflow": Param(
             DEFAULT_PROCESS_WORKFLOW,
@@ -113,18 +108,6 @@ dag = DAG(
             description=(
                 "The processing job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"
             ),
-        ),
-        "stage_out_bucket": Param(
-            DEFAULT_STAGE_OUT_BUCKET,
-            type="string",
-            title="Stage out S3 bucket",
-            description="S3 bucket to stage data out to",
-        ),
-        "collection_id": Param(
-            DEFAULT_COLLECTION_ID,
-            type="string",
-            title="Output collection identifier",
-            description="Collection identifier to use for output (processed) data",
         ),
         "request_memory": Param(
             "4Gi",
@@ -186,26 +169,24 @@ def select_ecr(ti, use_ecr):
 
 
 def select_stage_out(ti):
-    """Retrieve API key and account id from SSM parameter store."""
+    """Retrieve stage out input parameters from SSM parameter store."""
     ssm_client = boto3.client("ssm", region_name="us-west-2")
 
-    aws_key = ssm_client.get_parameter(Name=unity_sps_utils.DS_STAGE_OUT_AWS_KEY, WithDecryption=True)[
+    project = ssm_client.get_parameter(Name=unity_sps_utils.SPS_PROJECT_PARAM, WithDecryption=True)[
         "Parameter"
     ]["Value"]
-    logging.info("Retrieved stage out AWS access key.")
-    ti.xcom_push(key="aws_key", value=aws_key)
 
-    aws_secret = ssm_client.get_parameter(Name=unity_sps_utils.DS_STAGE_OUT_AWS_SECRET, WithDecryption=True)[
-        "Parameter"
-    ]["Value"]
-    logging.info("Retrieved stage out AWS access secret.")
-    ti.xcom_push(key="aws_secret", value=aws_secret)
+    venue = ssm_client.get_parameter(Name=unity_sps_utils.SPS_VENUE_PARAM, WithDecryption=True)["Parameter"][
+        "Value"
+    ]
 
-    aws_token = ssm_client.get_parameter(Name=unity_sps_utils.DS_STAGE_OUT_AWS_TOKEN, WithDecryption=True)[
+    staging_bucket = ssm_client.get_parameter(Name=unity_sps_utils.DS_S3_BUCKET_PARAM, WithDecryption=True)[
         "Parameter"
     ]["Value"]
-    logging.info("Retrieved stage out AWS access token.")
-    ti.xcom_push(key="aws_token", value=aws_token)
+
+    stage_out_args = json.dumps({"project": project, "venue": venue, "staging_bucket": staging_bucket})
+    logging.info(f"Selecting stage out args={stage_out_args}")
+    ti.xcom_push(key="stage_out_args", value=stage_out_args)
 
 
 def setup(ti=None, **context):
@@ -250,26 +231,18 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     arguments=[
         "-i",
         STAGE_IN_WORKFLOW,
-        "-k",
-        "{{ params.stage_in_args }}",
+        "-s",
+        "{{ params.stac_json }}",
         "-w",
         "{{ params.process_workflow }}",
         "-j",
         "{{ params.process_args }}",
-        "-f",
+        "-o",
         STAGE_OUT_WORKFLOW,
+        "-d",
+        "{{ ti.xcom_pull(task_ids='Setup', key='stage_out_args') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
-        "-c",
-        "{{ params.collection_id }}",
-        "-b",
-        "{{ params.stage_out_bucket }}",
-        "-a",
-        "{{ ti.xcom_pull(task_ids='Setup', key='aws_key') }}",
-        "-s",
-        "{{ ti.xcom_pull(task_ids='Setup', key='aws_secret') }}",
-        "-t",
-        "{{ ti.xcom_pull(task_ids='Setup', key='aws_token') }}",
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,

@@ -20,8 +20,6 @@ RUN apk add --no-cache nodejs npm
 
 # script to execute a generic CWL workflow with arguments
 COPY docker_cwl_entrypoint_modular.sh /usr/share/cwl/docker_cwl_entrypoint_modular.sh
-COPY docker_cwl_entrypoint_utils.py /usr/share/cwl/docker_cwl_entrypoint_utils.py
-RUN chmod +x /usr/share/cwl/docker_cwl_entrypoint_utils.py
 
 WORKDIR /usr/share/cwl
 ENTRYPOINT ["/usr/share/cwl/docker_cwl_entrypoint_modular.sh"]
