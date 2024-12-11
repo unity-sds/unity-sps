@@ -194,7 +194,7 @@ cwl_task = SpsKubernetesPodOperator(
     # note: 'affinity' cannot yet be templated
     affinity=get_affinity(
         capacity_type=["spot"],
-        # instance_type=["t3.2xlarge"],
+        instance_type=["r7i.xlarge"],
         anti_affinity_label=POD_LABEL,
     ),
     on_finish_action="keep_pod",
