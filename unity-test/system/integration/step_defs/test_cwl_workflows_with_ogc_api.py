@@ -43,9 +43,9 @@ DATA = {
                 "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
                 "/sbg-preprocess-workflow.test.yml",
             },
-            # r7i.xlarge
-            "request_memory": "32Gi",
-            # "request_cpu": "4",
+            # r7i.xlarge (4 CPU, 32 GiB memory)
+            "request_memory": "4Gi",
+            "request_cpu": "2",
             "request_storage": "10Gi",
             "use_ecr": False,
         },
