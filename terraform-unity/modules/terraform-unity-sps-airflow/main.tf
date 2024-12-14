@@ -430,6 +430,7 @@ resource "helm_release" "airflow" {
   ]
 }
 
+/* Note: re-enable this to allow access via the JPL network
 resource "aws_security_group" "airflow_ingress_sg" {
   name        = "${var.project}-${var.venue}-airflow-ingress-sg"
   description = "SecurityGroup for Airflow LoadBalancer ingress"
@@ -439,7 +440,7 @@ resource "aws_security_group" "airflow_ingress_sg" {
     Component = "airflow"
     Stack     = "airflow"
   })
-}
+}*/
 
 resource "aws_security_group" "airflow_ingress_sg_internal" {
   name        = "${var.project}-${var.venue}-airflow-internal-ingress-sg"
@@ -452,6 +453,7 @@ resource "aws_security_group" "airflow_ingress_sg_internal" {
   })
 }
 
+/* Note: re-enable this to allow access via the JPL network
 #tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
   for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
@@ -461,7 +463,7 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
   from_port         = local.load_balancer_port
   to_port           = local.load_balancer_port
   cidr_ipv4         = each.key
-}
+}*/
 
 data "aws_security_groups" "venue_proxy_sg" {
   filter {
@@ -484,6 +486,7 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
   referenced_security_group_id = data.aws_security_groups.venue_proxy_sg.ids[0]
 }
 
+/* Note: re-enable this to allow access via the JPL network
 resource "kubernetes_ingress_v1" "airflow_ingress" {
   metadata {
     name      = "airflow-ingress"
@@ -521,7 +524,7 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
   }
   wait_for_load_balancer = true
   depends_on             = [helm_release.airflow]
-}
+}*/
 
 resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
   metadata {
@@ -564,12 +567,13 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
-  value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+  value       = "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_ui")
     Component = "SSM"
     Stack     = "SSM"
   })
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
@@ -578,8 +582,8 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow UI"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000"
+    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/health"
+    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_ui")
@@ -589,18 +593,20 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   lifecycle {
     ignore_changes = [value]
   }
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "https://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+  value       = "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
     Component = "SSM"
     Stack     = "SSM"
   })
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
@@ -609,8 +615,8 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow API"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/api/v1/health"
+    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/api/v1"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_api")
@@ -620,6 +626,7 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   lifecycle {
     ignore_changes = [value]
   }
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {

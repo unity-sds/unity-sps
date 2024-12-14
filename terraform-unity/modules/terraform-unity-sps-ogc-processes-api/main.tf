@@ -206,6 +206,7 @@ resource "kubernetes_service" "ogc_processes_api" {
   }
 }
 
+/* Note: re-enable this to allow access via the JPL network
 resource "aws_security_group" "ogc_ingress_sg" {
   name        = "${var.project}-${var.venue}-ogc-ingress-sg"
   description = "SecurityGroup for OGC API LoadBalancer ingress"
@@ -215,7 +216,7 @@ resource "aws_security_group" "ogc_ingress_sg" {
     Component = "ogc"
     Stack     = "ogc"
   })
-}
+}*/
 
 resource "aws_security_group" "ogc_ingress_sg_internal" {
   name        = "${var.project}-${var.venue}-ogc-internal-ingress-sg"
@@ -228,6 +229,7 @@ resource "aws_security_group" "ogc_ingress_sg_internal" {
   })
 }
 
+/* Note: re-enable this to allow access via the JPL network
 #tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "ogc_ingress_sg_jpl_rule" {
   for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
@@ -237,7 +239,7 @@ resource "aws_vpc_security_group_ingress_rule" "ogc_ingress_sg_jpl_rule" {
   from_port         = local.load_balancer_port
   to_port           = local.load_balancer_port
   cidr_ipv4         = each.key
-}
+}*/
 
 data "aws_security_groups" "venue_proxy_sg" {
   filter {
@@ -260,6 +262,7 @@ resource "aws_vpc_security_group_ingress_rule" "ogc_ingress_sg_proxy_rule" {
   referenced_security_group_id = data.aws_security_groups.venue_proxy_sg.ids[0]
 }
 
+/* Note: re-enable this to allow access via the JPL network
 resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
   metadata {
     name      = "ogc-processes-api-ingress"
@@ -296,7 +299,7 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
     }
   }
   wait_for_load_balancer = true
-}
+}*/
 
 resource "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
   metadata {
@@ -338,24 +341,26 @@ resource "aws_ssm_parameter" "ogc_processes_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "ui_url"])))
   description = "The URL of the OGC Proccesses API Docs UI."
   type        = "String"
-  value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001/redoc"
+  value       = "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/ogc/redoc"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
     Component = "SSM"
     Stack     = "SSM"
   })
+  depends_on = [aws_ssm_parameter.unity_proxy_ogc_api]
 }
 
 resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
-  value       = "https://${data.kubernetes_ingress_v1.ogc_processes_api_ingress.status[0].load_balancer[0].ingress[0].hostname}:5001"
+  value       = "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/ogc/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_api")
     Component = "SSM"
     Stack     = "SSM"
   })
+  depends_on = [aws_ssm_parameter.unity_proxy_ogc_api]
 }
 
 resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
@@ -364,8 +369,8 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "OGC API"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001"
+    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/ogc/health"
+    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/ogc/"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-ogc_processes_api")
@@ -375,6 +380,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
   lifecycle {
     ignore_changes = [value]
   }
+  depends_on = [aws_ssm_parameter.unity_proxy_ogc_api]
 }
 
 resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
