@@ -59,5 +59,5 @@ data "aws_ssm_parameter" "shared_services_region" {
 }
 
 data "aws_ssm_parameter" "shared_services_domain" {
-  name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_services_region}:${data.aws_ssm_parameter.shared_services_account}:parameter/unity/shared-services/domain"
+  name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_services_region.value}:${data.aws_ssm_parameter.shared_services_account.value}:parameter/unity/shared-services/domain"
 }

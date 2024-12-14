@@ -567,7 +567,7 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
-  value       = "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/"
+  value       = "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_ui")
     Component = "SSM"
@@ -582,8 +582,8 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow UI"
-    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/health"
-    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/"
+    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/health"
+    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_ui")
@@ -600,7 +600,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/api/v1"
+  value       = "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
     Component = "SSM"
@@ -615,8 +615,8 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow API"
-    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/api/v1/health"
-    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain}:4443/${var.project}/${var.venue}/sps/api/v1"
+    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1/health"
+    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_api")
