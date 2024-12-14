@@ -341,7 +341,7 @@ resource "aws_ssm_parameter" "ogc_processes_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "ui_url"])))
   description = "The URL of the OGC Proccesses API Docs UI."
   type        = "String"
-  value       = "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/redoc"
+  value       = "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/redoc"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_ui")
     Component = "SSM"
@@ -354,7 +354,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
-  value       = "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/"
+  value       = "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_api")
     Component = "SSM"
@@ -369,8 +369,8 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "OGC API"
-    "healthCheckUrl" : "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/health"
-    "landingPageUrl" : "https://${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/"
+    "healthCheckUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/health"
+    "landingPageUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-ogc_processes_api")
