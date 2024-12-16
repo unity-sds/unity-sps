@@ -14,8 +14,6 @@ SPS_DOCKER_CWL_IMAGE_MODULAR = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl-modul
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
-SPS_PROJECT_PARAM = "/unity/unity-nikki-1/dev/project-name"
-SPS_VENUE_PARAM = "/unity/unity-nikki-1/dev/venue-name"
 DS_S3_BUCKET_PARAM = "/unity/unity-nikki-1/dev/ds/staging/s3/bucket-name"
 
 

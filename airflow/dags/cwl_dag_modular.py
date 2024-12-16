@@ -172,14 +172,8 @@ def select_stage_out(ti):
     """Retrieve stage out input parameters from SSM parameter store."""
     ssm_client = boto3.client("ssm", region_name="us-west-2")
 
-    project = ssm_client.get_parameter(Name=unity_sps_utils.SPS_PROJECT_PARAM, WithDecryption=True)[
-        "Parameter"
-    ]["Value"]
-
-    venue = ssm_client.get_parameter(Name=unity_sps_utils.SPS_VENUE_PARAM, WithDecryption=True)["Parameter"][
-        "Value"
-    ]
-
+    project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
+    venue = os.environ["AIRFLOW_VAR_UNITY_VENUE"]
     staging_bucket = ssm_client.get_parameter(Name=unity_sps_utils.DS_S3_BUCKET_PARAM, WithDecryption=True)[
         "Parameter"
     ]["Value"]
