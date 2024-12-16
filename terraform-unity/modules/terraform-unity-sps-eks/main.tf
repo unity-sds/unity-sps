@@ -24,7 +24,7 @@ module "unity-eks" {
     Component = "eks"
     Stack     = "eks"
   })
-  cluster_version = "1.29"
+  cluster_version = "1.30"
 }
 
 # add extra policies as inline policy
