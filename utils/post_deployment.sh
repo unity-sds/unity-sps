@@ -19,11 +19,14 @@ declare -a procs=("cwl_dag.json" "karpenter_test.json" "sbg_preprocess_cwl_dag.j
 for proc in "${procs[@]}"
 do
    echo " "
+   proc_name=$(echo "$proc" | sed "s/.json//")
+
    # register process
-   echo "Registering process: $proc"
+   echo "Registering process: $proc_name"
    curl -k -v -X POST -H "Expect:" -H "Content-Type: application/json; charset=utf-8" --data-binary @"../ogc-application-packages/$proc" "${WPST_API}/processes"
+
    # unregister process
-   # echo "Unregistering process: $proc"
-   # curl -X DELETE -H "Content-Type: application/json; charset=utf-8" "${WPST_API}/processes/${proc}"
-   echo " "
+   #echo "Unregistering process: $proc_name"
+   #curl -k -X DELETE -H "Content-Type: application/json; charset=utf-8" "${WPST_API}/processes/${proc_name}"
+
 done
