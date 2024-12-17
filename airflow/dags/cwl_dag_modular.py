@@ -38,7 +38,7 @@ LOCAL_DIR = "/shared-task-data"
 WORKING_DIR = "/scratch"
 
 # Default parameters
-DEFAULT_STAC_JSON = "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/main/test/stage_in/stage_in_results.json"
+DEFAULT_STAC_JSON = "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json"
 DEFAULT_PROCESS_WORKFLOW = (
     "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl"
 )
