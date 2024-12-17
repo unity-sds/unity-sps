@@ -21,21 +21,6 @@ JOB_PARAMS_SBG_E2E = {
     "outputs": {"result": {"transmissionMode": "reference"}},
 }
 
-# JOB_PARAMS_SBG_PREPROCESS = {
-#         "inputs": {
-#             "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-#             "/preprocess/sbg-preprocess-workflow.cwl",
-#             "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-#                         "/sbg-preprocess-workflow.dev.yml",
-#             # r7i.xlarge (4 CPU, 32 GiB memory)
-#             "request_memory": "4Gi",
-#             "request_cpu": "2",
-#             "request_storage": "10Gi",
-#             "use_ecr": False,
-#         },
-#         "outputs": {"result": {"transmissionMode": "reference"}},
-# }
-
 
 def main():
 

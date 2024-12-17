@@ -79,6 +79,17 @@ def main():
     response = process_service.deploy_process(CWL_DAG_PROCESS)
     print(response)
 
+    # query DAG back
+    # retrieve all OGC processes
+    processes = process_service.get_processes()
+
+    # select the desired process
+    process = None
+    for p in processes:
+        if p.id == DAG_ID:
+            process = p
+    print(process)
+
 
 if __name__ == "__main__":
     main()
