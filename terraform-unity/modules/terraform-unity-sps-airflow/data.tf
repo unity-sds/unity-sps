@@ -61,3 +61,7 @@ data "aws_ssm_parameter" "shared_services_region" {
 data "aws_ssm_parameter" "shared_services_domain" {
   name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_services_region.value}:${data.aws_ssm_parameter.shared_services_account.value}:parameter/unity/shared-services/domain"
 }
+
+data "aws_ssm_parameter" "venue_proxy_baseurl" {
+  name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
+}

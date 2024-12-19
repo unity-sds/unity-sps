@@ -43,6 +43,7 @@ No modules.
 | [aws_ssm_parameter.shared_services_domain](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.shared_services_region](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.venue_proxy_baseurl](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
@@ -71,4 +72,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_ogc_processes_urls"></a> [ogc\_processes\_urls](#output\_ogc\_processes\_urls) | SSM parameter IDs and URLs for the various OGC Processes endpoints. |
+| <a name="output_ogc_processes_venue_urls"></a> [ogc\_processes\_venue\_urls](#output\_ogc\_processes\_venue\_urls) | URLs for the various OGC Processes endpoints at venue-proxy level. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

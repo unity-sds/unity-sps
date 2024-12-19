@@ -78,6 +78,7 @@ No modules.
 | [aws_ssm_parameter.shared_services_domain](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.shared_services_region](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.venue_proxy_baseurl](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/vpc) | data source |
 | [kubernetes_ingress_v1.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
@@ -107,5 +108,6 @@ No modules.
 |------|-------------|
 | <a name="output_airflow_deployed_dags_pvc"></a> [airflow\_deployed\_dags\_pvc](#output\_airflow\_deployed\_dags\_pvc) | n/a |
 | <a name="output_airflow_urls"></a> [airflow\_urls](#output\_airflow\_urls) | SSM parameter IDs and URLs for the various Airflow endpoints. |
+| <a name="output_airflow_venue_urls"></a> [airflow\_venue\_urls](#output\_airflow\_venue\_urls) | URLs for the various Airflow endpoints at venue-proxy level. |
 | <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | SSM parameter IDs and bucket names for the various buckets used in the pipeline. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
