@@ -9,10 +9,10 @@ DAG_ID = "cwl_dag"
 
 JOB_PARAMS_SBG_E2E = {
     "inputs": {
-        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-        "/L1-to-L2-e2e.scale.cwl",
-        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-        "/L1-to-L2-e2e.dev.scale.yml",
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/"
+        "refs/heads/main/L1-to-L2-e2e.cwl",
+        "cwl_args": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/"
+        "refs/heads/main/L1-to-L2-e2e.dev.yml",
         "request_memory": "64Gi",
         "request_cpu": "32",
         "request_storage": "100Gi",
