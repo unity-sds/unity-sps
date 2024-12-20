@@ -11,3 +11,15 @@ output "ogc_processes_urls" {
     }
   }
 }
+
+output "ogc_processes_venue_urls" {
+  description = "URLs for the various OGC Processes endpoints at venue-proxy level."
+  value = {
+    "ui" = {
+      "url" = nonsensitive(replace(data.aws_ssm_parameter.venue_proxy_baseurl.value, "management/ui", "ogc/redoc"))
+    }
+    "rest_api" = {
+      "url" = nonsensitive(replace(data.aws_ssm_parameter.venue_proxy_baseurl.value, "management/ui", "ogc/"))
+    }
+  }
+}
