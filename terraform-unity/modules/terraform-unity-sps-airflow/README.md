@@ -42,7 +42,6 @@ No modules.
 | [aws_s3_bucket.airflow_logs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_policy.airflow_logs_s3_policy](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/s3_bucket_policy) | resource |
 | [aws_security_group.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
-| [aws_security_group.airflow_ingress_sg](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
 | [aws_security_group.airflow_ingress_sg_internal](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
 | [aws_security_group_rule.airflow_efs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group_rule) | resource |
 | [aws_ssm_parameter.airflow_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
@@ -51,11 +50,9 @@ No modules.
 | [aws_ssm_parameter.airflow_ui_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.unity_proxy_airflow_ui](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
-| [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_jpl_rule](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_proxy_rule](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.15.0/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.15.0/docs/resources/release) | resource |
-| [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_ingress_v1.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/namespace) | resource |
 | [kubernetes_persistent_volume.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/persistent_volume) | resource |
@@ -77,10 +74,12 @@ No modules.
 | [aws_lambda_functions.lambda_check_all](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lambda_functions) | data source |
 | [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_groups.venue_proxy_sg](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/security_groups) | data source |
-| [aws_ssm_parameter.ssl_cert_arn](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.shared_services_account](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.shared_services_domain](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.shared_services_region](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.venue_proxy_baseurl](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/vpc) | data source |
-| [kubernetes_ingress_v1.airflow_ingress](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_ingress_v1.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
 
@@ -109,5 +108,6 @@ No modules.
 |------|-------------|
 | <a name="output_airflow_deployed_dags_pvc"></a> [airflow\_deployed\_dags\_pvc](#output\_airflow\_deployed\_dags\_pvc) | n/a |
 | <a name="output_airflow_urls"></a> [airflow\_urls](#output\_airflow\_urls) | SSM parameter IDs and URLs for the various Airflow endpoints. |
+| <a name="output_airflow_venue_urls"></a> [airflow\_venue\_urls](#output\_airflow\_venue\_urls) | URLs for the various Airflow endpoints at venue-proxy level. |
 | <a name="output_s3_buckets"></a> [s3\_buckets](#output\_s3\_buckets) | SSM parameter IDs and bucket names for the various buckets used in the pipeline. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
