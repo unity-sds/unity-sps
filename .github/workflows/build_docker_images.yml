@@ -13,7 +13,7 @@ env:
   TAG: ${{ github.event.inputs.tag }}
   SPS_AIRFLOW: ${{ github.repository }}/sps-airflow
   SPS_DOCKER_CWL: ${{ github.repository }}/sps-docker-cwl
-  SPS_DOCKER_CWL_MODULAR: ${{ github.repository }}/sps-docker-cwl-modular
+  SPS_DOCKER_CWL_MODULAR: ${{ github.repository }}/sps-docker-cwl-mod
 
 jobs:
   build-sps-airflow:
