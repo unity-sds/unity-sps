@@ -81,7 +81,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./airflow/docker/cwl
-          file: airflow/docker/cwl/Dockerfile-modular
+          file: airflow/docker/cwl/Dockerfile_modular
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.SPS_DOCKER_CWL_MODULAR }}:${{ env.TAG }}
           labels: ${{ steps.metascheduler.outputs.labels }}
