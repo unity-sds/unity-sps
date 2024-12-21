@@ -22,7 +22,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.3"
+  default     = "24.4"
 }
 
 variable "kubeconfig_filepath" {
@@ -73,7 +73,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.3.0"
+      tag  = "2.4.0-rc1"
     }
   }
 }
