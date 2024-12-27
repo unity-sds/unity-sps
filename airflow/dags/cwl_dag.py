@@ -174,7 +174,7 @@ cwl_task = SpsKubernetesPodOperator(
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
     container_security_context={"privileged": True},
-    container_resources=CONTAINER_RESOURCES,
+    # container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -186,13 +186,16 @@ cwl_task = SpsKubernetesPodOperator(
         )
     ],
     dag=dag,
-    node_selector={"karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}"},
+    node_selector={
+        "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
+        "node.kubernetes.io/instance-type": "r7i.xlarge",
+    },
     labels={"app": POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     # note: 'affinity' cannot yet be templated
     affinity=get_affinity(
         capacity_type=["spot"],
-        instance_type=["r7i.xlarge"],
+        # instance_type=["r7i.2xlarge"],
         anti_affinity_label=POD_LABEL,
     ),
     on_finish_action="keep_pod",
