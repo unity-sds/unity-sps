@@ -100,7 +100,7 @@ dag = DAG(
         "request_instance_type": Param(
             "r7i.xlarge",
             type="string",
-            enum=["r7i.xlarge"],
+            enum=["r7i.xlarge", "r7i.2xlarge", "r7i.4xlarge"],
             title="EC2 instance type",
         ),
         "request_cpu": Param(
