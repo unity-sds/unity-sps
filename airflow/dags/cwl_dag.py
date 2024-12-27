@@ -16,9 +16,10 @@ from datetime import datetime
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import SpsKubernetesPodOperator, get_affinity
+from unity_sps_utils import get_affinity
 
 from airflow import DAG
 
@@ -96,17 +97,23 @@ dag = DAG(
             title="CWL workflow parameters",
             description=("The job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"),
         ),
+        "request_instance_type": Param(
+            "r7i.xlarge",
+            type="string",
+            enum=["r7i.xlarge"],
+            title="EC2 instance type",
+        ),
+        "request_cpu": Param(
+            "2",
+            type="string",
+            enum=["2", "4", "8", "16", "32"],
+            title="Docker container CPU",
+        ),
         "request_memory": Param(
             "4Gi",
             type="string",
             enum=["4Gi", "8Gi", "16Gi", "32Gi", "64Gi", "128Gi", "256Gi"],
             title="Docker container memory",
-        ),
-        "request_cpu": Param(
-            "4",
-            type="string",
-            enum=["2", "4", "8", "16", "32"],
-            title="Docker container CPU",
         ),
         "request_storage": Param(
             "10Gi",
@@ -144,6 +151,8 @@ def setup(ti=None, **context):
         node_pool = NODE_POOL_HIGH_WORKLOAD
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool", value=node_pool)
+    instance_type = context["params"]["request_instance_type"]
+    ti.xcom_push(key="instance_type", value=instance_type)
 
     # select "use_ecr" argument and determine if ECR login is required
     logging.info("Use ECR: %s", context["params"]["use_ecr"])
@@ -155,7 +164,7 @@ def setup(ti=None, **context):
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
-cwl_task = SpsKubernetesPodOperator(
+cwl_task = KubernetesPodOperator(
     retries=1,
     task_id="cwl_task",
     namespace=POD_NAMESPACE,
@@ -174,7 +183,7 @@ cwl_task = SpsKubernetesPodOperator(
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
     container_security_context={"privileged": True},
-    # container_resources=CONTAINER_RESOURCES,
+    container_resources=CONTAINER_RESOURCES,
     container_logs=True,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
@@ -188,7 +197,7 @@ cwl_task = SpsKubernetesPodOperator(
     dag=dag,
     node_selector={
         "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
-        "node.kubernetes.io/instance-type": "r7i.xlarge",
+        "node.kubernetes.io/instance-type": "{{ti.xcom_pull(task_ids='Setup', key='instance_type')}}",
     },
     labels={"app": POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
