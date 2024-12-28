@@ -100,7 +100,7 @@ dag = DAG(
         "request_instance_type": Param(
             "r7i.xlarge",
             type="string",
-            enum=["r7i.xlarge", "r7i.2xlarge", "r7i.4xlarge"],
+            enum=["r7i.xlarge", "r7i.2xlarge", "r7i.4xlarge", "c6i.8xlarge"],
             title="EC2 instance type",
         ),
         "request_cpu": Param(
@@ -141,13 +141,18 @@ def setup(ti=None, **context):
     # select the node pool based on what resources were requested
     node_pool = NODE_POOL_DEFAULT
     storage = context["params"]["request_storage"]  # 100Gi
-    storage = int(storage[0:-2])  # 100
+    container_storage = int(storage[0:-2])  # 100
+    ti.xcom_push(key="container_storage", value=container_storage)
     memory = context["params"]["request_memory"]  # 32Gi
-    memory = int(memory[0:-2])  # 32
-    cpu = int(context["params"]["request_cpu"])  # 8
+    # Note: must reduce the Docker container resources to account
+    # for the daemonset overhead={\"cpu\":\"210m\",\"memory\":\"240Mi\",\"pods\":\"5\"}
+    container_memory = int(memory[0:-2]) - 1  # 32
+    ti.xcom_push(key="container_memory", value=container_memory)
+    container_cpu = int(context["params"]["request_cpu"]) - 1  # 8
+    ti.xcom_push(key="container_cpu", value=container_cpu)
 
-    logging.info(f"Requesting storage={storage}Gi memory={memory}Gi CPU={cpu}")
-    if (storage > 30) or (memory > 32) or (cpu > 8):
+    logging.info(f"Requesting storage={container_storage}Gi memory={container_memory}Gi CPU={container_cpu}")
+    if (container_storage > 30) or (container_memory > 32) or (container_cpu > 8):
         node_pool = NODE_POOL_HIGH_WORKLOAD
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool", value=node_pool)
@@ -183,7 +188,13 @@ cwl_task = KubernetesPodOperator(
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
     container_security_context={"privileged": True},
-    container_resources=CONTAINER_RESOURCES,
+    container_resources=k8s.V1ResourceRequirements(
+        requests={
+            "memory": "{{ti.xcom_pull(task_ids='Setup', key='container_memory')}}",
+            "cpu": "{{ti.xcom_pull(task_ids='Setup', key='container_cpu')}}",
+            "ephemeral-storage": "{{ti.xcom_pull(task_ids='Setup', key='container_storage')}}",
+        },
+    ),
     container_logs=True,
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
