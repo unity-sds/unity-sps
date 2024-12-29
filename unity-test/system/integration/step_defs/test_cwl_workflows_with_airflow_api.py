@@ -19,7 +19,9 @@ FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_airflow_api.feature"
 DAG_ID = "cwl_dag"
 DAG_PARAMETERS = {
     "EMIT": {
-        "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
+        "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/"
+        "api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/"
+        "versions/9/plain-CWL/descriptor/workflow.cwl",
         "cwl_args": {
             "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
             "/test/emit-ghg-dev.json",
@@ -27,20 +29,24 @@ DAG_PARAMETERS = {
             # "/test/emit-ghg-test.json",
         },
         "request_memory": "16Gi",
-        "request_cpu": "8",
+        "request_cpu": "4",
         "request_storage": "100Gi",
+        # r7i.2xlarge: 8 CPUs, 64 GB memory
+        "request_instance_type": "r7i.2xlarge",
         "use_ecr": False,
     },
     "SBG_E2E_SCALE": {
-        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/"
-        "refs/heads/main/L1-to-L2-e2e.cwl",
+        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
+        "sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
         "cwl_args": {
-            "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/"
-            "refs/heads/main/L1-to-L2-e2e.dev.yml",
+            "dev": "https://raw.githubusercontent.com/unity-sds/"
+            "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
         },
         "request_memory": "64Gi",
         "request_cpu": "32",
         "request_storage": "100Gi",
+        # c6i.8xlarge: 32 CPUs, 64 GB memory
+        "request_instance_type": "c6i.8xlarge",
         "use_ecr": False,
     },
     "SBG_PREPROCESS": {
@@ -53,9 +59,10 @@ DAG_PARAMETERS = {
             "/sbg-preprocess-workflow.test.yml",
         },
         # r7i.xlarge (4 CPU, 32 GiB memory)
-        "request_memory": "4Gi",
-        "request_cpu": "2",
+        "request_memory": "8Gi",
+        "request_cpu": "4",
         "request_storage": "10Gi",
+        "request_instance_type": "c6i.xlarge",
         "use_ecr": False,
     },
 }
