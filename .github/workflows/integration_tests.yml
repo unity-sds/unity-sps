@@ -92,77 +92,7 @@ jobs:
           exit 1
         fi
 
-  Test-Venue-Airflow-API:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Setup
-      uses: ./.github/actions/setup-action
-      continue-on-error: false
-
-    - name: MCP Venue Test - Integration tests with Airflow API
-      id: mcp_venue_test_integration_tests_with_airflow_api
-      continue-on-error: true
-      env:
-        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
-        UNITY_USER: ${{ secrets.UNITY_USER }}
-        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      run: |
-        pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py \
-        --venue="test" \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
-
-    - name: Check Tests Results
-      if: always()
-      run: |
-        tests_status=${{ steps.mcp_venue_test_integration_tests_with_airflow_api.outcome }}
-        echo "Tests Status: $tests_status"
-        if [ "$tests_status" != "success" ]; then
-          echo "Integration Tests with Airflow API on MCP Venue Test failed."
-          exit 1
-        fi
-
-  Test-Venue-OGC-API:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Setup
-      uses: ./.github/actions/setup-action
-      continue-on-error: false
-
-    - name: MCP Venue Test - Integration tests with OGC API
-      id: mcp_venue_test_integration_tests_with_ogc_api
-      continue-on-error: true
-      env:
-        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
-        UNITY_USER: ${{ secrets.UNITY_USER }}
-        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-      run: |
-        pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py \
-        --venue="test" \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
-
-    - name: Check Tests Results
-      if: always()
-      run: |
-        tests_status=${{ steps.mcp_venue_test_integration_tests_with_ogc_api.outcome }}
-        echo "Tests Status: $tests_status"
-        if [ "$tests_status" != "success" ]; then
-          echo "Integration Tests with OGC API on MCP Venue Test failed."
-          exit 1
-        fi
-
-#  Dev-Venue-SBG_Preprocess:
+#  Test-Venue-Airflow-API:
 #    runs-on: ubuntu-latest
 #
 #    steps:
@@ -173,62 +103,62 @@ jobs:
 #      uses: ./.github/actions/setup-action
 #      continue-on-error: false
 #
-#    - name: MCP Venue Dev - SBG Preprocess
-#      id: mcp_venue_dev_sbg_preprocess
+#    - name: MCP Venue Test - Integration tests with Airflow API
+#      id: mcp_venue_test_integration_tests_with_airflow_api
 #      continue-on-error: true
 #      env:
-#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
+#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
 #        UNITY_USER: ${{ secrets.UNITY_USER }}
 #        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
 #      run: |
 #        pytest -vv -s --gherkin-terminal-reporter \
-#        unity-test/system/integration/step_defs/test_sbg_preprocess_workflow.py  \
-#        --venue="dev" \
-#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
+#        unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py \
+#        --venue="test" \
+#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
+#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
 #
 #    - name: Check Tests Results
 #      if: always()
 #      run: |
-#        tests_status=${{ steps.mcp_venue_dev_sbg_preprocess.outcome }}
+#        tests_status=${{ steps.mcp_venue_test_integration_tests_with_airflow_api.outcome }}
 #        echo "Tests Status: $tests_status"
 #        if [ "$tests_status" != "success" ]; then
-#          echo "SBG Preprocess on MCP Venue Dev failed."
+#          echo "Integration Tests with Airflow API on MCP Venue Test failed."
 #          exit 1
 #        fi
 #
-#
-#  Test-Venue-SBG_Preprocess:
+#  Test-Venue-OGC-API:
 #    runs-on: ubuntu-latest
 #
 #    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
+#    - name: Checkout
+#      uses: actions/checkout@v4
 #
-#      - name: Setup
-#        uses: ./.github/actions/setup-action
-#        continue-on-error: false
+#    - name: Setup
+#      uses: ./.github/actions/setup-action
+#      continue-on-error: false
 #
-#      - name: MCP Venue Test - SBG Preprocess
-#        id: mcp_venue_test_sbg_preprocess
-#        continue-on-error: true
-#        env:
-#          AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
-#          UNITY_USER: ${{ secrets.UNITY_USER }}
-#          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-#        run: |
-#          pytest -vv -s --gherkin-terminal-reporter \
-#          unity-test/system/integration/step_defs/test_sbg_preprocess_workflow.py  \
-#          --venue="test" \
-#          --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
-#          --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
+#    - name: MCP Venue Test - Integration tests with OGC API
+#      id: mcp_venue_test_integration_tests_with_ogc_api
+#      continue-on-error: true
+#      env:
+#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
+#        UNITY_USER: ${{ secrets.UNITY_USER }}
+#        UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+#      run: |
+#        pytest -vv -s --gherkin-terminal-reporter \
+#        unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py \
+#        --venue="test" \
+#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
+#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
 #
-#      - name: Check Tests Results
-#        if: always()
-#        run: |
-#          tests_status=${{ steps.mcp_venue_test_sbg_preprocess.outcome }}
-#          echo "Tests Status: $tests_status"
-#          if [ "$tests_status" != "success" ]; then
-#            echo "SBG Preprocess on MCP Venue Test failed."
-#            exit 1
-#          fi
+#    - name: Check Tests Results
+#      if: always()
+#      run: |
+#        tests_status=${{ steps.mcp_venue_test_integration_tests_with_ogc_api.outcome }}
+#        echo "Tests Status: $tests_status"
+#        if [ "$tests_status" != "success" ]; then
+#          echo "Integration Tests with OGC API on MCP Venue Test failed."
+#          exit 1
+#        fi
+#
