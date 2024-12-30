@@ -89,6 +89,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
         request_memory = DAG_PARAMETERS[test_case]["request_memory"]
         request_cpu = DAG_PARAMETERS[test_case]["request_cpu"]
         request_storage = DAG_PARAMETERS[test_case]["request_storage"]
+        request_instance_type = DAG_PARAMETERS[test_case]["request_instance_type"]
         use_ecr = DAG_PARAMETERS[test_case]["use_ecr"]
         response = requests.post(
             f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
@@ -100,6 +101,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
                     "request_memory": f"{request_memory}",
                     "request_cpu": f"{request_cpu}",
                     "request_storage": f"{request_storage}",
+                    "request_instance_type": f"{request_instance_type}",
                     "use_ecr": use_ecr,
                 }
             },
