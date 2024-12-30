@@ -26,9 +26,11 @@ DATA = {
             "cwl_args": {
                 "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json"
             },
-            "request_memory": "16Gi",
+            "request_memory": "32Gi",
             "request_cpu": "8",
             "request_storage": "100Gi",
+            # r7i.2xlarge: 8 CPUs, 64 GB memory
+            "request_instance_type": "r7i.2xlarge",
             "use_ecr": False,
         },
         "outputs": {"result": {"transmissionMode": "reference"}},
@@ -44,9 +46,10 @@ DATA = {
                 "/sbg-preprocess-workflow.test.yml",
             },
             # r7i.xlarge (4 CPU, 32 GiB memory)
-            "request_memory": "4Gi",
-            "request_cpu": "2",
+            "request_memory": "8Gi",
+            "request_cpu": "4",
             "request_storage": "10Gi",
+            "request_instance_type": "c6i.xlarge",
             "use_ecr": False,
         },
         "outputs": {"result": {"transmissionMode": "reference"}},
@@ -62,7 +65,9 @@ DATA = {
             "request_memory": "64Gi",
             "request_cpu": "32",
             "request_storage": "100Gi",
-            "use_ecr": True,
+            # c6i.8xlarge: 32 CPUs, 64 GB memory
+            "request_instance_type": "c6i.8xlarge",
+            "use_ecr": False,
         },
         "outputs": {"result": {"transmissionMode": "reference"}},
     },

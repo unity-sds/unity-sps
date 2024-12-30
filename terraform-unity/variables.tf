@@ -171,7 +171,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // 8 GiB = 8192 MiB
+          values   = ["4095"] // 4 GiB = 4096 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"

@@ -151,13 +151,17 @@ def setup(ti=None, **context):
     container_cpu = int(context["params"]["request_cpu"]) - 1  # 8
     ti.xcom_push(key="container_cpu", value=container_cpu)
 
-    logging.info(f"Requesting storage={container_storage}Gi memory={container_memory}Gi CPU={container_cpu}")
+    instance_type = context["params"]["request_instance_type"]
+    ti.xcom_push(key="instance_type", value=instance_type)
+    logging.info(f"Requesting EC2 instance type={instance_type}")
+
+    logging.info(
+        f"Requesting container storage={container_storage}Gi memory={container_memory}Gi CPU={container_cpu}"
+    )
     if (container_storage > 30) or (container_memory > 32) or (container_cpu > 8):
         node_pool = NODE_POOL_HIGH_WORKLOAD
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool", value=node_pool)
-    instance_type = context["params"]["request_instance_type"]
-    ti.xcom_push(key="instance_type", value=instance_type)
 
     # select "use_ecr" argument and determine if ECR login is required
     logging.info("Use ECR: %s", context["params"]["use_ecr"])
