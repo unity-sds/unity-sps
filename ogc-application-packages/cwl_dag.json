@@ -36,6 +36,15 @@
         },
         "title": "Requested CPU"
       },
+      "request_instance_type": {
+        "description": "The specific EC2 instance type requested for the job",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Requested EC2 Type"
+      },
       "request_memory": {
         "default": "8Gi",
         "description": "The amount of memory requested for the job",
