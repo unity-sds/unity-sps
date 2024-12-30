@@ -46,7 +46,7 @@ DAG_PARAMETERS = {
         "request_cpu": "32",
         "request_storage": "100Gi",
         # c6i.8xlarge: 32 CPUs, 64 GB memory
-        "request_instance_type": "c6i.8xlarge",
+        "request_instance_type": "c7i.8xlarge",
         "use_ecr": False,
     },
     "SBG_PREPROCESS": {
@@ -62,7 +62,7 @@ DAG_PARAMETERS = {
         "request_cpu": "4",
         "request_storage": "10Gi",
         # c6i.xlarge: 4vCPUs, 8 GB memory
-        "request_instance_type": "c6i.xlarge",
+        "request_instance_type": "c7i.xlarge",
         "use_ecr": False,
     },
 }
