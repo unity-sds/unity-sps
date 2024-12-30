@@ -56,11 +56,11 @@ DATA = {
     },
     "SBG_E2E_SCALE": {
         "inputs": {
-            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-            "/L1-to-L2-e2e.scale.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
+            "sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-                "/L1-to-L2-e2e.dev.scale.yml",
+                "dev": "https://raw.githubusercontent.com/unity-sds/"
+                "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
             },
             "request_memory": "64Gi",
             "request_cpu": "32",
@@ -124,7 +124,7 @@ def check_failed(e):
 @backoff.on_exception(
     backoff.constant,
     (AssertionError, ApiException, ServiceException, UnityException),
-    max_time=3600,
+    max_time=7200,
     giveup=check_failed,
     jitter=None,
     interval=5,
