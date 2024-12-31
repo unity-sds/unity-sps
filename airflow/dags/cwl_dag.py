@@ -141,6 +141,8 @@ def setup(ti=None, **context):
     and parses the input parameter values.
     """
     context = get_current_context()
+    logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
+
     dag_run_id = context["dag_run"].run_id
     local_dir = f"/shared-task-data/{dag_run_id}"
     logging.info(f"Creating directory: {local_dir}")
