@@ -22,7 +22,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.3"
+  default     = "24.4"
 }
 
 variable "kubeconfig_filepath" {
@@ -73,7 +73,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.3.0"
+      tag  = "2.4.0-rc1"
     }
   }
 }
@@ -166,17 +166,17 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-cpu"
           operator = "Lt"
-          values   = ["49"] // To 48 inclusive
+          values   = ["65"] // To 64 inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // 8 GiB = 8192 MiB
+          values   = ["4095"] // 4 GiB = 4096 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["98305"] // 96 GiB = 98404 MiB
+          values   = ["131073"] // 128 GiB = 131072 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -214,7 +214,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // 8 GiB = 8192 MiB
+          values   = ["4095"] // 4 GiB = 4096 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
