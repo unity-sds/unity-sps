@@ -17,7 +17,7 @@ from airflow import DAG
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "sps"
 POD_LABEL = "sbg_preprocess_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0-rc1"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).

@@ -5,6 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [Unity Release 24.4] - 2025-01-02
+
+## Tags
+
+- SPS Version 2.4.0 (new)
+- OGC API Version 2.0.0 (unchanged)
+- OGC Python Client Version 2.0.1 (new)
+
+## Repositories
+
+- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.4.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.0.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.1>
+
+## Epics
+
+- EPIC: Airflow/WPS-T Integration
+  - [[[New Feature]: Publish ogc-api-python-client to PyPi]](https://github.com/unity-sds/unity-sps/issues/225)
+- EPIC: `SPS Infrastructure`
+  - [[New Feature]: Upgrade SPS library versions](https://github.com/unity-sds/unity-sps/issues/224)
+  - [[New Feature]: Enforce SSL access on SPS S3 buckets](https://github.com/unity-sds/unity-sps/issues/231)
+  - [[New feature] Enforce SSL on SPS endpoints](https://github.com/unity-sds/unity-sps/issues/237)
+  - [[New Feature] Upgrade Apache Airflow to latest version 2.10.3](https://github.com/unity-sds/unity-sps/issues/238)
+  - [[New Feature] Add more CWL workflows to integration tests, use both the Airflow and OGC API](https://github.com/unity-sds/unity-sps/issues/235)
+- EPIC: Documentation
+  - [[Documentation]: Document programmatic submission via OGC API](https://github.com/unity-sds/unity-sps/issues/213)
+- EPIC: Airflow/Cognito Integration
+  - [[New Feature] Remove the SPS ALBs for Airflow and OGC API](https://github.com/unity-sds/unity-sps/issues/246)
+  - [[New Feature] Experiment with removing the Airflow authentication altogether](https://github.com/unity-sds/unity-sps/issues/242)
+- EPIC: Demonstrated Scalability
+  - [[New feature]: Concurrent Execution of N SBG end-to-end workflows](https://github.com/unity-sds/unity-sps/issues/64)
+  - [[New Feature]: Scale up the EMIT workflow](https://github.com/unity-sds/unity-sps/issues/214)
+- EPIC: Unity Marketplace
+  - [[New Feature]: Airflow Integration into Unity Marketplace](https://github.com/unity-sds/unity-sps/issues/218)
+- EPIC: Application Package Standardization
+  - [[New Feature]: Stage-In Task](https://github.com/unity-sds/unity-sps/issues/220)
+  - [[New Feature]: Modular Process Task](https://github.com/unity-sds/unity-sps/issues/219)
+  - [[New Feature]: Modular Stage-Out Task](https://github.com/unity-sds/unity-sps/issues/221)
+  - [[Task]: Investigate logging and errors for CWL workflows](https://github.com/unity-sds/unity-sps/issues/230)
+
+## Docker Containers
+
+- ghcr.io/unity-sds/unity-sps/sps-airflow:2.4.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.0.0
+
+## Documentation
+
+- For Administrators:
+  - [SPS Deployment with Terraform](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-terraform)
+  - [Interacting with an Existing SPS Deployment](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/interacting-with-an-existing-sps-deployment)
+  - [SPS Airflow Custom Docker Image Build Instructions](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
+  - [SPS Post Deployment Operations](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/admin-guide/sps-post-deployment-operations)
+- For Deverlopers:
+  - [Tutorial: Deploy, Execute, and Undeploy a Process using the OGC API - Processes](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/developers-guide/tutorial-deploy-execute-and-undeploy-a-process-using-the-ogc-api-processes)
+- For Users:
+  - [Tutorial: Register and Execute a CWL Workflow](https://app.gitbook.com/o/xZRqGQeQXJ0RP4VMj7Lq/s/UMIRhLdbRQTvMWop8Il9/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
+
+
 # [Unity Release 24.3] - 2024-09-22
 
 ## Tags
