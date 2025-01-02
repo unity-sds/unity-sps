@@ -5,17 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# [Unity Release 24.4] - 2025-01-10
+# [Unity Release 24.4] - 2025-01-02
 
 ## Tags
 
-- SPS Version 2.3.0 (new)
+- SPS Version 2.4.0 (new)
 - OGC API Version 2.0.0 (unchanged)
 - OGC Python Client Version 2.0.1 (new)
 
 ## Repositories
 
-- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.3.0>
+- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.4.0>
 - unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.0.0>
 - unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.1>
 
@@ -28,10 +28,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - [[New Feature]: Enforce SSL access on SPS S3 buckets](https://github.com/unity-sds/unity-sps/issues/231)
   - [[New feature] Enforce SSL on SPS endpoints](https://github.com/unity-sds/unity-sps/issues/237)
   - [[New Feature] Upgrade Apache Airflow to latest version 2.10.3](https://github.com/unity-sds/unity-sps/issues/238)
+  - [[New Feature] Add more CWL workflows to integration tests, use both the Airflow and OGC API](https://github.com/unity-sds/unity-sps/issues/235)
 - EPIC: Documentation
   - [[Documentation]: Document programmatic submission via OGC API](https://github.com/unity-sds/unity-sps/issues/213)
 - EPIC: Airflow/Cognito Integration
   - [[New Feature] Remove the SPS ALBs for Airflow and OGC API](https://github.com/unity-sds/unity-sps/issues/246)
+  - [[New Feature] Experiment with removing the Airflow authentication altogether](https://github.com/unity-sds/unity-sps/issues/242)
 - EPIC: Demonstrated Scalability
   - [[New feature]: Concurrent Execution of N SBG end-to-end workflows](https://github.com/unity-sds/unity-sps/issues/64)
   - [[New Feature]: Scale up the EMIT workflow](https://github.com/unity-sds/unity-sps/issues/214)
@@ -45,8 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Docker Containers
 
-- ghcr.io/unity-sds/unity-sps/sps-airflow:2.3.0
-- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.3.0
+- ghcr.io/unity-sds/unity-sps/sps-airflow:2.4.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0
 - ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.0.0
 
 ## Documentation
