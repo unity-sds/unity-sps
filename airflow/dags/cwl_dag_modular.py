@@ -28,8 +28,8 @@ from kubernetes.client import models as k8s
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/220-stage-in-task/demos/cwl_dag_modular_stage_in.cwl"
-STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/220-stage-in-task/demos/cwl_dag_modular_stage_out.cwl"
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/demos/cwl_dag_modular_stage_in.cwl"
+STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/demos/cwl_dag_modular_stage_out.cwl"
 LOCAL_DIR = "/shared-task-data"
 
 # The path of the working directory where the CWL workflow is executed
@@ -217,11 +217,12 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     task_id="cwl_task_processing",
     namespace=unity_sps_utils.POD_NAMESPACE,
     name="cwl-task-pod",
-    image=unity_sps_utils.SPS_DOCKER_CWL_IMAGE_MODULAR,
+    image=unity_sps_utils.SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
     startup_timeout_seconds=1800,
+    cmds=["/usr/share/cwl/docker_cwl_entrypoint_modular.sh"],
     arguments=[
         "-i",
         STAGE_IN_WORKFLOW,
