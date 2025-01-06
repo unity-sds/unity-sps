@@ -80,4 +80,4 @@ repos:
       - id: terraform_docs
         args:
           - --hook-config=--add-to-existing-file=true
-          - --hook-config=--create-file-if-not-exist=true`
+          - --hook-config=--create-file-if-not-exist=true

@@ -62,16 +62,16 @@ resource "aws_security_group_rule" "eks_egress_to_rds" {
 }
 
 resource "aws_db_instance" "sps_db" {
-  identifier             = format(local.resource_name_prefix, "spsdb") # format(local.resource_name_prefix, "db")
+  identifier             = format(local.resource_name_prefix, "db")
   allocated_storage      = 100
   storage_type           = "gp3"
   engine                 = "postgres"
-  engine_version         = "13.13"
+  engine_version         = "16.4"
   instance_class         = "db.m5d.large"
   db_name                = "sps_db"
   username               = "db_user"
   password               = aws_secretsmanager_secret_version.db.secret_string
-  parameter_group_name   = "default.postgres13"
+  parameter_group_name   = "default.postgres16"
   skip_final_snapshot    = true
   publicly_accessible    = false
   db_subnet_group_name   = aws_db_subnet_group.db.name

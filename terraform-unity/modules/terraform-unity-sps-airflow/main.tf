@@ -124,6 +124,33 @@ resource "aws_s3_bucket" "airflow_logs" {
   })
 }
 
+resource "aws_s3_bucket_policy" "airflow_logs_s3_policy" {
+  bucket = aws_s3_bucket.airflow_logs.id
+  policy = jsonencode(
+    {
+      "Id" : "ExamplePolicy",
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Sid" : "AllowSSLRequestsOnly",
+          "Action" : "s3:*",
+          "Effect" : "Deny",
+          "Resource" : [
+            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs")),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs"), "*")
+          ],
+          "Condition" : {
+            "Bool" : {
+              "aws:SecureTransport" : "false"
+            }
+          },
+          "Principal" : "*"
+        }
+      ]
+    }
+  )
+}
+
 resource "aws_iam_policy" "airflow_worker_policy" {
   name        = format(local.resource_name_prefix, "AirflowWorkerPolicy")
   description = "Policy for Airflow Workers to access AWS services"
@@ -403,6 +430,7 @@ resource "helm_release" "airflow" {
   ]
 }
 
+/* Note: re-enable this to allow access via the JPL network
 resource "aws_security_group" "airflow_ingress_sg" {
   name        = "${var.project}-${var.venue}-airflow-ingress-sg"
   description = "SecurityGroup for Airflow LoadBalancer ingress"
@@ -412,8 +440,20 @@ resource "aws_security_group" "airflow_ingress_sg" {
     Component = "airflow"
     Stack     = "airflow"
   })
+}*/
+
+resource "aws_security_group" "airflow_ingress_sg_internal" {
+  name        = "${var.project}-${var.venue}-airflow-internal-ingress-sg"
+  description = "SecurityGroup for Airflow LoadBalancer internal ingress"
+  vpc_id      = data.aws_vpc.cluster_vpc.id
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowLBSg")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
 }
 
+/* Note: re-enable this to allow access via the JPL network
 #tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
   for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
@@ -423,7 +463,7 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
   from_port         = local.load_balancer_port
   to_port           = local.load_balancer_port
   cidr_ipv4         = each.key
-}
+}*/
 
 data "aws_security_groups" "venue_proxy_sg" {
   filter {
@@ -435,9 +475,10 @@ data "aws_security_groups" "venue_proxy_sg" {
   }
 }
 
+#tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
   count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
-  security_group_id            = aws_security_group.airflow_ingress_sg.id
+  security_group_id            = aws_security_group.airflow_ingress_sg_internal.id
   description                  = "SecurityGroup ingress rule for venue-services proxy"
   ip_protocol                  = "tcp"
   from_port                    = local.load_balancer_port
@@ -445,6 +486,7 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
   referenced_security_group_id = data.aws_security_groups.venue_proxy_sg.ids[0]
 }
 
+/* Note: re-enable this to allow access via the JPL network
 resource "kubernetes_ingress_v1" "airflow_ingress" {
   metadata {
     name      = "airflow-ingress"
@@ -453,8 +495,47 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
       "alb.ingress.kubernetes.io/scheme"                              = "internet-facing"
       "alb.ingress.kubernetes.io/target-type"                         = "ip"
       "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
-      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
+      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTPS\": ${local.load_balancer_port}}]"
       "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg.id
+      "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
+      "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+      "alb.ingress.kubernetes.io/certificate-arn"                     = data.aws_ssm_parameter.ssl_cert_arn.value
+      "alb.ingress.kubernetes.io/ssl-policy"                          = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+    }
+  }
+  spec {
+    ingress_class_name = "alb"
+    rule {
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+          backend {
+            service {
+              name = "airflow-webserver"
+              port {
+                number = 8080
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  wait_for_load_balancer = true
+  depends_on             = [helm_release.airflow]
+}*/
+
+resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
+  metadata {
+    name      = "airflow-ingress-internal"
+    namespace = data.kubernetes_namespace.service_area.metadata[0].name
+    annotations = {
+      "alb.ingress.kubernetes.io/scheme"                              = "internal"
+      "alb.ingress.kubernetes.io/target-type"                         = "ip"
+      "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
+      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
+      "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
       "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
       "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
     }
@@ -486,12 +567,13 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+  value       = "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_ui")
     Component = "SSM"
     Stack     = "SSM"
   })
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
@@ -500,8 +582,8 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow UI"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000"
+    "healthCheckUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/health"
+    "landingPageUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_ui")
@@ -511,18 +593,20 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   lifecycle {
     ignore_changes = [value]
   }
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+  value       = "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
     Component = "SSM"
     Stack     = "SSM"
   })
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
@@ -531,8 +615,8 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow API"
-    "healthCheckUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1/health"
-    "landingPageUrl" : "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/api/v1"
+    "healthCheckUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1/health"
+    "landingPageUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_api")
@@ -542,6 +626,7 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   lifecycle {
     ignore_changes = [value]
   }
+  depends_on = [aws_ssm_parameter.unity_proxy_airflow_ui]
 }
 
 resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
@@ -557,7 +642,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       Redirect "/${var.project}/${var.venue}/sps/home"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress.status[0].load_balancer[0].ingress[0].hostname}:5000/$1"
+      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
@@ -575,8 +660,8 @@ EOT
 data "aws_lambda_functions" "lambda_check_all" {}
 
 resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
-  count         = contains(data.aws_lambda_functions.lambda_check_all.function_names, "unity-${var.venue}-httpdproxymanagement") ? 1 : 0
-  function_name = "unity-${var.venue}-httpdproxymanagement"
+  count         = contains(data.aws_lambda_functions.lambda_check_all.function_names, "${var.project}-${var.venue}-httpdproxymanagement") ? 1 : 0
+  function_name = "${var.project}-${var.venue}-httpdproxymanagement"
   input         = "{}"
   triggers = {
     redeployment = sha1(jsonencode([

@@ -1,6 +1,6 @@
 {
   "executionUnit": {
-    "image": "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.2.0",
+    "image": "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0",
     "type": "docker"
   },
   "processDescription": {

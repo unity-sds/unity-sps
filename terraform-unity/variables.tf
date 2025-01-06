@@ -22,7 +22,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.3"
+  default     = "24.4"
 }
 
 variable "kubeconfig_filepath" {
@@ -52,12 +52,12 @@ variable "helm_charts" {
     airflow = {
       repository = "https://airflow.apache.org"
       chart      = "airflow"
-      version    = "1.13.1"
+      version    = "1.15.0"
     },
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.14.2"
+      version    = "v2.15.1"
     }
   }
 }
@@ -73,11 +73,10 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.2.0"
+      tag  = "2.4.0"
     }
   }
 }
-
 
 variable "ogc_processes_docker_images" {
   description = "Docker images for the associated OGC Processes API services."
@@ -167,17 +166,17 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-cpu"
           operator = "Lt"
-          values   = ["49"] // To 48 inclusive
+          values   = ["65"] // To 64 inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // 8 GiB = 8192 MiB
+          values   = ["4095"] // 4 GiB = 4096 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["98305"] // 96 GiB = 98404 MiB
+          values   = ["131073"] // 128 GiB = 131072 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -215,7 +214,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // 8 GiB = 8192 MiB
+          values   = ["4095"] // 4 GiB = 4096 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
@@ -335,7 +334,28 @@ variable "dag_catalog_repo" {
   })
   default = {
     url                 = "https://github.com/unity-sds/unity-sps.git"
-    ref                 = "develop"
+    ref                 = "2.4.0"
     dags_directory_path = "airflow/dags"
   }
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "deployment_name" {
+  description = "The name of the deployment."
+  type        = string
+  default     = ""
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "tags" {
+  description = "Tags for the deployment (unused)"
+  type        = map(string)
+  default     = { empty = "" }
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "installprefix" {
+  description = "The install prefix for the service area (unused)"
+  type        = string
+  default     = ""
 }

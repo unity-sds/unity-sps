@@ -28,6 +28,39 @@ resource "aws_s3_bucket" "config" {
   })
 }
 
+resource "aws_s3_bucket_policy" "ssl_s3_policy" {
+  for_each = toset([
+    "isl",
+    "code",
+    "config"
+  ])
+  bucket = format(local.resource_name_prefix, each.key)
+  policy = jsonencode(
+    {
+      "Id" : "ExamplePolicy",
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Sid" : "AllowSSLRequestsOnly",
+          "Action" : "s3:*",
+          "Effect" : "Deny",
+          "Resource" : [
+            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, each.key)),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, each.key), "*")
+          ],
+          "Condition" : {
+            "Bool" : {
+              "aws:SecureTransport" : "false"
+            }
+          },
+          "Principal" : "*"
+        }
+      ]
+    }
+  )
+}
+
+
 resource "aws_s3_object" "router_config" {
   bucket = aws_s3_bucket.config.id
   key    = "routers/srl_router.yaml"
@@ -45,7 +78,7 @@ resource "aws_s3_object" "router_config" {
 }
 
 module "unity_initiator" {
-  source        = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/initiator?ref=unity-sps-2.2.0"
+  source        = "git::https://github.com/unity-sds/unity-initiator.git//terraform-unity/initiator?ref=unity-sps-2.2.0"
   code_bucket   = aws_s3_bucket.code.id
   project       = var.project
   router_config = "s3://${aws_s3_bucket.config.id}/${aws_s3_object.router_config.key}"
@@ -58,7 +91,7 @@ resource "aws_s3_object" "isl_stacam_rawdp_folder" {
 }
 
 module "s3_bucket_notification" {
-  source              = "git@github.com:unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification?ref=unity-sps-2.2.0"
+  source              = "git::https://github.com/unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification?ref=unity-sps-2.2.0"
   initiator_topic_arn = module.unity_initiator.initiator_topic_arn
   isl_bucket          = aws_s3_bucket.inbound_staging_location.id
   isl_bucket_prefix   = "STACAM/RawDP/"

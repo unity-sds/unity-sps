@@ -18,7 +18,28 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.3"
+  default     = "24.4"
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "deployment_name" {
+  description = "The name of the deployment."
+  type        = string
+  default     = ""
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "tags" {
+  description = "Tags for the deployment (unused)"
+  type        = map(string)
+  default     = { empty = "" }
+}
+
+# tflint-ignore: terraform_unused_declarations
+variable "installprefix" {
+  description = "The install prefix for the service area (unused)"
+  type        = string
+  default     = ""
 }
 
 variable "nodegroups" {

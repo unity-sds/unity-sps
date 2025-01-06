@@ -4,13 +4,13 @@
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8.2 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.50.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.67.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.50.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.67.0 |
 
 ## Modules
 
@@ -20,9 +20,9 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_efs_file_system.efs](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/efs_file_system) | resource |
-| [aws_kms_alias.efs_key_alias](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/kms_alias) | resource |
-| [aws_kms_key.efs_key](https://registry.terraform.io/providers/hashicorp/aws/5.50.0/docs/resources/kms_key) | resource |
+| [aws_efs_file_system.efs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_file_system) | resource |
+| [aws_kms_alias.efs_key_alias](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/kms_alias) | resource |
+| [aws_kms_key.efs_key](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/kms_key) | resource |
 
 ## Inputs
 
