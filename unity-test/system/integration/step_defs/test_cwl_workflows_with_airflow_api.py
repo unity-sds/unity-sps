@@ -81,8 +81,6 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
         # DAG parameters are venue dependent
         cwl_workflow = DAG_PARAMETERS[test_case]["cwl_workflow"]
         cwl_args = DAG_PARAMETERS[test_case]["cwl_args"][venue]
-        request_memory = DAG_PARAMETERS[test_case]["request_memory"]
-        request_cpu = DAG_PARAMETERS[test_case]["request_cpu"]
         request_storage = DAG_PARAMETERS[test_case]["request_storage"]
         request_instance_type = DAG_PARAMETERS[test_case]["request_instance_type"]
         use_ecr = DAG_PARAMETERS[test_case]["use_ecr"]
@@ -93,8 +91,6 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
                 "conf": {
                     "cwl_workflow": f"{cwl_workflow}",
                     "cwl_args": f"{cwl_args}",
-                    "request_memory": f"{request_memory}",
-                    "request_cpu": f"{request_cpu}",
                     "request_storage": f"{request_storage}",
                     "request_instance_type": f"{request_instance_type}",
                     "use_ecr": use_ecr,
