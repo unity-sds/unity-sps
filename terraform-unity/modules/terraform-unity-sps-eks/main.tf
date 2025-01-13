@@ -27,6 +27,13 @@ module "unity-eks" {
   cluster_version = "1.29"
 }
 
+resource "null_resource" "eks_post_deployment_actions" {
+  depends_on = [module.unity-eks]
+  provisioner "local-exec" {
+    command = "${path.module}/eks_post_deployment_actions.sh ${data.aws_region.current.name} ${local.cluster_name}"
+  }
+}
+
 # add extra policies as inline policy
 resource "aws_iam_role_policy" "sps_airflow_eks_inline_policy" {
   name   = format(local.resource_name_prefix, "EksInlinePolicy")
