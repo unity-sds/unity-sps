@@ -28,8 +28,6 @@ DAG_PARAMETERS = {
             # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
             # "/test/emit-ghg-test.json",
         },
-        "request_memory": "32Gi",
-        "request_cpu": "8",
         "request_storage": "100Gi",
         # r7i.2xlarge: 8 CPUs, 64 GB memory
         "request_instance_type": "r7i.2xlarge",
@@ -42,8 +40,6 @@ DAG_PARAMETERS = {
             "dev": "https://raw.githubusercontent.com/unity-sds/"
             "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
         },
-        "request_memory": "64Gi",
-        "request_cpu": "32",
         "request_storage": "100Gi",
         # c6i.8xlarge: 32 CPUs, 64 GB memory
         "request_instance_type": "c6i.8xlarge",
@@ -58,8 +54,6 @@ DAG_PARAMETERS = {
             "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
             "/sbg-preprocess-workflow.test.yml",
         },
-        "request_memory": "16Gi",
-        "request_cpu": "4",
         "request_storage": "10Gi",
         # c6i.xlarge: 4vCPUs, 8 GB memory
         # r7i.xlarge: 4 CPUs 32 GB memory
@@ -87,8 +81,6 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
         # DAG parameters are venue dependent
         cwl_workflow = DAG_PARAMETERS[test_case]["cwl_workflow"]
         cwl_args = DAG_PARAMETERS[test_case]["cwl_args"][venue]
-        request_memory = DAG_PARAMETERS[test_case]["request_memory"]
-        request_cpu = DAG_PARAMETERS[test_case]["request_cpu"]
         request_storage = DAG_PARAMETERS[test_case]["request_storage"]
         request_instance_type = DAG_PARAMETERS[test_case]["request_instance_type"]
         use_ecr = DAG_PARAMETERS[test_case]["use_ecr"]
@@ -99,8 +91,6 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
                 "conf": {
                     "cwl_workflow": f"{cwl_workflow}",
                     "cwl_args": f"{cwl_args}",
-                    "request_memory": f"{request_memory}",
-                    "request_cpu": f"{request_cpu}",
                     "request_storage": f"{request_storage}",
                     "request_instance_type": f"{request_instance_type}",
                     "use_ecr": use_ecr,
