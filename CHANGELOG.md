@@ -13,6 +13,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - OGC API Version 2.0.0 (unchanged)
 - OGC Python Client Version 2.0.1 (new)
 
+## Upgrade Guide
+
+- The CWL DAG ("cwl_dag.py") has changed: instead of requesting
+  a certain amount of CPU ("request_cpu") and memory ("request_memory)"
+  separately, the client need to specify the desired EC2 instance
+  ("request_instance_type"). The value needs to be one of those shown
+  in the drop-down menu of the User Interface (for example, "r7i.xlarge", "c6i.8xlarge", etc.).
+  The client can still specify the desired size of the attached
+  disk ("request_storage").
+
+- The SPS User Interface (Airflow) can be accessed via either of the following methods:
+  - The top-level URL (for example, "https://www.dev.mdps.mcp.nasa.gov:4443/unity/dev/sps/home"),
+    which will require a Cognito login and (temporarily) an additional Airflow login.
+  - The mid-level proxy (for example, "http://unity-dev-httpd-alb-1659665968.us-west-2.elb.amazonaws.com:8080/unity/dev/sps/"),
+    which requires an Airflow login, and is only accessible within the JPL VPC.
+
+- A new prototype CWL Modular DAG ("cwl_dag_modular.py") is available, which will run the stage-in, process and
+  stage-out tasks as separate CWL workflow, but all in the same EC2 node. To use this DAG,
+  users will have to rewrite and modularize their existing CWL workflows which were written as a single document.
+
 ## Repositories
 
 - unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.4.0>
