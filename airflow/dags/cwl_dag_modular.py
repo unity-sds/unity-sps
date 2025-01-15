@@ -28,8 +28,8 @@ from kubernetes.client import models as k8s
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/demos/cwl_dag_modular_stage_in.cwl"
-STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/demos/cwl_dag_modular_stage_out.cwl"
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl"
+STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl"
 LOCAL_DIR = "/shared-task-data"
 
 # The path of the working directory where the CWL workflow is executed

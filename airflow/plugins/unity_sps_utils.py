@@ -12,7 +12,7 @@ POD_NAMESPACE = "sps"  # The Kubernetes namespace within which the Pod is run (i
 POD_LABEL = "cwl_task" + datetime.now().strftime(
     "%Y%m%d_%H%M%S_%f"
 )  # unique pod label to assure each job runs on its own pod
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.0"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
