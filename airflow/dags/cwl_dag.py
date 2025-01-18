@@ -157,7 +157,7 @@ dag = DAG(
             description=("The job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"),
         ),
         "request_instance_type": Param(
-            "t3.large (General Purpose: 2vCPU, 8GiB)",
+            "t3.medium",
             type="string",
             enum=list(EC2_TYPES.keys()),
             values_display={key: f"{build_ec2_type_label(key)}" for key in EC2_TYPES.keys()},
