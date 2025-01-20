@@ -152,6 +152,7 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1.8.2 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | 5.67.0 |
+| <a name="requirement_external"></a> [external](#requirement\_external) | 2.3.4 |
 | <a name="requirement_helm"></a> [helm](#requirement\_helm) | 2.15.0 |
 | <a name="requirement_kubernetes"></a> [kubernetes](#requirement\_kubernetes) | 2.32.0 |
 | <a name="requirement_null"></a> [null](#requirement\_null) | 3.2.3 |
