@@ -2,19 +2,23 @@
 Module containing common utilities for the Unity Science Processing System.
 """
 
+import os
+from datetime import datetime
+
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
 # Shared constants
 POD_NAMESPACE = "sps"  # The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_LABEL = "cwl_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0"
-SPS_DOCKER_CWL_IMAGE_MODULAR = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl-mod:2.4.0"
+POD_LABEL = "cwl_task" + datetime.now().strftime(
+    "%Y%m%d_%H%M%S_%f"
+)  # unique pod label to assure each job runs on its own pod
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.0"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
-DS_S3_BUCKET_PARAM = "/unity/unity-nikki-1/dev/ds/staging/s3/bucket-name"
+DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
 
 class SpsKubernetesPodOperator(KubernetesPodOperator):
