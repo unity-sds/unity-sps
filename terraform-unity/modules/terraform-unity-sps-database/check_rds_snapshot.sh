@@ -1,13 +1,14 @@
 #!/bin/bash
 
 db_id=$1
+aws_region=$2
 
 if [ -z ${db_id} ]; then
   echo "usage : $0 <db_id>" >2
   exit 1
 fi
 
-RESULT=($(aws rds describe-db-snapshots --db-instance-identifier $db_id --output text --region us-west-2 2> /dev/null))
+RESULT=($(aws rds describe-db-snapshots --db-instance-identifier $db_id --output text --region $aws_region 2> /dev/null))
 aws_result=$?
 
 if [ ${aws_result} -eq 0 ] && [[ ${RESULT[0]} == "DBSNAPSHOTS" ]]; then

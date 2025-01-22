@@ -35,6 +35,7 @@ No modules.
 | [random_password.db](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/password) | resource |
 | [aws_db_snapshot.latest_snapshot](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/db_snapshot) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/region) | data source |
 | [aws_security_group.default](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/security_group) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [external_external.rds_final_snapshot_exists](https://registry.terraform.io/providers/hashicorp/external/2.3.4/docs/data-sources/external) | data source |
