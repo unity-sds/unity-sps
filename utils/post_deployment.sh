@@ -21,12 +21,12 @@ do
    echo " "
    proc_name=$(echo "$proc" | sed "s/.json//")
 
+   # unregister process (in case it was already registered)
+   echo "Unregistering process: $proc_name"
+   curl -k -X DELETE -H "Content-Type: application/json; charset=utf-8" "${WPST_API}/processes/${proc_name}"
+
    # register process
    echo "Registering process: $proc_name"
    curl -k -v -X POST -H "Expect:" -H "Content-Type: application/json; charset=utf-8" --data-binary @"../ogc-application-packages/$proc" "${WPST_API}/processes"
-
-   # unregister process
-   #echo "Unregistering process: $proc_name"
-   #curl -k -X DELETE -H "Content-Type: application/json; charset=utf-8" "${WPST_API}/processes/${proc_name}"
 
 done

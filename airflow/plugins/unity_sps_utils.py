@@ -2,6 +2,7 @@
 Module containing common utilities for the Unity Science Processing System.
 """
 
+import os
 from datetime import datetime
 
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
@@ -17,7 +18,7 @@ SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.0"
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
-DS_S3_BUCKET_PARAM = "/unity/unity/dev/ds/datastore-bucket"
+DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
 
 class SpsKubernetesPodOperator(KubernetesPodOperator):
