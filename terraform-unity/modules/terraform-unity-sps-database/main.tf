@@ -61,6 +61,20 @@ resource "aws_security_group_rule" "eks_egress_to_rds" {
   source_security_group_id = aws_security_group.rds_sg.id
 }
 
+data "aws_db_snapshot" "latest_snapshot" {
+  count                  = data.external.rds_final_snapshot_exists.result.db_exists ? 1 : 0
+  db_instance_identifier = format(local.resource_name_prefix, "db")
+  # db_instance_identifier = aws_db_instance.sps_db.identifier
+  most_recent = true
+
+  #   tags = merge(local.common_tags, {
+  #     Name      = format(local.resource_name_prefix, "db")
+  #     Component = "processing"
+  #     Stack     = "processing"
+  #   })
+
+}
+
 data "external" "rds_final_snapshot_exists" {
   program = [
     "./modules/terraform-unity-sps-database/check_rds_snapshot.sh",
@@ -68,31 +82,22 @@ data "external" "rds_final_snapshot_exists" {
   ]
 }
 
-data "aws_db_snapshot" "latest_snapshot" {
-  count                  = data.external.rds_final_snapshot_exists.result.db_exists ? 1 : 0
-  db_instance_identifier = format(local.resource_name_prefix, "db")
-  # db_instance_identifier = aws_db_instance.sps_db.identifier
-  most_recent = true
-
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "db")
-    Component = "processing"
-    Stack     = "processing"
-  })
-
-}
-
 resource "aws_db_instance" "sps_db" {
-  identifier                = format(local.resource_name_prefix, "db")
-  allocated_storage         = 100
-  storage_type              = "gp3"
-  engine                    = "postgres"
-  engine_version            = "16.4"
-  instance_class            = "db.m5d.large"
-  db_name                   = "sps_db"
-  username                  = "db_user"
-  password                  = aws_secretsmanager_secret_version.db.secret_string
-  parameter_group_name      = "default.postgres16"
+  identifier           = format(local.resource_name_prefix, "db")
+  allocated_storage    = 100
+  storage_type         = "gp3"
+  engine               = "postgres"
+  engine_version       = "16.4"
+  instance_class       = "db.m5d.large"
+  db_name              = "sps_db"
+  username             = "db_user"
+  password             = aws_secretsmanager_secret_version.db.secret_string
+  parameter_group_name = "default.postgres16"
+
+  backup_retention_period = 7
+  backup_window           = "01:00-02:00"
+  storage_encrypted       = true
+
   skip_final_snapshot       = false
   final_snapshot_identifier = "${terraform.workspace}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
   snapshot_identifier       = try(data.aws_db_snapshot.latest_snapshot[0].id, null)
