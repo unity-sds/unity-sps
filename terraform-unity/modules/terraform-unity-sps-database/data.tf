@@ -21,12 +21,6 @@ data "aws_db_snapshot" "latest_snapshot" {
   db_instance_identifier = format(local.resource_name_prefix, "db")
   most_recent            = true
 
-  #   tags = merge(local.common_tags, {
-  #       Name      = format(local.resource_name_prefix, "db")
-  #       Component = "processing"
-  #       Stack     = "processing"
-  #   })
-
 }
 
 data "external" "rds_final_snapshot_exists" {

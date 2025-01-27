@@ -75,12 +75,15 @@ resource "aws_db_instance" "sps_db" {
   parameter_group_name = "default.postgres16"
 
   backup_retention_period = 7
-  backup_window           = "01:00-02:00"
-  storage_encrypted       = true
-  copy_tags_to_snapshot   = true
+  # 07:00-08:00 GMT = 01:00-02:00 PST
+  backup_window         = "07:00-08:00"
+  storage_encrypted     = true
+  copy_tags_to_snapshot = true
 
-  skip_final_snapshot       = false
-  final_snapshot_identifier = "${terraform.workspace}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
+  skip_final_snapshot = false
+  # rds:unity-luca-1-dev-sps-db-2025-01-26-12-14
+  # unity-luca-1-dev-sps-20250122213608
+  final_snapshot_identifier = "${terraform.workspace}-db-${formatdate("YYYY-MM-DD-hh-mm", timestamp())}"
   snapshot_identifier       = try(data.aws_db_snapshot.latest_snapshot[0].id, null)
   publicly_accessible       = false
   db_subnet_group_name      = aws_db_subnet_group.db.name
