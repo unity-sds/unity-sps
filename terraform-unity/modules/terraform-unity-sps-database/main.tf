@@ -77,6 +77,7 @@ resource "aws_db_instance" "sps_db" {
   backup_retention_period = 7
   backup_window           = "01:00-02:00"
   storage_encrypted       = true
+  copy_tags_to_snapshot   = true
 
   skip_final_snapshot       = false
   final_snapshot_identifier = "${terraform.workspace}-${formatdate("YYYYMMDDhhmmss", timestamp())}"
