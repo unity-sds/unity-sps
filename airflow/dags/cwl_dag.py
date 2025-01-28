@@ -28,7 +28,7 @@ POD_NAMESPACE = "sps"
 
 # unique pod label to assure each jkob runs on its own pod
 POD_LABEL = "cwl_task" + datetime.now().strftime("%Y%m%d_%H%M%S_%f")
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.1"
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
