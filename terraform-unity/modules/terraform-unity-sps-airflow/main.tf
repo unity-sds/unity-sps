@@ -122,6 +122,35 @@ resource "aws_s3_bucket" "airflow_logs" {
     Component = "airflow"
     Stack     = "airflow"
   })
+  depends_on = [ null_resource.import_s3_bucket ]
+}
+
+resource "null_resource" "import_s3_bucket" {
+  provisioner "local-exec" {
+    command = "${path.module}/../../scripts/preserve_s3.sh"
+    when = create
+    environment = {
+      PRESERVE_ACTION = "import"
+      BUCKET_RESOURCE = "module.unity-sps-airflow.aws_s3_bucket.airflow_logs"
+      BUCKET_NAME = format(local.resource_name_prefix, "airflowlogs")
+      TF_VAR_airflow_webserver_password = var.airflow_webserver_password
+      TF_VAR_kubeconfig_filepath = var.kubeconfig_filepath
+      TF_VAR_venue = var.venue
+
+    }
+  }
+}
+
+resource "null_resource" "remove_s3_bucket" {
+  provisioner "local-exec" {
+    command = "${path.module}/../../scripts/preserve_s3.sh"
+    when = destroy
+    environment = {
+      PRESERVE_ACTION = "remove"
+      BUCKET_RESOURCE = "module.unity-sps-airflow.aws_s3_bucket.airflow_logs"
+    }
+  }
+  depends_on = [ aws_s3_bucket.airflow_logs ]
 }
 
 resource "aws_s3_bucket_policy" "airflow_logs_s3_policy" {
