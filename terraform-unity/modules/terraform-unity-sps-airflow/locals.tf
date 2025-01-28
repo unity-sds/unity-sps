@@ -21,6 +21,7 @@ locals {
     "ops"     = "#bf4f4f"
     "prod"    = "#bf4f4f"
     "test"    = "#cfdf4f"
+    "int"     = "#cfdf4f"
     "dev"     = "#58cc35"
     "sbg-dev" = "#58cc35"
   }[var.venue]

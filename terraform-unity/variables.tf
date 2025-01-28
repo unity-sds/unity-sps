@@ -8,7 +8,7 @@ variable "venue" {
   description = "The MCP venue in which the resources will be deployed."
   type        = string
   validation {
-    condition     = can(regex("^(dev|test|prod|ops|sbg-dev)$", var.venue))
+    condition     = can(regex("^(dev|test|prod|ops|sbg-dev|int)$", var.venue))
     error_message = "Invalid deployment type."
   }
 }
