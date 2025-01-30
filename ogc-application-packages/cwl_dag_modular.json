@@ -1,0 +1,74 @@
+{
+  "executionUnit": {
+    "image": "docker pull ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.1",
+    "type": "docker"
+  },
+  "processDescription": {
+    "description": "This process executes any modularized CWL workflow (stage in, processing, stage out).",
+    "id": "cwl_dag_modular",
+    "inputs": {
+      "process_args": {
+        "description": "The URL of the CWL processing workflow's YAML parameters file",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "Processing Workflow Parameters URL"
+      },
+      "process_workflow": {
+        "description": "The URL of the CWL workflow definition",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "CWL Processing Workflow URL"
+      },
+      "request_instance_type": {
+        "description": "The EC2 instance type used to run the CWL workflows",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "EC2 instance type"
+      },
+      "request_storage": {
+        "description": "The amount of storage requested for the job",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Requested Storage"
+      },
+      "stac_json": {
+        "description": "The URL of the STAC JSON which dictates where and what should be downloaded as input to the processing stage",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "STAC JSON"
+      }
+    },
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputs": {
+      "result": {
+        "description": "The result of the modular CWL Workflow execution",
+        "schema": {
+          "$ref": "some-ref"
+        },
+        "title": "Process Result"
+      }
+    },
+    "title": "Generic CWL Process",
+    "version": "1.0.0"
+  }
+}
