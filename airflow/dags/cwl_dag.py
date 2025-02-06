@@ -26,8 +26,9 @@ from airflow import DAG
 # The Kubernetes namespace within which the Pod is run (it must already exist)
 POD_NAMESPACE = "sps"
 
-# unique pod label to assure each jkob runs on its own pod
-POD_LABEL = "cwl_task" + datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+# Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
+# two Pods with the same label cannot run on the same Node
+POD_LABEL = "cwl_task"
 SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.1"
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
@@ -143,8 +144,8 @@ dag = DAG(
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=10,
-    max_active_tasks=30,
+    max_active_runs=100,
+    max_active_tasks=300,
     default_args=dag_default_args,
     params={
         "cwl_workflow": Param(
@@ -253,7 +254,7 @@ cwl_task = KubernetesPodOperator(
         "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
         "node.kubernetes.io/instance-type": "{{ti.xcom_pull(task_ids='Setup', key='instance_type')}}",
     },
-    labels={"app": POD_LABEL},
+    labels={"pod": POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     # note: 'affinity' cannot yet be templated
     affinity=get_affinity(

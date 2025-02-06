@@ -308,7 +308,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
         "node.kubernetes.io/instance-type": "{{ti.xcom_pull(task_ids='Setup', key='instance_type')}}",
     },
-    labels={"app": unity_sps_utils.POD_LABEL},
+    labels={"pod": unity_sps_utils.POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     # note: 'affinity' cannot yet be templated
     affinity=unity_sps_utils.get_affinity(

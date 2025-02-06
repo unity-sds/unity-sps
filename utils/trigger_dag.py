@@ -41,10 +41,19 @@ def main():
         dt_now = datetime.now(timezone.utc)
         logical_date = dt_now.strftime("%Y-%m-%dT%H:%M:%SZ")
         data = {"logical_date": logical_date}
-        # Example on how to pass DAG specific parameters
-        # data = {"logical_date": logical_date,
-        #        "conf": {"cwl_args": "abc123"}
-        #       }
+        # Example on how to pass DAG specific parameters for the cwl_dag
+        # data = {
+        #         "logical_date": logical_date,
+        #         "conf": {
+        #             "request_instance_type": "r7i.xlarge",
+        #             "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/"
+        #                             "api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/"
+        #                             "versions/9/plain-CWL/descriptor/workflow.cwl",
+        #             "cwl_args": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
+        #                         "/test/emit-ghg-dev.json",
+        #             "request_storage": "100Gi"
+        #         }
+        # }
         result = requests.post(
             url, json=data, headers=headers, auth=HTTPBasicAuth(airflow_username, airflow_password)
         )
