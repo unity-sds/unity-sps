@@ -38,9 +38,9 @@ data "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
   }
 }*/
 
-data "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
+data "kubernetes_service" "ogc_processes_api_ingress_internal" {
   metadata {
-    name      = kubernetes_ingress_v1.ogc_processes_api_ingress_internal.metadata[0].name
+    name      = kubernetes_service.ogc_processes_api_ingress_internal.metadata[0].name
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
   }
 }
@@ -64,4 +64,39 @@ data "aws_ssm_parameter" "shared_services_domain" {
 
 data "aws_ssm_parameter" "venue_proxy_baseurl" {
   name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
+}
+
+data "aws_api_gateway_rest_api" "rest_api" {
+  name = "unity-${var.project}-${var.venue}-rest-api-gateway"
+}
+
+data "aws_api_gateway_authorizers" "unity_cs_common_authorizers_list" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+}
+
+data "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
+  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
+  authorizer_id = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
+}
+
+data "aws_lb" "ogc_k8s_lb" {
+  tags = {
+    Venue = var.venue
+    Proj  = var.project
+    Name  = format(local.resource_name_prefix, "OgcLB")
+    Stack = "ogc"
+  }
+  depends_on = [kubernetes_service.ogc_processes_api_ingress_internal]
+}
+
+data "aws_lambda_functions" "lambda_check_all" {}
+
+data "aws_security_groups" "venue_proxy_sg" {
+  filter {
+    name   = "group-name"
+    values = ["${var.project}-${var.venue}-ecs_service_sg"]
+  }
+  tags = {
+    Service = "U-CS"
+  }
 }
