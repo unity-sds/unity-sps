@@ -531,30 +531,19 @@ resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
     name      = "airflow-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
-      "alb.ingress.kubernetes.io/scheme"                              = "internal"
-      "alb.ingress.kubernetes.io/target-type"                         = "ip"
-      "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
-      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
-      "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
-      "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
-      "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internal"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
+      "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path" = "/health"
     }
   }
   spec {
     ingress_class_name = "alb"
-    rule {
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "airflow-webserver"
-              port {
-                number = 8080
-              }
-            }
-          }
+    default_backend {
+      service {
+        name = "airflow-webserver"
+        port {
+          number = 8080
         }
       }
     }
