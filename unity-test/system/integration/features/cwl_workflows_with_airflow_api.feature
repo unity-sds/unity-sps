@@ -7,12 +7,10 @@ Feature: Execute CWL workflows using the Airflow API
 
       Scenario Outline: Successful execution of a CWL workflow with the Airflow API
             Given the Airflow API is up and running
-            When I trigger a dag run for the <test_case> workflow
+            When I trigger a dag run for the <test_case> workflow using the <test_dag> DAG
             Then I receive a response with status code 200
             And I see an eventual successful dag run
 
             Examples:
-            | test_case      |
-            | EMIT           |
-            | SBG_E2E_SCALE  |
-            | SBG_PREPROCESS |
+            | test_case      | test_dag |
+            | EMIT           | cwl_dag  |
