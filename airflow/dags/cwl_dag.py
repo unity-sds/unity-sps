@@ -36,7 +36,7 @@ NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
 # This is fixed to the EFS /scratch directory in this DAG.
-WORKING_DIR = "/scratch"
+# WORKING_DIR = "/scratch"
 
 # default parameters
 DEFAULT_CWL_WORKFLOW = (
@@ -240,15 +240,15 @@ cwl_task = KubernetesPodOperator(
         },
     ),
     container_logs=True,
-    volume_mounts=[
-        k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="workers-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
-        )
-    ],
+    # volume_mounts=[
+    #     k8s.V1VolumeMount(name="workers-volume", mount_path=WORKING_DIR, sub_path="{{ dag_run.run_id }}")
+    # ],
+    # volumes=[
+    #     k8s.V1Volume(
+    #         name="workers-volume",
+    #         persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
+    #     )
+    # ],
     dag=dag,
     node_selector={
         "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
