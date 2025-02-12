@@ -314,7 +314,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
         "-d",
-        "{{ params.debug }}"
+        "{{ params.debug }}",
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -343,7 +343,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     ),
     on_finish_action="keep_pod",
     is_delete_operator_pod=False,
-    do_xcom_push=True
+    do_xcom_push=True,
 )
 
 
