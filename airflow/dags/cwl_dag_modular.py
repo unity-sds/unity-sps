@@ -187,6 +187,7 @@ dag = DAG(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
+        "debug": Param(False, type="boolean", title="Generate debug level logs for all processes"),
     },
 )
 
@@ -248,6 +249,15 @@ def select_stage_out(ti):
     ti.xcom_push(key="stage_out_args", value=stage_out_args)
 
 
+def select_log_level(ti, debug, log_level):
+    """Determine log level based on debug value."""
+    if debug:
+        log_level = 10
+    logging.info(f"Selecting debug: {debug}")
+    logging.info(f"Selecting log level: {log_level}")
+    ti.xcom_push(key="log_level", value=log_level)
+
+
 def setup(ti=None, **context):
     """
     Task that creates the working directory on the shared volume
@@ -268,7 +278,8 @@ def setup(ti=None, **context):
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
 
-    logging.info(f"Selected log level: {context['params']['log_level']}")
+    # select log level based on debug
+    select_log_level(ti, context["params"]["debug"], context["params"]["log_level"])
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
@@ -296,12 +307,14 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "{{ params.process_args }}",
         "-o",
         STAGE_OUT_WORKFLOW,
-        "-d",
+        "-a",
         "{{ ti.xcom_pull(task_ids='Setup', key='stage_out_args') }}",
         "-l",
-        "{{ params.log_level }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
+        "-d",
+        "{{ params.debug }}"
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
