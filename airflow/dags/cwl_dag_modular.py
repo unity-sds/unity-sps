@@ -28,8 +28,8 @@ from kubernetes.client import models as k8s
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl"
-STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl"
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_in_log_level.cwl"
+STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_out_cwl_log_level.cwl"
 LOCAL_DIR = "/shared-task-data"
 
 # The path of the working directory where the CWL workflow is executed
@@ -43,6 +43,7 @@ DEFAULT_PROCESS_WORKFLOW = (
     "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl"
 )
 DEFAULT_PROCESS_ARGS = json.dumps({"example_argument_empty": ""})
+DEFAULT_LOG_LEVEL = 20
 
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     requests={
@@ -168,6 +169,13 @@ dag = DAG(
                 "The processing job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"
             ),
         ),
+        "log_level": Param(
+            DEFAULT_LOG_LEVEL,
+            type="string",
+            enum=["20", "10", "30", "40", "50"],
+            title="Stage in/out log level",
+            description=("Default log level for stage in and stage out tasks"),
+        ),
         "request_instance_type": Param(
             "t3.medium",
             type="string",
@@ -179,6 +187,7 @@ dag = DAG(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
+        "debug": Param(False, type="boolean", title="Generate debug level logs for all processes"),
     },
 )
 
@@ -240,6 +249,15 @@ def select_stage_out(ti):
     ti.xcom_push(key="stage_out_args", value=stage_out_args)
 
 
+def select_log_level(ti, debug, log_level):
+    """Determine log level based on debug value."""
+    if debug:
+        log_level = 10
+    logging.info(f"Selecting debug: {debug}")
+    logging.info(f"Selecting log level: {log_level}")
+    ti.xcom_push(key="log_level", value=log_level)
+
+
 def setup(ti=None, **context):
     """
     Task that creates the working directory on the shared volume
@@ -259,6 +277,9 @@ def setup(ti=None, **context):
 
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
+
+    # select log level based on debug
+    select_log_level(ti, context["params"]["debug"], context["params"]["log_level"])
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
@@ -286,10 +307,14 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "{{ params.process_args }}",
         "-o",
         STAGE_OUT_WORKFLOW,
-        "-d",
+        "-a",
         "{{ ti.xcom_pull(task_ids='Setup', key='stage_out_args') }}",
+        "-l",
+        "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
+        "-d",
+        "{{ params.debug }}",
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,
@@ -318,6 +343,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     ),
     on_finish_action="keep_pod",
     is_delete_operator_pod=False,
+    do_xcom_push=True,
 )
 
 
