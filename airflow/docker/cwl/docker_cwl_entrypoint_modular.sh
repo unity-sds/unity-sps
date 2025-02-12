@@ -36,8 +36,8 @@ get_job_args() {
   echo $job_args_file
 }
 
-set -ex
-while getopts i:s:w:j:o:d:e:f: flag
+set -e
+while getopts i:s:w:j:o:d:e:f:l: flag
 do
   case "${flag}" in
     i) cwl_workflow_stage_in=${OPTARG};;
@@ -48,6 +48,7 @@ do
     d) job_args_stage_out=${OPTARG};;
     e) ecr_login=${OPTARG};;
     f) json_output=${OPTARG};;
+    l) log_level=${OPTARG};;
   esac
 done
 
@@ -80,8 +81,8 @@ echo "Logged into: $ecr_login"
 fi
 
 # Stage in operations
-echo "Executing the CWL workflow: $cwl_workflow_stage_in with STAC JSON: $stac_json and working directory: $WORKING_DIR"
-stage_in=$(cwltool --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --stac_json $stac_json)
+echo "Executing the CWL workflow: $cwl_workflow_stage_in with working directory: $WORKING_DIR and STAC JSON: $stac_json"
+stage_in=$(cwltool --quiet --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
 
 # Retrieve directory that contains downloaded granules
 stage_in_dir=$(echo $stage_in | jq '.download_dir.path')
@@ -98,10 +99,11 @@ echo "Updating process arguments with input directory: $job_args_process"
 job_args_process_updated=./job_args_process_updated.json
 cat $job_args_process | jq --arg data_dir $stage_in_dir '. += {"input": {"class": "Directory", "path": $data_dir}}' > $job_args_process_updated
 mv $job_args_process_updated $job_args_process
-echo "Executing the CWL workflow: $cwl_workflow_process with json arguments: $job_args_process and working directory: $WORKING_DIR"
+echo "Executing the CWL workflow: $cwl_workflow_process with working directory: $WORKING_DIR and json arguments:"
+cat $job_args_process
 
 # Process operations
-process=$(cwltool --outdir process $cwl_workflow_process $job_args_process)
+process=$(cwltool --quiet --outdir process $cwl_workflow_process $job_args_process)
 echo $process
 
 # Get directory that contains processed files
@@ -112,11 +114,12 @@ ls -l $process_dir
 
 # Add process directory into stage out job arguments
 echo "Editing stage out arguments: $job_args_stage_out"
-echo $job_args_stage_out | jq --arg data_dir $process_dir '. += {"sample_output_data": {"class": "Directory", "path": $data_dir}}' > ./job_args_stage_out.json
-echo "Executing the CWL workflow: $cwl_workflow_stage_out with json arguments: job_args_stage_out.json and working directory: $WORKING_DIR"
+echo $job_args_stage_out | jq --arg data_dir $process_dir --arg log_level $log_level '. += {"sample_output_data": {"class": "Directory", "path": $data_dir}, "log_level": $log_level}' > ./job_args_stage_out.json
+echo "Executing the CWL workflow: $cwl_workflow_stage_out with working directory: $WORKING_DIR and json arguments:"
+cat job_args_stage_out.json
 
 # Stage out operations
-stage_out=$(cwltool --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
+stage_out=$(cwltool --quiet --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
 
 # Report on stage out
 successful_features=$(echo "$stage_out" | jq '.successful_features.path' | tr -d "[]\",\\t ")

@@ -28,8 +28,8 @@ from kubernetes.client import models as k8s
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl"
-STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl"
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_in_log_level.cwl"
+STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_out_cwl_log_level.cwl"
 LOCAL_DIR = "/shared-task-data"
 
 # The path of the working directory where the CWL workflow is executed
@@ -43,6 +43,7 @@ DEFAULT_PROCESS_WORKFLOW = (
     "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl"
 )
 DEFAULT_PROCESS_ARGS = json.dumps({"example_argument_empty": ""})
+DEFAULT_LOG_LEVEL = 20
 
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     requests={
@@ -168,6 +169,13 @@ dag = DAG(
                 "The processing job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"
             ),
         ),
+        "log_level": Param(
+            DEFAULT_LOG_LEVEL,
+            type="string",
+            enum=["20", "10", "30", "40", "50"],
+            title="Stage in/out log level",
+            description=("Default log level for stage in and stage out tasks"),
+        ),
         "request_instance_type": Param(
             "t3.medium",
             type="string",
@@ -260,6 +268,8 @@ def setup(ti=None, **context):
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
 
+    logging.info(f"Selected log level: {context['params']['log_level']}")
+
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
@@ -288,6 +298,8 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         STAGE_OUT_WORKFLOW,
         "-d",
         "{{ ti.xcom_pull(task_ids='Setup', key='stage_out_args') }}",
+        "-l",
+        "{{ params.log_level }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
