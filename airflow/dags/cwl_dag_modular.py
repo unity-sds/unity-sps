@@ -343,6 +343,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
     ),
     on_finish_action="keep_pod",
     is_delete_operator_pod=False,
+    do_xcom_push=True
 )
 
 
