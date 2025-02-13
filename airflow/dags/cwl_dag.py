@@ -10,6 +10,7 @@ Parameter args_as_json: JSON string contained the specific values for the workfl
 import json
 import logging
 import os
+import shutil
 from datetime import datetime
 
 from airflow.models.baseoperator import chain
@@ -202,6 +203,7 @@ def cleanup(**context):
         files = os.listdir(local_dir)
         for f in files:
             logging.info(os.path.join(local_dir, f))
+        shutil.rmtree(local_dir)
         logging.info(f"Deleted directory: {local_dir}")
     else:
         logging.info(f"Directory does not exist, no need to delete: {local_dir}")
