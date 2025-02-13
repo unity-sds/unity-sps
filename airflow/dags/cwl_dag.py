@@ -10,7 +10,6 @@ Parameter args_as_json: JSON string contained the specific values for the workfl
 import json
 import logging
 import os
-import shutil
 from datetime import datetime
 
 from airflow.models.baseoperator import chain
@@ -19,19 +18,21 @@ from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import get_affinity
+from unity_sps_utils import (
+    EC2_TYPES,
+    NODE_POOL_DEFAULT,
+    NODE_POOL_HIGH_WORKLOAD,
+    POD_LABEL,
+    POD_NAMESPACE,
+    build_ec2_type_label,
+    get_affinity,
+)
 
 from airflow import DAG
 
-# The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_NAMESPACE = "sps"
-
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
-POD_LABEL = "cwl_task"
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.2"
-NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
-NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.3"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -50,78 +51,6 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     }
 )
 
-EC2_TYPES = {
-    "t3.micro": {
-        "desc": "General Purpose",
-        "cpu": 1,
-        "memory": 1,
-    },
-    "t3.small": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 2,
-    },
-    "t3.medium": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 4,
-    },
-    "t3.large": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 8,
-    },
-    "t3.xlarge": {
-        "desc": "General Purpose",
-        "cpu": 4,
-        "memory": 16,
-    },
-    "t3.2xlarge": {
-        "desc": "General Purpose",
-        "cpu": 8,
-        "memory": 32,
-    },
-    "r7i.xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 4,
-        "memory": 32,
-    },
-    "r7i.2xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 8,
-        "memory": 64,
-    },
-    "r7i.4xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 16,
-        "memory": 128,
-    },
-    "r7i.8xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 32,
-        "memory": 256,
-    },
-    "c6i.xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 4,
-        "memory": 8,
-    },
-    "c6i.2xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 8,
-        "memory": 16,
-    },
-    "c6i.4xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 16,
-        "memory": 32,
-    },
-    "c6i.8xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 32,
-        "memory": 64,
-    },
-}
 
 # Default DAG configuration
 dag_default_args = {
@@ -129,12 +58,6 @@ dag_default_args = {
     "depends_on_past": False,
     "start_date": datetime.utcfromtimestamp(0),
 }
-
-
-# "t3.large": "t3.large (General Purpose: 2vCPU, 8GiB)",
-def build_ec2_type_label(key):
-    return f"{key} ({EC2_TYPES.get(key)['desc']}: {EC2_TYPES.get(key)['cpu']}vCPU, {EC2_TYPES.get(key)['memory']}GiB)"
-
 
 dag = DAG(
     dag_id="cwl_dag",
@@ -275,7 +198,10 @@ def cleanup(**context):
     dag_run_id = context["dag_run"].run_id
     local_dir = f"/shared-task-data/{dag_run_id}"
     if os.path.exists(local_dir):
-        shutil.rmtree(local_dir)
+        logging.info(f"Content of directory: {local_dir}")
+        files = os.listdir(local_dir)
+        for f in files:
+            logging.info(os.path.join(local_dir, f))
         logging.info(f"Deleted directory: {local_dir}")
     else:
         logging.info(f"Directory does not exist, no need to delete: {local_dir}")
