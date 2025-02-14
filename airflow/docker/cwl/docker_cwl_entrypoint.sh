@@ -11,9 +11,12 @@
 #        (example: <aws_account_id>.dkr.ecr.<region>.amazonaws.com) [optional]
 # -o: path to an output JSON file that needs to be shared as Airflow "xcom" data [optional]
 
-# Must be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
+# Set equal to the path of the EFS Persistent Volume mounted by the Airflow KubernetesPodOperator
 # that executes this script
-WORKING_DIR="/scratch"
+# WORKING_DIR="/scratch"
+
+# Set to a local path on the Pod EBS volume
+WORKING_DIR="/data"
 
 set -ex
 while getopts w:j:e:o: flag
