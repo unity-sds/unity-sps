@@ -5,6 +5,7 @@
 # and it is invoked via the Airflow API.
 # The CWL task is executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
+import json
 from pathlib import Path
 
 import backoff
@@ -15,10 +16,28 @@ FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
 FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_airflow_api.feature"
 
-# DAG parameters are venue specific
-# DAG_ID = "cwl_dag"
+# Note: DAG parameters are venue specific
+CWL_DAG_ID = "cwl_dag"
+CWL_DAG_MODULAR_ID = "cwl_dag_modular"
 DAG_PARAMETERS = {
-    "cwl_dag": {
+    CWL_DAG_MODULAR_ID: {
+        "EMIT": {
+            "cwl_workflow_stage_in": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl",
+            "stac_json": "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json",
+            "cwl_workflow_process": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
+            "job_args_process": json.dumps({"example_argument_empty": ""}),
+            "cwl_workflow_stage_out": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl",
+            "job_args_stage_out": {
+                "dev": json.dumps(
+                    {"project": "unity", "venue": "dev", "staging_bucket": "unity-dev-unity-storage"}
+                ),
+            },
+            "request_storage": "10Gi",
+            "request_instance_type": "t3.medium",
+            "use_ecr": False,
+        }
+    },
+    CWL_DAG_ID: {
         "EMIT": {
             "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/"
             "api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/"
@@ -83,24 +102,29 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
 
     # check that this test_case is enabled for the specified venue and test_dag
     try:
-        # DAG parameters are venue dependent
-        cwl_workflow = DAG_PARAMETERS[test_dag][test_case]["cwl_workflow"]
-        cwl_args = DAG_PARAMETERS[test_dag][test_case]["cwl_args"][venue]
-        request_storage = DAG_PARAMETERS[test_dag][test_case]["request_storage"]
-        request_instance_type = DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]
-        use_ecr = DAG_PARAMETERS[test_dag][test_case]["use_ecr"]
+
+        # job parameters common to cwl_dag and cwl_dag_modular
+        job_config = {
+            "request_storage": DAG_PARAMETERS[test_dag][test_case]["request_storage"],
+            "request_instance_type": DAG_PARAMETERS[test_dag][test_case]["request_instance_type"],
+            "use_ecr": DAG_PARAMETERS[test_dag][test_case]["use_ecr"],
+        }
+        if DAG_PARAMETERS[test_dag][test_case] == CWL_DAG_ID:
+            job_config["cwl_workflow"] = DAG_PARAMETERS[test_dag][test_case]["cwl_workflow"]
+            job_config["cwl_args"] = DAG_PARAMETERS[test_dag][test_case]["cwl_args"][venue]
+        elif DAG_PARAMETERS[test_dag][test_case] == CWL_DAG_MODULAR_ID:
+            job_config["cwl_workflow_stage_in"] = DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_in"]
+            job_config["stac_json"] = DAG_PARAMETERS[test_dag][test_case]["stac_json"]
+            job_config["cwl_workflow_process"] = DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_process"]
+            job_config["job_args_process"] = DAG_PARAMETERS[test_dag][test_case]["job_args_process"][venue]
+            job_config["cwl_workflow_stage_out"] = DAG_PARAMETERS[test_dag][test_case][
+                "cwl_workflow_stage_out"
+            ]
+
         response = requests.post(
             f"{airflow_api_url}/api/v1/dags/{test_dag}/dagRuns",
             auth=airflow_api_auth,
-            json={
-                "conf": {
-                    "cwl_workflow": f"{cwl_workflow}",
-                    "cwl_args": f"{cwl_args}",
-                    "request_storage": f"{request_storage}",
-                    "request_instance_type": f"{request_instance_type}",
-                    "use_ecr": use_ecr,
-                }
-            },
+            json=job_config,
             # nosec
             verify=False,
         )
