@@ -20,6 +20,83 @@ NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
 DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
+EC2_TYPES = {
+    "t3.micro": {
+        "desc": "General Purpose",
+        "cpu": 1,
+        "memory": 1,
+    },
+    "t3.small": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 2,
+    },
+    "t3.medium": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 4,
+    },
+    "t3.large": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 8,
+    },
+    "t3.xlarge": {
+        "desc": "General Purpose",
+        "cpu": 4,
+        "memory": 16,
+    },
+    "t3.2xlarge": {
+        "desc": "General Purpose",
+        "cpu": 8,
+        "memory": 32,
+    },
+    "r7i.xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 4,
+        "memory": 32,
+    },
+    "r7i.2xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 8,
+        "memory": 64,
+    },
+    "r7i.4xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 16,
+        "memory": 128,
+    },
+    "r7i.8xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 32,
+        "memory": 256,
+    },
+    "c6i.xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 4,
+        "memory": 8,
+    },
+    "c6i.2xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 8,
+        "memory": 16,
+    },
+    "c6i.4xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 16,
+        "memory": 32,
+    },
+    "c6i.8xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 32,
+        "memory": 64,
+    },
+}
+
+
+def build_ec2_type_label(key):
+    return f"{key} ({EC2_TYPES.get(key)['desc']}: {EC2_TYPES.get(key)['cpu']}vCPU, {EC2_TYPES.get(key)['memory']}GiB)"
+
 
 class SpsKubernetesPodOperator(KubernetesPodOperator):
     """
