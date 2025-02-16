@@ -16,7 +16,7 @@ FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
 FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_airflow_api.feature"
 
-# Note: DAG parameters are venue specific
+# DAG parameters are venue specific
 CWL_DAG_ID = "cwl_dag"
 CWL_DAG_MODULAR_ID = "cwl_dag_modular"
 DAG_PARAMETERS = {
@@ -30,7 +30,7 @@ DAG_PARAMETERS = {
             "job_args_stage_out": {
                 "dev": json.dumps(
                     {"project": "unity", "venue": "dev", "staging_bucket": "unity-dev-unity-storage"}
-                ),
+                )
             },
             "request_storage": "10Gi",
             "request_instance_type": "t3.medium",
@@ -103,23 +103,38 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
     # check that this test_case is enabled for the specified venue and test_dag
     try:
 
-        # job parameters common to cwl_dag and cwl_dag_modular
+        # configuration common to all DAGs
         job_config = {
-            "request_storage": DAG_PARAMETERS[test_dag][test_case]["request_storage"],
-            "request_instance_type": DAG_PARAMETERS[test_dag][test_case]["request_instance_type"],
-            "use_ecr": DAG_PARAMETERS[test_dag][test_case]["use_ecr"],
+            "conf": {
+                "request_storage": f'{DAG_PARAMETERS[test_dag][test_case]["request_storage"]}',
+                "request_instance_type": f'{DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]}',
+                "use_ecr": DAG_PARAMETERS[test_dag][test_case]["use_ecr"],
+            }
         }
-        if DAG_PARAMETERS[test_dag][test_case] == CWL_DAG_ID:
-            job_config["cwl_workflow"] = DAG_PARAMETERS[test_dag][test_case]["cwl_workflow"]
-            job_config["cwl_args"] = DAG_PARAMETERS[test_dag][test_case]["cwl_args"][venue]
-        elif DAG_PARAMETERS[test_dag][test_case] == CWL_DAG_MODULAR_ID:
-            job_config["cwl_workflow_stage_in"] = DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_in"]
-            job_config["stac_json"] = DAG_PARAMETERS[test_dag][test_case]["stac_json"]
-            job_config["cwl_workflow_process"] = DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_process"]
-            job_config["job_args_process"] = DAG_PARAMETERS[test_dag][test_case]["job_args_process"][venue]
-            job_config["cwl_workflow_stage_out"] = DAG_PARAMETERS[test_dag][test_case][
+
+        # configuration specific to CWL_DAG
+        if test_dag == CWL_DAG_ID:
+            job_config["conf"]["cwl_workflow"] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow"]}'
+            job_config["conf"]["cwl_args"] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_args"][venue]}'
+
+        # configuration specific to CWL_DAG to CWL_DAG_MODULAR_ID
+        elif test_dag == CWL_DAG_MODULAR_ID:
+            job_config["conf"][
+                "cwl_workflow_stage_in"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_in"]}'
+            job_config["conf"]["stac_json"] = f'{DAG_PARAMETERS[test_dag][test_case]["stac_json"]}'
+            job_config["conf"][
+                "cwl_workflow_process"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_process"]}'
+            job_config["conf"][
+                "job_args_process"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_process"]}'
+            job_config["conf"][
                 "cwl_workflow_stage_out"
-            ]
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_out"]}'
+            job_config["conf"][
+                "job_args_stage_out"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_stage_out"][venue]}'
 
         response = requests.post(
             f"{airflow_api_url}/api/v1/dags/{test_dag}/dagRuns",
@@ -129,6 +144,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
             verify=False,
         )
         return response
+
     except KeyError:
         print(f"Test case: {test_case} is NOT enabled for DAG: {test_dag} in venue: {venue}")
         return None
