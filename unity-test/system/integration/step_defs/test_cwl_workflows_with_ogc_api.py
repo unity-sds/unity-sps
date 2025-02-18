@@ -5,6 +5,7 @@
 # and it is invoked via the OGC API.
 # The CWL task is executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
+import json
 from pathlib import Path
 
 import backoff
@@ -18,8 +19,9 @@ FEATURES_DIR = FILE_PATH.parent.parent / "features"
 FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_ogc_api.feature"
 
 # DAG parameters are venue specific
-DAG_ID = "cwl_dag"
-DATA = {
+CWL_DAG_ID = "cwl_dag"
+CWL_DAG_MODULAR_ID = "cwl_dag_modular"
+CWL_DAG_DATA = {
     "EMIT": {
         "inputs": {
             "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
@@ -68,6 +70,27 @@ DATA = {
     },
 }
 
+CWL_DAG_MODULAR_DATA = {
+    "EMIT": {
+        "inputs": {
+            "cwl_workflow_stage_in": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl",
+            "stac_json": "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json",
+            "cwl_workflow_process": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
+            "job_args_process": json.dumps({"example_argument_empty": ""}),
+            "cwl_workflow_stage_out": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl",
+            "job_args_stage_out": {
+                "dev": json.dumps(
+                    {"project": "unity", "venue": "dev", "staging_bucket": "unity-dev-unity-storage"}
+                )
+            },
+            "request_storage": "10Gi",
+            "request_instance_type": "t3.medium",
+            "use_ecr": False,
+        },
+        "outputs": {"result": {"transmissionMode": "reference"}},
+    },
+}
+
 
 @scenario(FEATURE_FILE, "Successful execution of a CWL workflow with the OGC API")
 def test_successful_execution_of_a_cwl_workflow_with_the_ogc_api():
@@ -79,24 +102,35 @@ def api_up_and_running(ogc_processes):
     assert ogc_processes is not None and len(ogc_processes) > 0
 
 
-@when(parsers.parse("I trigger an OGC job for the {test_case} OGC process"), target_fixture="job")
-def trigger_process(cwl_dag_process, venue, test_case):
+@when(parsers.parse("I trigger a {test_case} OGC job for the {test_dag} OGC process"), target_fixture="job")
+def trigger_process(cwl_dag_process, cwl_dag_modular_process, venue, test_case, test_dag):
 
-    print(cwl_dag_process)
-    assert cwl_dag_process is not None
+    # check that this test_case and test_dag are enabled for the specified venue
+    ogc_process = None
+    payload = None
+    try:
 
-    # check that this test_case is enabled for the specified venue
-    if venue in DATA[test_case]["inputs"]["cwl_args"]:
-        payload = DATA[test_case]
-        # choose the "cwl_args" specific to the current venue
-        payload["inputs"]["cwl_args"] = payload["inputs"]["cwl_args"][venue]
+        if test_dag == CWL_DAG_ID:
+            ogc_process = cwl_dag_process
+            payload = CWL_DAG_DATA[test_case]
+            payload["inputs"]["cwl_args"] = payload["inputs"]["cwl_args"][venue]
+        elif test_dag == CWL_DAG_MODULAR_ID:
+            ogc_process = cwl_dag_modular_process
+            payload = CWL_DAG_MODULAR_DATA[test_case]
+            payload["inputs"]["job_args_stage_out"] = payload["inputs"]["job_args_stage_out"][venue]
+
+        print(ogc_process)
+        assert ogc_process is not None
         print(payload)
-        job = cwl_dag_process.execute(payload)
+        assert payload is not None
+
+        # submit job
+        job = ogc_process.execute(payload)
         assert job is not None
         return job
 
-    else:
-        print(f"Test case: {test_case} is NOT enabled for venue: {venue}, skipping")
+    except KeyError:
+        print(f"Test case: {test_case} and Test DAG: {test_dag} are NOT enabled for venue: {venue}")
         return None
 
 
