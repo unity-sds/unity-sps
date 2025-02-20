@@ -90,9 +90,9 @@ fi
 # Stage in operations
 echo "Executing the CWL workflow: $cwl_workflow_stage_in with working directory: $WORKING_DIR and STAC JSON: $stac_json"
 if [ "$log_level" eq 10 ]; then
-  stage_in=$(cwltool --debug --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
+  stage_in=$(cwl-runner --debug --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
 else
-  stage_in=$(cwltool --quiet --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
+  stage_in=$(cwl-runner --quiet --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
 fi
 echo "Stage In output:"
 echo $stage_in | jq '.'
@@ -117,9 +117,9 @@ cat $job_args_process
 
 # Process operations
 if [ "$log_level" eq 10 ]; then
-  process=$(cwltool --debug --outdir process $cwl_workflow_process $job_args_process)
+  process=$(cwl-runner --debug --outdir process $cwl_workflow_process $job_args_process)
 else
-  process=$(cwltool --quiet --outdir process $cwl_workflow_process $job_args_process)
+  process=$(cwl-runner --quiet --outdir process $cwl_workflow_process $job_args_process)
 fi
 echo "Process output:"
 echo $process | jq '.'
@@ -138,9 +138,9 @@ cat job_args_stage_out.json
 
 # Stage out operations
 if [ "$log_level" eq 10 ]; then
-  stage_out=$(cwltool --debug --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
+  stage_out=$(cwl-runner --debug --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
 else
-  stage_out=$(cwltool --quiet --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
+  stage_out=$(cwl-runner --quiet --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
 fi
 echo "Stage Out output:"
 echo $stage_out | jq '.'
