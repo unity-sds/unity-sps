@@ -124,7 +124,7 @@ EC2_TYPES = {
     },
 }
 
-LOG_LEVEL_TYPE = {"10": "DEBUG", "20": "INFO", "30": "WARNING", "40": "ERROR", "50": "CRITICAL"}
+LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
 
 # Default DAG configuration
 dag_default_args = {
@@ -173,9 +173,9 @@ dag = DAG(
         ),
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
-            type="string",
+            type="integer",
             enum=list(LOG_LEVEL_TYPE.keys()),
-            values_display={key: f"({value})" for key, value in LOG_LEVEL_TYPE.items()},
+            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
             description=("Log level for modular DAG processing"),
         ),
