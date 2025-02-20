@@ -307,6 +307,7 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
       "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internal"
+      "service.beta.kubernetes.io/aws-load-balancer-type"             = "external"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
       "service.beta.kubernetes.io/aws-load-balancer-subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
       "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path" = "/health"
