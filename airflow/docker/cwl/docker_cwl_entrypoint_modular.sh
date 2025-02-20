@@ -137,7 +137,7 @@ echo "Executing the CWL workflow: $cwl_workflow_stage_out with working directory
 cat job_args_stage_out.json
 
 # Stage out operations
-if [ "$log_level" == 10 ]; then
+if [ "$log_level" eq 10 ]; then
   stage_out=$(cwltool --debug --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
 else
   stage_out=$(cwltool --quiet --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)

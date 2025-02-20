@@ -303,7 +303,7 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "-a",
         "{{ ti.xcom_pull(task_ids='Setup', key='stage_out_args') }}",
         "-l",
-        "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
+        "{{ params.log_level }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
