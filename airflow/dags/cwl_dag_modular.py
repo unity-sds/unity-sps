@@ -18,7 +18,17 @@ import shutil
 from datetime import datetime
 
 import boto3
-import unity_sps_utils
+from unity_sps_utils import (
+    DEFAULT_LOG_LEVEL,
+    EC2_TYPES,
+    LOG_LEVEL_TYPE,
+    NODE_POOL_DEFAULT,
+    NODE_POOL_HIGH_WORKLOAD,
+    POD_LABEL,
+    POD_NAMESPACE,
+    build_ec2_type_label,
+    get_affinity,
+)
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
@@ -57,12 +67,6 @@ dag_default_args = {
     "start_date": datetime.utcfromtimestamp(0),
 }
 
-
-# "t3.large": "t3.large (General Purpose: 2vCPU, 8GiB)",
-def build_ec2_type_label(key):
-    return f"{key} ({unity_sps_utils.EC2_TYPES.get(key)['desc']}: {unity_sps_utils.EC2_TYPES.get(key)['cpu']}vCPU, {unity_sps_utils.EC2_TYPES.get(key)['memory']}GiB)"
-
-
 dag = DAG(
     dag_id="cwl_dag_modular",
     description="CWL DAG Modular",
@@ -96,18 +100,18 @@ dag = DAG(
             ),
         ),
         "log_level": Param(
-            unity_sps_utils.DEFAULT_LOG_LEVEL,
+            DEFAULT_LOG_LEVEL,
             type="integer",
-            enum=list(unity_sps_utils.LOG_LEVEL_TYPE.keys()),
-            values_display={key: f"{key} ({value})" for key, value in unity_sps_utils.LOG_LEVEL_TYPE.items()},
+            enum=list(LOG_LEVEL_TYPE.keys()),
+            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
             description=("Log level for modular DAG processing"),
         ),
         "request_instance_type": Param(
             "t3.medium",
             type="string",
-            enum=list(unity_sps_utils.EC2_TYPES.keys()),
-            values_display={key: f"{build_ec2_type_label(key)}" for key in unity_sps_utils.EC2_TYPES.keys()},
+            enum=list(EC2_TYPES.keys()),
+            values_display={key: f"{build_ec2_type_label(key)}" for key in EC2_TYPES.keys()},
             title="EC2 instance type",
         ),
         "request_storage": Param(
@@ -131,20 +135,20 @@ def select_node_pool(ti, request_storage, request_instance_type):
     """
     Select node pool based on resources requested in input parameters.
     """
-    node_pool = unity_sps_utils.NODE_POOL_DEFAULT
+    node_pool = NODE_POOL_DEFAULT
     storage = int(request_storage[0:-2])  # 100Gi -> 100
     ti.xcom_push(key="container_storage", value=storage)
     logging.info(f"Selecting container storage={storage}")
 
     # from "t3.large (General Purpose: 2vCPU, 8GiB)" to "t3.large"
-    cpu = unity_sps_utils.EC2_TYPES[request_instance_type]["cpu"]
-    memory = unity_sps_utils.EC2_TYPES[request_instance_type]["memory"]
+    cpu = EC2_TYPES[request_instance_type]["cpu"]
+    memory = EC2_TYPES[request_instance_type]["memory"]
     ti.xcom_push(key="instance_type", value=request_instance_type)
     logging.info(f"Requesting EC2 instance type={request_instance_type}")
 
     logging.info(f"Requesting storage={storage}Gi memory={memory}Gi CPU={cpu}")
     if (storage > 30) or (memory > 32) or (cpu > 8):
-        node_pool = unity_sps_utils.NODE_POOL_HIGH_WORKLOAD
+        node_pool = NODE_POOL_HIGH_WORKLOAD
     ti.xcom_push(key="node_pool", value=node_pool)
     logging.info(f"Selecting node pool={node_pool}")
 
@@ -166,7 +170,7 @@ def select_stage_out(ti):
 
     project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
     venue = os.environ["AIRFLOW_VAR_UNITY_VENUE"]
-    staging_bucket = ssm_client.get_parameter(Name=unity_sps_utils.DS_S3_BUCKET_PARAM, WithDecryption=True)[
+    staging_bucket = ssm_client.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)[
         "Parameter"
     ]["Value"]
 
@@ -202,12 +206,12 @@ def setup(ti=None, **context):
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
 
-cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
+cwl_task_processing = SpsKubernetesPodOperator(
     retries=0,
     task_id="cwl_task_processing",
-    namespace=unity_sps_utils.POD_NAMESPACE,
+    namespace=POD_NAMESPACE,
     name="cwl-task-pod",
-    image=unity_sps_utils.SPS_DOCKER_CWL_IMAGE,
+    image=SPS_DOCKER_CWL_IMAGE,
     service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
@@ -248,13 +252,13 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
         "node.kubernetes.io/instance-type": "{{ti.xcom_pull(task_ids='Setup', key='instance_type')}}",
     },
-    labels={"pod": unity_sps_utils.POD_LABEL},
+    labels={"pod": POD_LABEL},
     annotations={"karpenter.sh/do-not-disrupt": "true"},
     # note: 'affinity' cannot yet be templated
-    affinity=unity_sps_utils.get_affinity(
+    affinity=get_affinity(
         capacity_type=["spot"],
         # instance_type=["t3.2xlarge"],
-        anti_affinity_label=unity_sps_utils.POD_LABEL,
+        anti_affinity_label=POD_LABEL,
     ),
     on_finish_action="keep_pod",
     is_delete_operator_pod=False,
