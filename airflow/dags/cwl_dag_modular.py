@@ -43,88 +43,12 @@ DEFAULT_PROCESS_WORKFLOW = (
     "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl"
 )
 DEFAULT_PROCESS_ARGS = json.dumps({"example_argument_empty": ""})
-DEFAULT_LOG_LEVEL = 20
 
 CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     requests={
         "ephemeral-storage": "{{ti.xcom_pull(task_ids='Setup', key='container_storage')}}",
     }
 )
-
-EC2_TYPES = {
-    "t3.micro": {
-        "desc": "General Purpose",
-        "cpu": 1,
-        "memory": 1,
-    },
-    "t3.small": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 2,
-    },
-    "t3.medium": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 4,
-    },
-    "t3.large": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 8,
-    },
-    "t3.xlarge": {
-        "desc": "General Purpose",
-        "cpu": 4,
-        "memory": 16,
-    },
-    "t3.2xlarge": {
-        "desc": "General Purpose",
-        "cpu": 8,
-        "memory": 32,
-    },
-    "r7i.xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 4,
-        "memory": 32,
-    },
-    "r7i.2xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 8,
-        "memory": 64,
-    },
-    "r7i.4xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 16,
-        "memory": 128,
-    },
-    "r7i.8xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 32,
-        "memory": 256,
-    },
-    "c6i.xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 4,
-        "memory": 8,
-    },
-    "c6i.2xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 8,
-        "memory": 16,
-    },
-    "c6i.4xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 16,
-        "memory": 32,
-    },
-    "c6i.8xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 32,
-        "memory": 64,
-    },
-}
-
-LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
 
 # Default DAG configuration
 dag_default_args = {
@@ -136,7 +60,7 @@ dag_default_args = {
 
 # "t3.large": "t3.large (General Purpose: 2vCPU, 8GiB)",
 def build_ec2_type_label(key):
-    return f"{key} ({EC2_TYPES.get(key)['desc']}: {EC2_TYPES.get(key)['cpu']}vCPU, {EC2_TYPES.get(key)['memory']}GiB)"
+    return f"{key} ({unity_sps_utils.EC2_TYPES.get(key)['desc']}: {unity_sps_utils.EC2_TYPES.get(key)['cpu']}vCPU, {unity_sps_utils.EC2_TYPES.get(key)['memory']}GiB)"
 
 
 dag = DAG(
@@ -172,18 +96,18 @@ dag = DAG(
             ),
         ),
         "log_level": Param(
-            DEFAULT_LOG_LEVEL,
+            unity_sps_utils.DEFAULT_LOG_LEVEL,
             type="integer",
-            enum=list(LOG_LEVEL_TYPE.keys()),
-            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
+            enum=list(unity_sps_utils.LOG_LEVEL_TYPE.keys()),
+            values_display={key: f"{key} ({value})" for key, value in unity_sps_utils.LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
             description=("Log level for modular DAG processing"),
         ),
         "request_instance_type": Param(
             "t3.medium",
             type="string",
-            enum=list(EC2_TYPES.keys()),
-            values_display={key: f"{build_ec2_type_label(key)}" for key in EC2_TYPES.keys()},
+            enum=list(unity_sps_utils.EC2_TYPES.keys()),
+            values_display={key: f"{build_ec2_type_label(key)}" for key in unity_sps_utils.EC2_TYPES.keys()},
             title="EC2 instance type",
         ),
         "request_storage": Param(
@@ -213,8 +137,8 @@ def select_node_pool(ti, request_storage, request_instance_type):
     logging.info(f"Selecting container storage={storage}")
 
     # from "t3.large (General Purpose: 2vCPU, 8GiB)" to "t3.large"
-    cpu = EC2_TYPES[request_instance_type]["cpu"]
-    memory = EC2_TYPES[request_instance_type]["memory"]
+    cpu = unity_sps_utils.EC2_TYPES[request_instance_type]["cpu"]
+    memory = unity_sps_utils.EC2_TYPES[request_instance_type]["memory"]
     ti.xcom_push(key="instance_type", value=request_instance_type)
     logging.info(f"Requesting EC2 instance type={request_instance_type}")
 
