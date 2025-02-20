@@ -10,11 +10,7 @@ from airflow import DAG
 from airflow.decorators import task
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.utils.trigger_rule import TriggerRule
-from airflow.operators.python import (
-    PythonOperator,
-    get_current_context,
-    ShortCircuitOperator,
-)
+from airflow.operators.python import PythonOperator, get_current_context, ShortCircuitOperator
 from airflow.models.param import Param
 from airflow.exceptions import AirflowFailException
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
@@ -66,9 +62,7 @@ with DAG(
             keys["emd"] = (bucket, key)
             keys["dat"] = (bucket, f"{path}/{match.groupdict()['id']}.dat")
         else:
-            raise AirflowFailException(
-                f"Extension {match.groupdict()['ext']} not recognized."
-            )
+            raise AirflowFailException(f"Extension {match.groupdict()['ext']} not recognized.")
         keys["fsw"] = (
             "unity-gmanipon-ads-deployment-dev",
             f"srl/edrgen/static/srl/current/products/dp_{match.groupdict()['apid'][1:]}_v0.xml",
@@ -114,6 +108,7 @@ with DAG(
             "dat_url": "{{ ti.xcom_pull(task_ids='evaluate_edrgen')['dat_url'] }}",
             "emd_url": "{{ ti.xcom_pull(task_ids='evaluate_edrgen')['emd_url'] }}",
             "fsw_url": "{{ ti.xcom_pull(task_ids='evaluate_edrgen')['fsw_url'] }}",
+            "output_url": "s3://gmanipon-dev-sps-isl/STACAM/VIC",
         },
     )
 
