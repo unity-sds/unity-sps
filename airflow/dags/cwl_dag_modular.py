@@ -124,6 +124,8 @@ EC2_TYPES = {
     },
 }
 
+LOG_LEVEL_TYPE = {"10": "DEBUG", "20": "INFO", "30": "WARNING", "40": "ERROR", "50": "CRITICAL"}
+
 # Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
@@ -172,9 +174,10 @@ dag = DAG(
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
             type="string",
-            enum=["20", "10", "30", "40", "50"],
-            title="Stage in/out log level",
-            description=("Default log level for stage in and stage out tasks"),
+            enum=list(LOG_LEVEL_TYPE.keys()),
+            values_display={key: f"({value})" for key, value in LOG_LEVEL_TYPE.items()},
+            title="Processing log levels",
+            description=("Log level for modular DAG processing"),
         ),
         "request_instance_type": Param(
             "t3.medium",
@@ -187,7 +190,6 @@ dag = DAG(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
-        "debug": Param(False, type="boolean", title="Generate debug level logs for all processes"),
     },
 )
 
@@ -249,15 +251,6 @@ def select_stage_out(ti):
     ti.xcom_push(key="stage_out_args", value=stage_out_args)
 
 
-def select_log_level(ti, debug, log_level):
-    """Determine log level based on debug value."""
-    if debug:
-        log_level = 10
-    logging.info(f"Selecting debug: {debug}")
-    logging.info(f"Selecting log level: {log_level}")
-    ti.xcom_push(key="log_level", value=log_level)
-
-
 def setup(ti=None, **context):
     """
     Task that creates the working directory on the shared volume
@@ -279,7 +272,7 @@ def setup(ti=None, **context):
     select_stage_out(ti)
 
     # select log level based on debug
-    select_log_level(ti, context["params"]["debug"], context["params"]["log_level"])
+    logging.info(f"Selecting log level: {context['params']['log_level']}.")
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
@@ -313,8 +306,6 @@ cwl_task_processing = unity_sps_utils.SpsKubernetesPodOperator(
         "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
-        "-d",
-        "{{ params.debug }}",
     ],
     container_security_context={"privileged": True},
     container_resources=CONTAINER_RESOURCES,

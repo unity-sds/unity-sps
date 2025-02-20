@@ -37,7 +37,7 @@ get_job_args() {
 }
 
 
-while getopts i:s:w:j:o:a:e:d:f:l: flag
+while getopts i:s:w:j:o:a:e:f:l: flag
 do
   case "${flag}" in
     i) cwl_workflow_stage_in=${OPTARG};;
@@ -47,14 +47,13 @@ do
     o) cwl_workflow_stage_out=${OPTARG};;
     a) job_args_stage_out=${OPTARG};;
     e) ecr_login=${OPTARG};;
-    d) debug=${OPTARG};;
     f) json_output=${OPTARG};;
     l) log_level=${OPTARG};;
   esac
 done
 
 # Determine logging level
-if [ "$debug" == "True" ]; then
+if [ "$log_level" == "10" ]; then
   set -ex
 else
   set -e
@@ -90,7 +89,7 @@ fi
 
 # Stage in operations
 echo "Executing the CWL workflow: $cwl_workflow_stage_in with working directory: $WORKING_DIR and STAC JSON: $stac_json"
-if [ "$debug" == "True" ]; then
+if [ "$log_level" == "10" ]; then
   stage_in=$(cwltool --debug --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
 else
   stage_in=$(cwltool --quiet --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
@@ -117,7 +116,7 @@ echo "Executing the CWL workflow: $cwl_workflow_process with working directory: 
 cat $job_args_process
 
 # Process operations
-if [ "$debug" == "True" ]; then
+if [ "$log_level" == "10" ]; then
   process=$(cwltool --debug --outdir process $cwl_workflow_process $job_args_process)
 else
   process=$(cwltool --quiet --outdir process $cwl_workflow_process $job_args_process)
@@ -138,7 +137,7 @@ echo "Executing the CWL workflow: $cwl_workflow_stage_out with working directory
 cat job_args_stage_out.json
 
 # Stage out operations
-if [ "$debug" == "True" ]; then
+if [ "$log_level" == "10" ]; then
   stage_out=$(cwltool --debug --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
 else
   stage_out=$(cwltool --quiet --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
