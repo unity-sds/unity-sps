@@ -101,7 +101,7 @@ with DAG(
         task_id="trigger_edrgen",
         trigger_dag_id="edrgen",
         # uncomment the next line if we want to dedup dagRuns for a particular ID
-        # trigger_run_id="{{ ti.xcom_pull(task_ids='evaluate_edrgen')['id'] }}",
+         trigger_run_id="{{ ti.xcom_pull(task_ids='evaluate_edrgen')['id'] }}",
         trigger_rule=TriggerRule.ALL_SUCCESS,
         skip_when_already_exists=True,
         conf={
