@@ -64,16 +64,16 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
 
-#    - name: MCP Venue Test - Smoke tests
-#      id: mcp_venue_test_smoke_tests
-#      env:
-#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
-#      continue-on-error: true
-#      run: |
-#        pytest -vv --gherkin-terminal-reporter \
-#        unity-test/system/smoke \
-#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
+    - name: MCP Venue Test - Smoke tests
+      id: mcp_venue_test_smoke_tests
+      env:
+        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_TEST_AIRFLOW_WEBSERVER_PASSWORD }}
+      continue-on-error: true
+      run: |
+        pytest -vv --gherkin-terminal-reporter \
+        unity-test/system/smoke \
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_ENDPOINT }} \
+        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
 
     - name: MCP Venue Ops - Smoke tests
       id: mcp_venue_ops_smoke_tests
