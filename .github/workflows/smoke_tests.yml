@@ -113,7 +113,7 @@ jobs:
       if: always()
       run: |
         dev_status=${{ steps.mcp_venue_dev_smoke_tests.outcome }}
-        # test_status=${{ steps.mcp_venue_test_smoke_tests.outcome }}
+        test_status=${{ steps.mcp_venue_test_smoke_tests.outcome }}
         sbg_dev_status=${{ steps.mcp_sbg_dev_smoke_tests.outcome }}
         emit_int_status=${{ steps.mcp_emit_int_smoke_tests.outcome }}
         ops_status=${{ steps.mcp_venue_ops_smoke_tests.outcome }}
@@ -123,8 +123,7 @@ jobs:
         echo "EMIT InT Smoke Tests: $emit_int_status"
         echo "Ops Smoke Tests: $ops_status"
 
-        # if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ] \
-        if [ "$dev_status" != "success" ] \
+        if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ] \
                                           || [ "$sbg_dev_status" != "success" ] \
                                           || [ "$emit_int_status" != "success" ] \
                                           || [ "$ops_status" != "success" ]; then
