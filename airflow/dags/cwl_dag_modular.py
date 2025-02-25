@@ -18,8 +18,15 @@ import shutil
 from datetime import datetime
 
 import boto3
+from airflow.models.baseoperator import chain
+from airflow.models.param import Param
+from airflow.operators.python import PythonOperator, get_current_context
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.utils.trigger_rule import TriggerRule
+from kubernetes.client import models as k8s
 from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
+    DS_S3_BUCKET_PARAM,
     EC2_TYPES,
     LOG_LEVEL_TYPE,
     NODE_POOL_DEFAULT,
@@ -30,11 +37,6 @@ from unity_sps_utils import (
     build_ec2_type_label,
     get_affinity,
 )
-from airflow.models.baseoperator import chain
-from airflow.models.param import Param
-from airflow.operators.python import PythonOperator, get_current_context
-from airflow.utils.trigger_rule import TriggerRule
-from kubernetes.client import models as k8s
 
 from airflow import DAG
 
@@ -171,9 +173,9 @@ def select_stage_out(ti):
 
     project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
     venue = os.environ["AIRFLOW_VAR_UNITY_VENUE"]
-    staging_bucket = ssm_client.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)[
-        "Parameter"
-    ]["Value"]
+    staging_bucket = ssm_client.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
+        "Value"
+    ]
 
     stage_out_args = json.dumps({"project": project, "venue": venue, "staging_bucket": staging_bucket})
     logging.info(f"Selecting stage out args={stage_out_args}")
@@ -207,7 +209,7 @@ def setup(ti=None, **context):
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
 
-cwl_task_processing = SpsKubernetesPodOperator(
+cwl_task_processing = KubernetesPodOperator(
     retries=0,
     task_id="cwl_task_processing",
     namespace=POD_NAMESPACE,
