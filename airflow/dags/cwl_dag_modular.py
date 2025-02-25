@@ -26,6 +26,7 @@ from unity_sps_utils import (
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
+    SPS_DOCKER_CWL_IMAGE,
     build_ec2_type_label,
     get_affinity,
 )
