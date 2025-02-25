@@ -20,20 +20,18 @@ from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperato
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
+    DEFAULT_LOG_LEVEL,
     EC2_TYPES,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
+    SPS_DOCKER_CWL_IMAGE,
     build_ec2_type_label,
     get_affinity,
 )
 
 from airflow import DAG
-
-# Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
-# two Pods with the same label cannot run on the same Node
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.3"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -52,6 +50,7 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     }
 )
 
+LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
 # Default DAG configuration
 dag_default_args = {
@@ -80,6 +79,14 @@ dag = DAG(
             type="string",
             title="CWL workflow parameters",
             description=("The job parameters encoded as a JSON string," "or the URL of a JSON or YAML file"),
+        ),
+        "log_level": Param(
+            DEFAULT_LOG_LEVEL,
+            type="integer",
+            enum=list(LOG_LEVEL_TYPE.keys()),
+            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
+            title="Processing log levels",
+            description=("Log level for DAG processing"),
         ),
         "request_instance_type": Param(
             "t3.medium",
@@ -136,6 +143,9 @@ def setup(ti=None, **context):
         ti.xcom_push(key="ecr_login", value=ecr_login)
         logging.info("ECR login: %s", ecr_login)
 
+    # select log level based on debug
+    logging.info(f"Selecting log level: {context['params']['log_level']}.")
+
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
@@ -154,6 +164,8 @@ cwl_task = KubernetesPodOperator(
         "{{ params.cwl_workflow }}",
         "-j",
         "{{ params.cwl_args }}",
+        "-l",
+        "{{ params.log_level }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],

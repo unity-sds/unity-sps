@@ -18,16 +18,23 @@
 # Set to a local path on the Pod EBS volume
 WORKING_DIR="/data"
 
-set -ex
-while getopts w:j:e:o: flag
+while getopts w:j:e:o:l: flag
 do
   case "${flag}" in
     w) cwl_workflow=${OPTARG};;
     j) job_args=${OPTARG};;
     e) ecr_login=${OPTARG};;
     o) json_output=${OPTARG};;
+    l) log_level=${OPTARG};;
   esac
 done
+
+# determine logging level
+if [ "$log_level" -eq 10 ]; then
+  set -ex
+else
+  set -e
+fi
 
 # create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
@@ -75,7 +82,11 @@ fi
 # List contents when done
 pwd
 ls -lR
-cwl-runner --debug --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
+if [ "$log_level" -eq 10 ]; then
+  cwl-runner --debug --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
+else
+  cwl-runner --quiet --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
+fi
 ls -lR
 
 # Optionally, save the requested output file to a location
