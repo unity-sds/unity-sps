@@ -31,8 +31,8 @@ No modules.
 | [aws_vpc_security_group_ingress_rule.ogc_ingress_sg_proxy_rule](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [kubernetes_deployment.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/deployment) | resource |
 | [kubernetes_deployment.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/deployment) | resource |
-| [kubernetes_ingress_v1.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_service.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
+| [kubernetes_service.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
 | [kubernetes_service.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
 | [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/db_instance) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
@@ -45,9 +45,9 @@ No modules.
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.venue_proxy_baseurl](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/vpc) | data source |
-| [kubernetes_ingress_v1.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
 | [kubernetes_persistent_volume_claim.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/persistent_volume_claim) | data source |
+| [kubernetes_service.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/service) | data source |
 
 ## Inputs
 

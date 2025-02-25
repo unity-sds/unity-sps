@@ -526,7 +526,7 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
   depends_on             = [helm_release.airflow]
 }*/
 
-resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
+resource "kubernetes_service" "airflow_ingress_internal" {
   metadata {
     name      = "airflow-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
@@ -534,19 +534,18 @@ resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
       "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internal"
       "service.beta.kubernetes.io/aws-load-balancer-type"             = "external"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
-      "service.beta.kubernetes.io/aws-load-balancer-subnets"          = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"          = jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]
       "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path" = "/health"
     }
   }
   spec {
-    ingress_class_name = "alb"
-    default_backend {
-      service {
-        name = "airflow-webserver"
-        port {
-          number = 8080
-        }
-      }
+    selector = {
+      app = "airflow-webserver"
+    }
+    type = "LoadBalancer"
+    port {
+      port        = local.load_balancer_port
+      target_port = 8080
     }
   }
   wait_for_load_balancer = true
@@ -632,7 +631,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       Redirect "/${var.project}/${var.venue}/sps/home"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
+      ProxyPassMatch "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html

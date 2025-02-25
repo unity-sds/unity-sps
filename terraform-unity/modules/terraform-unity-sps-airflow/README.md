@@ -53,7 +53,6 @@ No modules.
 | [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_proxy_rule](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.15.0/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.15.0/docs/resources/release) | resource |
-| [kubernetes_ingress_v1.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/namespace) | resource |
 | [kubernetes_persistent_volume.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/persistent_volume) | resource |
 | [kubernetes_persistent_volume.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/persistent_volume) | resource |
@@ -63,6 +62,7 @@ No modules.
 | [kubernetes_role_binding.airflow_pod_creator_binding](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/role_binding) | resource |
 | [kubernetes_secret.airflow_metadata](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/secret) | resource |
 | [kubernetes_secret.airflow_webserver](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/secret) | resource |
+| [kubernetes_service.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
 | [kubernetes_storage_class.efs](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/storage_class) | resource |
 | [null_resource.remove_keda_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.3/docs/resources/resource) | resource |
 | [random_id.airflow_webserver_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/id) | resource |
@@ -80,8 +80,8 @@ No modules.
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.venue_proxy_baseurl](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/vpc) | data source |
-| [kubernetes_ingress_v1.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
+| [kubernetes_service.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/service) | data source |
 
 ## Inputs
 
