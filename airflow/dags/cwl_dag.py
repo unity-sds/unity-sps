@@ -22,7 +22,6 @@ from kubernetes.client import models as k8s
 from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
     EC2_TYPES,
-    LOG_LEVEL_TYPE,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
@@ -51,6 +50,7 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     }
 )
 
+LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
 # Default DAG configuration
 dag_default_args = {
@@ -86,7 +86,7 @@ dag = DAG(
             enum=list(LOG_LEVEL_TYPE.keys()),
             values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
-            description=("Log level for modular DAG processing"),
+            description=("Log level for DAG processing"),
         ),
         "request_instance_type": Param(
             "t3.medium",
