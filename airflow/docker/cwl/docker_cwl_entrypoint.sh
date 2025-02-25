@@ -30,7 +30,7 @@ do
 done
 
 # determine logging level
-if [ "$log_level" eq 10 ]; then
+if [ "$log_level" -eq 10 ]; then
   set -ex
 else
   set -e
@@ -82,7 +82,7 @@ fi
 # List contents when done
 pwd
 ls -lR
-if [ "$log_level" eq 10 ]; then
+if [ "$log_level" -eq 10 ]; then
   cwl-runner --debug --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
 else
   cwl-runner --quiet --tmp-outdir-prefix "$PWD"/ --no-read-only "$cwl_workflow" "$job_args"
