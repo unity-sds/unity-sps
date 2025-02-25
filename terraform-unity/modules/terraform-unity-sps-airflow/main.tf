@@ -536,11 +536,13 @@ resource "kubernetes_service" "airflow_ingress_internal" {
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
       "service.beta.kubernetes.io/aws-load-balancer-subnets"          = jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]
       "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path" = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-attributes"       = "load_balancing.cross_zone.enabled=true"
     }
   }
   spec {
     selector = {
-      app = "airflow-webserver"
+      app       = "airflow"
+      component = "webserver"
     }
     type = "LoadBalancer"
     port {
