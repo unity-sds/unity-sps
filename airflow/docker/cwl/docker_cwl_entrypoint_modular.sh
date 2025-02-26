@@ -36,8 +36,8 @@ get_job_args() {
   echo $job_args_file
 }
 
-set -ex
-while getopts i:s:w:j:o:d:e:f: flag
+
+while getopts i:s:w:j:o:a:e:f:l: flag
 do
   case "${flag}" in
     i) cwl_workflow_stage_in=${OPTARG};;
@@ -45,13 +45,21 @@ do
     w) cwl_workflow_process=${OPTARG};;
     j) job_args_process=${OPTARG};;
     o) cwl_workflow_stage_out=${OPTARG};;
-    d) job_args_stage_out=${OPTARG};;
+    a) job_args_stage_out=${OPTARG};;
     e) ecr_login=${OPTARG};;
     f) json_output=${OPTARG};;
+    l) log_level=${OPTARG};;
   esac
 done
 
-# create working directory if it doesn't exist
+# Determine logging level
+if [ "$log_level" -eq 10 ]; then
+  set -ex
+else
+  set -e
+fi
+
+# Create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
 cd $WORKING_DIR
 
@@ -80,8 +88,14 @@ echo "Logged into: $ecr_login"
 fi
 
 # Stage in operations
-echo "Executing the CWL workflow: $cwl_workflow_stage_in with STAC JSON: $stac_json and working directory: $WORKING_DIR"
-stage_in=$(cwltool --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --stac_json $stac_json)
+echo "Executing the CWL workflow: $cwl_workflow_stage_in with working directory: $WORKING_DIR and STAC JSON: $stac_json"
+if [ "$log_level" -eq 10 ]; then
+  stage_in=$(cwl-runner --debug --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
+else
+  stage_in=$(cwl-runner --quiet --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
+fi
+echo "Stage In output:"
+echo $stage_in | jq '.'
 
 # Retrieve directory that contains downloaded granules
 stage_in_dir=$(echo $stage_in | jq '.download_dir.path')
@@ -98,11 +112,17 @@ echo "Updating process arguments with input directory: $job_args_process"
 job_args_process_updated=./job_args_process_updated.json
 cat $job_args_process | jq --arg data_dir $stage_in_dir '. += {"input": {"class": "Directory", "path": $data_dir}}' > $job_args_process_updated
 mv $job_args_process_updated $job_args_process
-echo "Executing the CWL workflow: $cwl_workflow_process with json arguments: $job_args_process and working directory: $WORKING_DIR"
+echo "Executing the CWL workflow: $cwl_workflow_process with working directory: $WORKING_DIR and json arguments:"
+cat $job_args_process
 
 # Process operations
-process=$(cwltool --outdir process $cwl_workflow_process $job_args_process)
-echo $process
+if [ "$log_level" -eq 10 ]; then
+  process=$(cwl-runner --debug --outdir process $cwl_workflow_process $job_args_process)
+else
+  process=$(cwl-runner --quiet --outdir process $cwl_workflow_process $job_args_process)
+fi
+echo "Process output:"
+echo $process | jq '.'
 
 # Get directory that contains processed files
 process_dir=$(echo $process | jq '.output.path')
@@ -112,26 +132,38 @@ ls -l $process_dir
 
 # Add process directory into stage out job arguments
 echo "Editing stage out arguments: $job_args_stage_out"
-echo $job_args_stage_out | jq --arg data_dir $process_dir '. += {"sample_output_data": {"class": "Directory", "path": $data_dir}}' > ./job_args_stage_out.json
-echo "Executing the CWL workflow: $cwl_workflow_stage_out with json arguments: job_args_stage_out.json and working directory: $WORKING_DIR"
+echo $job_args_stage_out | jq --arg data_dir $process_dir --arg log_level $log_level '. += {"sample_output_data": {"class": "Directory", "path": $data_dir}, "log_level": $log_level}' > ./job_args_stage_out.json
+echo "Executing the CWL workflow: $cwl_workflow_stage_out with working directory: $WORKING_DIR and json arguments:"
+cat job_args_stage_out.json
 
 # Stage out operations
-stage_out=$(cwltool --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
+if [ "$log_level" -eq 10 ]; then
+  stage_out=$(cwl-runner --debug --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
+else
+  stage_out=$(cwl-runner --quiet --outdir stage_out $cwl_workflow_stage_out job_args_stage_out.json)
+fi
+echo "Stage Out output:"
+echo $stage_out | jq '.'
 
 # Report on stage out
-successful_features=$(echo "$stage_out" | jq '.successful_features.path' | tr -d "[]\",\\t ")
-successful_features=$(cat $successful_features | jq '.')
-echo Successful features: $successful_features
+successful_features_file=$(echo "$stage_out" | jq '.successful_features.path' | tr -d "[]\",\\t ")
+successful_features=$(cat $successful_features_file | jq '.')
+echo Successful features:
+echo $successful_features | jq '.'
 
-failed_features=$(echo "$stage_out" | jq '.failed_features.path' | tr -d "[]\",\\t ")
-failed_features=$(cat $failed_features | jq '.')
-echo Failed features: $failed_features
+failed_features_file=$(echo "$stage_out" | jq '.failed_features.path' | tr -d "[]\",\\t ")
+failed_features=$(cat $failed_features_file | jq '.')
+echo Failed features:
+echo $failed_features | jq '.'
+
+# Save catalog.json in a location where it will be picked up by Airflow XCOM mechanism
+mkdir -p /airflow/xcom/
+cp $successful_features_file /airflow/xcom/return.json
 
 # Optionally, save the requested output file to a location
 # where it will be picked up by the Airflow XCOM mechanism
 # Note: the content of the file MUST be valid JSON or XCOM will fail.
 if [ ! -z "${json_output}" -a "${json_output}" != " " ]; then
-  mkdir -p /airflow/xcom/
   cp ${json_output} /airflow/xcom/return.json
 fi
 

@@ -1,10 +1,11 @@
 # This test executes the specified CWL workflow
-# using the CWL DAG submitted through the Airflow API.
+# using the CWL DAG (classic or modular) submitted through the Airflow API.
 # The workflow parameters are contained in a YAML file which is venue-dependent.
-# The CWL DAG must already be deployed in Airflow,
+# The CWL DAGs (classic and modular) must already be deployed in Airflow,
 # and it is invoked via the Airflow API.
 # The CWL task is executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
+import json
 from pathlib import Path
 
 import backoff
@@ -16,49 +17,69 @@ FEATURES_DIR = FILE_PATH.parent.parent / "features"
 FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_airflow_api.feature"
 
 # DAG parameters are venue specific
-DAG_ID = "cwl_dag"
+CWL_DAG_ID = "cwl_dag"
+CWL_DAG_MODULAR_ID = "cwl_dag_modular"
 DAG_PARAMETERS = {
-    "EMIT": {
-        "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/"
-        "api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/"
-        "versions/9/plain-CWL/descriptor/workflow.cwl",
-        "cwl_args": {
-            "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
-            "/test/emit-ghg-dev.json",
-            # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
-            # "/test/emit-ghg-test.json",
-        },
-        "request_storage": "100Gi",
-        # r7i.2xlarge: 8 CPUs, 64 GB memory
-        "request_instance_type": "r7i.2xlarge",
-        "use_ecr": False,
+    CWL_DAG_MODULAR_ID: {
+        "EMIT": {
+            "cwl_workflow_stage_in": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl",
+            "stac_json": "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json",
+            "cwl_workflow_process": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
+            "job_args_process": json.dumps({"example_argument_empty": ""}),
+            "cwl_workflow_stage_out": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl",
+            "job_args_stage_out": {
+                "dev": json.dumps(
+                    {"project": "unity", "venue": "dev", "staging_bucket": "unity-dev-unity-storage"}
+                )
+            },
+            "request_storage": "10Gi",
+            "request_instance_type": "t3.medium",
+            "use_ecr": False,
+        }
     },
-    "SBG_E2E_SCALE": {
-        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
-        "sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
-        "cwl_args": {
-            "dev": "https://raw.githubusercontent.com/unity-sds/"
-            "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
+    CWL_DAG_ID: {
+        "EMIT": {
+            "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/"
+            "api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/"
+            "versions/9/plain-CWL/descriptor/workflow.cwl",
+            "cwl_args": {
+                "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
+                "/test/emit-ghg-dev.json",
+                # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
+                # "/test/emit-ghg-test.json",
+            },
+            "request_storage": "100Gi",
+            # r7i.2xlarge: 8 CPUs, 64 GB memory
+            "request_instance_type": "r7i.2xlarge",
+            "use_ecr": False,
         },
-        "request_storage": "100Gi",
-        # c6i.8xlarge: 32 CPUs, 64 GB memory
-        "request_instance_type": "c6i.8xlarge",
-        "use_ecr": False,
-    },
-    "SBG_PREPROCESS": {
-        "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-        "/preprocess/sbg-preprocess-workflow.cwl",
-        "cwl_args": {
-            "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-            "/sbg-preprocess-workflow.dev.yml",
-            "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-            "/sbg-preprocess-workflow.test.yml",
+        "SBG_E2E_SCALE": {
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
+            "sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
+            "cwl_args": {
+                "dev": "https://raw.githubusercontent.com/unity-sds/"
+                "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
+            },
+            "request_storage": "100Gi",
+            # c6i.8xlarge: 32 CPUs, 64 GB memory
+            "request_instance_type": "c6i.8xlarge",
+            "use_ecr": False,
         },
-        "request_storage": "10Gi",
-        # c6i.xlarge: 4vCPUs, 8 GB memory
-        # r7i.xlarge: 4 CPUs 32 GB memory
-        "request_instance_type": "r7i.xlarge",
-        "use_ecr": False,
+        "SBG_PREPROCESS": {
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
+            "/preprocess/sbg-preprocess-workflow.cwl",
+            "cwl_args": {
+                "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
+                "/sbg-preprocess-workflow.dev.yml",
+                "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
+                "/sbg-preprocess-workflow.test.yml",
+            },
+            "request_storage": "10Gi",
+            # c6i.xlarge: 4vCPUs, 8 GB memory
+            # r7i.xlarge: 4 CPUs 32 GB memory
+            "request_instance_type": "r7i.xlarge",
+            "use_ecr": False,
+        },
     },
 }
 
@@ -73,35 +94,59 @@ def api_up_and_running():
     pass
 
 
-@when(parsers.parse("I trigger a dag run for the {test_case} workflow"), target_fixture="response")
-def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case):
+@when(
+    parsers.parse("I trigger a dag run for the {test_case} workflow using the {test_dag} DAG"),
+    target_fixture="response",
+)
+def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
 
-    # check that this test_case is enabled for the specified venue
-    if venue in DAG_PARAMETERS[test_case]["cwl_args"]:
-        # DAG parameters are venue dependent
-        cwl_workflow = DAG_PARAMETERS[test_case]["cwl_workflow"]
-        cwl_args = DAG_PARAMETERS[test_case]["cwl_args"][venue]
-        request_storage = DAG_PARAMETERS[test_case]["request_storage"]
-        request_instance_type = DAG_PARAMETERS[test_case]["request_instance_type"]
-        use_ecr = DAG_PARAMETERS[test_case]["use_ecr"]
+    # check that this test_case is enabled for the specified venue and test_dag
+    try:
+
+        # configuration common to all DAGs
+        job_config = {
+            "conf": {
+                "request_storage": f'{DAG_PARAMETERS[test_dag][test_case]["request_storage"]}',
+                "request_instance_type": f'{DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]}',
+                "use_ecr": DAG_PARAMETERS[test_dag][test_case]["use_ecr"],
+            }
+        }
+
+        # configuration specific to CWL_DAG
+        if test_dag == CWL_DAG_ID:
+            job_config["conf"]["cwl_workflow"] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow"]}'
+            job_config["conf"]["cwl_args"] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_args"][venue]}'
+
+        # configuration specific to CWL_DAG to CWL_DAG_MODULAR_ID
+        elif test_dag == CWL_DAG_MODULAR_ID:
+            job_config["conf"][
+                "cwl_workflow_stage_in"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_in"]}'
+            job_config["conf"]["stac_json"] = f'{DAG_PARAMETERS[test_dag][test_case]["stac_json"]}'
+            job_config["conf"][
+                "cwl_workflow_process"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_process"]}'
+            job_config["conf"][
+                "job_args_process"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_process"]}'
+            job_config["conf"][
+                "cwl_workflow_stage_out"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_out"]}'
+            job_config["conf"][
+                "job_args_stage_out"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_stage_out"][venue]}'
+
         response = requests.post(
-            f"{airflow_api_url}/api/v1/dags/{DAG_ID}/dagRuns",
+            f"{airflow_api_url}/api/v1/dags/{test_dag}/dagRuns",
             auth=airflow_api_auth,
-            json={
-                "conf": {
-                    "cwl_workflow": f"{cwl_workflow}",
-                    "cwl_args": f"{cwl_args}",
-                    "request_storage": f"{request_storage}",
-                    "request_instance_type": f"{request_instance_type}",
-                    "use_ecr": use_ecr,
-                }
-            },
+            json=job_config,
             # nosec
             verify=False,
         )
         return response
-    else:
-        print(f"Test case: {test_case} is NOT enabled for venue: {venue}, skipping")
+
+    except KeyError:
+        print(f"Test case: {test_case} is NOT enabled for DAG: {test_dag} in venue: {venue}")
         return None
 
 

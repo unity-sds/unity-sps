@@ -127,10 +127,22 @@ def ogc_processes(ogc_processes_api_url):
 @pytest.fixture(scope="session")
 def cwl_dag_process(ogc_processes):
     """
-    Selects the CWL DAG from the list of available OGC processes
+    Selects the CWL classic DAG from the list of available OGC processes
     """
 
     for p in ogc_processes:
         if p.id == "cwl_dag":
+            return p
+    return None
+
+
+@pytest.fixture(scope="session")
+def cwl_dag_modular_process(ogc_processes):
+    """
+    Selects the CWL modular DAG from the list of available OGC processes
+    """
+
+    for p in ogc_processes:
+        if p.id == "cwl_dag_modular":
             return p
     return None
