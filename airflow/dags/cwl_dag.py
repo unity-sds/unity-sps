@@ -21,7 +21,6 @@ from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
-    EC2_TYPES,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
@@ -37,6 +36,99 @@ from airflow import DAG
 # (aka the starting directory for cwl-runner).
 # This is fixed to the EFS /scratch directory in this DAG.
 # WORKING_DIR = "/scratch"
+
+EC2_TYPES = {
+    "m5ad.xlarge": {
+        "desc": "General Purpose with Local Storage",
+        "cpu": 4,
+        "memory": 16,
+    },
+    "t3.nano": {
+        "desc": "General Purpose",
+        "cpu": 1,
+        "memory": 0.5,
+    },
+    "t3.micro": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 1,
+    },
+    "t3.small": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 2,
+    },
+    "t3.medium": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 4,
+    },
+    "t3.large": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 8,
+    },
+    "t3.xlarge": {
+        "desc": "General Purpose",
+        "cpu": 4,
+        "memory": 16,
+    },
+    "t3.2xlarge": {
+        "desc": "General Purpose",
+        "cpu": 8,
+        "memory": 32,
+    },
+    "r7i.xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 4,
+        "memory": 32,
+    },
+    "r7i.2xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 8,
+        "memory": 64,
+    },
+    "r7i.4xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 16,
+        "memory": 128,
+    },
+    "r7i.8xlarge": {
+        "desc": "Memory Optimized",
+        "cpu": 32,
+        "memory": 256,
+    },
+    "c6i.xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 4,
+        "memory": 8,
+    },
+    "c6i.2xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 8,
+        "memory": 16,
+    },
+    "c6i.4xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 16,
+        "memory": 32,
+    },
+    "c6i.8xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 32,
+        "memory": 64,
+    },
+    "c6i.12xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 48,
+        "memory": 96,
+    },
+    "c6i.16xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 64,
+        "memory": 128,
+    },
+}
 
 # default parameters
 DEFAULT_CWL_WORKFLOW = (
