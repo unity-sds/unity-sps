@@ -24,10 +24,10 @@ FNAME_RE = re.compile(
 
 
 with DAG(
-    dag_id="eval_srl_edrgen_readiness",
+    dag_id="eval_srl_edrgen",
     default_args=default_args,
     schedule=None,
-    tags=["eval_srl_edrgen_readiness"],
+    tags=["eval_srl_edrgen"],
     params={
         "payload": Param(
             "s3://unity-gmanipon-ads-deployment-dev/srl/edrgen/inputs/0980_0734432789-43133-1.dat",

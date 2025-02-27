@@ -15,6 +15,8 @@ from airflow.operators.python import PythonOperator, get_current_context
 from airflow.operators.bash_operator import BashOperator
 from airflow.models.param import Param
 
+import unity_sps_utils
+
 
 default_args = {"owner": "unity-sps", "start_date": datetime.utcfromtimestamp(0)}
 
@@ -90,11 +92,13 @@ with DAG(
         arguments=prep_task,
         do_xcom_push=True,
         on_finish_action="delete_pod",
-        in_cluster=False,
+        in_cluster=True,
         get_logs=True,
+        startup_timeout_seconds=1800,
         container_logs=True,
-        # service_account_name="airflow-worker",
-        # container_security_context={"privileged": True},
+        service_account_name="airflow-worker",
+        container_security_context={"privileged": True},
+        retries=0,
         volume_mounts=[
             k8s.V1VolumeMount(
                 name="workers-volume", mount_path="/stage-in", sub_path="{{ dag_run.run_id }}/stage-in"
@@ -109,6 +113,15 @@ with DAG(
                 persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
             )
         ],
+        node_selector={
+            "karpenter.sh/nodepool": unity_sps_utils.NODE_POOL_HIGH_WORKLOAD,
+            "node.kubernetes.io/instance-type": "r7i.2xlarge",
+        },
+        labels={"pod": unity_sps_utils.POD_LABEL},
+        annotations={"karpenter.sh/do-not-disrupt": "true"},
+        affinity=unity_sps_utils.get_affinity(
+            capacity_type=["spot"], anti_affinity_label=unity_sps_utils.POD_LABEL
+        ),
     )
 
     @task

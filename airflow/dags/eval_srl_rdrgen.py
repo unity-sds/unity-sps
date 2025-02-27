@@ -52,7 +52,12 @@ with DAG(
         # ensure matches filename convention and parse filename components
         match = FNAME_RE.search(fname)
         if not match:
-            return {"success": False, "vic_url": None, "id": match.groupdict()["id"], "message": "File didn't match regex."}
+            return {
+                "success": False,
+                "vic_url": None,
+                "id": None,
+                "message": "File didn't match regex for VIC of prodType 'ECM'.",
+            }
 
         # build expected file prefixes (TODO: fix hardcoding)
         keys = {"vic": (bucket, key)}
