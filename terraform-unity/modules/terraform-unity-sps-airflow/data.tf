@@ -66,15 +66,6 @@ data "aws_ssm_parameter" "venue_proxy_baseurl" {
   name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
 }
 
-data "aws_lb" "unity_mc_nlb" {
-  name = format("%s-%s-%s", "unity-mc-nlb", var.project, var.venue)
-
-  tags = {
-    "Proj"  = var.project
-    "Venue" = var.venue
-  }
-}
-
 data "aws_iam_policy" "mcp_operator_policy" {
   name = "mcp-tenantOperator-AMI-APIG"
 }
@@ -102,7 +93,7 @@ data "aws_iam_policy_document" "inline_policy" {
 }
 
 data "aws_api_gateway_vpc_link" "rest_api_unity_vpc_link" {
-  name        = "mc-nlb-vpc-link-${var.project}-${var.venue}"
+  name = "mc-nlb-vpc-link-${var.project}-${var.venue}"
 }
 
 data "aws_api_gateway_rest_api" "rest_api" {
