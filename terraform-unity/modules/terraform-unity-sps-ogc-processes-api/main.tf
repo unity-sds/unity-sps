@@ -397,25 +397,19 @@ resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
   depends_on                       = [aws_lambda_function.cs_common_lambda_auth, data.aws_api_gateway_rest_api.rest_api]
 }
 
-resource "aws_api_gateway_vpc_link" "rest_api_health_check_vpc_link" {
-  name        = "mc-nlb-vpc-link-${var.project}-${var.venue}"
-  description = "mc-nlb-vpc-link-${var.project}-${var.venue}"
-  target_arns = [data.aws_lb.unity_mc_nlb.arn]
-}
-
-resource "aws_api_gateway_integration" "rest_api_integration_for_health_check" {
+resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
   rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
   resource_id             = aws_api_gateway_resource.rest_api_resource_health_checks_path.id
   http_method             = aws_api_gateway_method.rest_api_method_for_health_check_method.http_method
   type                    = "HTTP"
-  uri                     = format("%s://%s:%s", "http", data.aws_lb.unity_mc_nlb.dns_name, "8080/api/health_checks")
+  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/ogc/")
   integration_http_method = "GET"
   passthrough_behavior    = "WHEN_NO_TEMPLATES"
   content_handling        = "CONVERT_TO_TEXT"
   connection_type         = "VPC_LINK"
-  connection_id           = aws_api_gateway_vpc_link.rest_api_health_check_vpc_link.id
+  connection_id           = data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link.id
 
-  depends_on = [aws_api_gateway_vpc_link.rest_api_health_check_vpc_link]
+  depends_on = [data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link]
 }
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {

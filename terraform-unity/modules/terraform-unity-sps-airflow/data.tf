@@ -101,6 +101,10 @@ data "aws_iam_policy_document" "inline_policy" {
   }
 }
 
+data "aws_api_gateway_vpc_link" "rest_api_unity_vpc_link" {
+  name        = "mc-nlb-vpc-link-${var.project}-${var.venue}"
+}
+
 data "aws_api_gateway_rest_api" "rest_api" {
   name = "unity-${var.project}-${var.venue}-rest-api-gateway"
 }

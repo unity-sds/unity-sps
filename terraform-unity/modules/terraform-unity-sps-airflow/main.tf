@@ -623,12 +623,6 @@ resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
   depends_on                       = [aws_lambda_function.cs_common_lambda_auth, data.aws_api_gateway_rest_api.rest_api]
 }
 
-resource "aws_api_gateway_vpc_link" "rest_api_health_check_vpc_link" {
-  name        = "mc-nlb-vpc-link-${var.project}-${var.venue}"
-  description = "mc-nlb-vpc-link-${var.project}-${var.venue}"
-  target_arns = [data.aws_lb.unity_mc_nlb.arn]
-}
-
 resource "aws_api_gateway_integration" "rest_api_integration_for_health_check" {
   rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
   resource_id             = aws_api_gateway_resource.rest_api_resource_health_checks_path.id
@@ -639,9 +633,9 @@ resource "aws_api_gateway_integration" "rest_api_integration_for_health_check" {
   passthrough_behavior    = "WHEN_NO_TEMPLATES"
   content_handling        = "CONVERT_TO_TEXT"
   connection_type         = "VPC_LINK"
-  connection_id           = aws_api_gateway_vpc_link.rest_api_health_check_vpc_link.id
+  connection_id           = data.aws_api_gateway_vpc_link.rest_api_health_check_vpc_link.id
 
-  depends_on = [aws_api_gateway_vpc_link.rest_api_health_check_vpc_link]
+  depends_on = [data.aws_api_gateway_vpc_link.rest_api_health_check_vpc_link]
 }
 
 resource "aws_ssm_parameter" "airflow_ui_url" {
