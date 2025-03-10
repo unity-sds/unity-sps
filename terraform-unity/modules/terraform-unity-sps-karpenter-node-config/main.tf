@@ -12,13 +12,7 @@ resource "kubernetes_manifest" "karpenter_node_classes" {
       amiSelectorTerms = [{
         id = data.aws_ami.al2_eks_optimized.image_id
       }]
-      userData = <<-EOT
-        #!/bin/bash
-        echo "Starting pre-bootstrap configurations..."
-        # Custom script to enable IP forwarding
-        sudo sed -i 's/^net.ipv4.ip_forward = 0/net.ipv4.ip_forward = 1/' /etc/sysctl.conf && sudo sysctl -p |true
-        echo "Pre-bootstrap configurations applied."
-      EOT
+      userData = file("${path.module}/node-user-data.sh")
       role     = data.aws_iam_role.cluster_iam_role.name
       subnetSelectorTerms = [for subnet_id in jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"] : {
         id = subnet_id
