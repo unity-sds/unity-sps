@@ -76,3 +76,15 @@ variable "karpenter_node_pools" {
   description = "Names of the Karpenter node pools"
   type        = list(string)
 }
+
+variable "unity_cs_lambda_authorizer_function_name" {
+  type        = string
+  description = "Function name of the CS Lambda Authorizer"
+  default     = "unity-cs-common-lambda-authorizer"
+}
+
+variable "unity_cs_lambda_authorizer_zip_path" {
+  type        = string
+  description = "The URL of the CS Lambda Authorizer deployment ZIP file"
+  default     = "https://github.com/unity-sds/unity-cs-auth-lambda/releases/download/1.0.4/unity-cs-lambda-auth-1.0.4.zip"
+}

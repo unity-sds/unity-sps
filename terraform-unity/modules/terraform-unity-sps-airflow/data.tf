@@ -65,3 +65,52 @@ data "aws_ssm_parameter" "shared_services_domain" {
 data "aws_ssm_parameter" "venue_proxy_baseurl" {
   name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
 }
+
+data "aws_lb" "unity_mc_nlb" {
+  name = format("%s-%s-%s", "unity-mc-nlb", var.project, var.venue)
+
+  tags = {
+    "Proj"  = var.project
+    "Venue" = var.venue
+  }
+}
+
+data "aws_iam_policy" "mcp_operator_policy" {
+  name = "mcp-tenantOperator-AMI-APIG"
+}
+
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com", "apigateway.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
+# IAM Policy Document for Inline Policy
+data "aws_iam_policy_document" "inline_policy" {
+  statement {
+    actions = ["logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents",
+    "lambda:InvokeFunction"]
+    resources = ["*"]
+  }
+}
+
+data "aws_api_gateway_rest_api" "rest_api" {
+  name = "unity-${var.project}-${var.venue}-rest-api-gateway"
+}
+
+# Unity CS Common Lambda Authorizer Allowed Cognito User Pool ID
+data "aws_ssm_parameter" "api_gateway_cs_lambda_authorizer_cognito_user_pool_id" {
+  name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_services_region.value}:${data.aws_ssm_parameter.shared_services_account.value}:parameter/unity/shared-services/cognito/user-pool-id"
+}
+
+# Unity CS Common Lambda Authorizer Allowed Cognito User Groups List (Comma Seperated)
+data "aws_ssm_parameter" "api_gateway_cs_lambda_authorizer_cognito_user_groups_list" {
+  name = "arn:aws:ssm:${data.aws_ssm_parameter.shared_services_region.value}:${data.aws_ssm_parameter.shared_services_account.value}:parameter/unity/shared-services/cognito/default-user-groups"
+}

@@ -554,6 +554,96 @@ resource "kubernetes_service" "airflow_ingress_internal" {
   depends_on             = [helm_release.airflow]
 }
 
+resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
+  path_part   = "sps"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_api_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_management_path.id
+  path_part   = "api"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_health_checks_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_api_path.id
+  path_part   = "sps"
+}
+
+resource "aws_api_gateway_method" "rest_api_method_for_health_check_method" {
+  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id   = aws_api_gateway_resource.rest_api_resource_health_checks_path.id
+  http_method   = "GET"
+  authorization = "CUSTOM"
+  authorizer_id = aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+}
+
+resource "null_resource" "download_lambda_zip" {
+  provisioner "local-exec" {
+    command = "wget --no-check-certificate ${var.unity_cs_lambda_authorizer_zip_path}  -O ucs-common-lambda-auth.zip"
+  }
+}
+
+resource "aws_lambda_function" "cs_common_lambda_auth" {
+  filename      = "ucs-common-lambda-auth.zip"
+  function_name = "${var.project}-${var.venue}-${var.unity_cs_lambda_authorizer_function_name}"
+  role          = aws_iam_role.iam_for_lambda_auth.arn
+  handler       = "index.handler"
+  runtime       = "nodejs20.x"
+  depends_on    = [null_resource.download_lambda_zip]
+
+  environment {
+    variables = {
+      COGNITO_CLIENT_ID_LIST = "deprecated"
+      COGNITO_USER_POOL_ID   = data.aws_ssm_parameter.api_gateway_cs_lambda_authorizer_cognito_user_pool_id.value
+      COGNITO_GROUPS_ALLOWED = data.aws_ssm_parameter.api_gateway_cs_lambda_authorizer_cognito_user_groups_list.value
+    }
+  }
+}
+
+resource "aws_iam_role" "iam_for_lambda_auth" {
+  name = "${var.project}-${var.venue}-iam_for_lambda_auth"
+  inline_policy {
+    name   = "unity-cs-lambda-auth-inline-policy"
+    policy = data.aws_iam_policy_document.inline_policy.json
+  }
+  assume_role_policy   = data.aws_iam_policy_document.assume_role.json
+  permissions_boundary = data.aws_iam_policy.mcp_operator_policy.arn
+}
+
+resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
+  name                             = "Unity_CS_Common_Authorizer"
+  rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
+  authorizer_uri                   = aws_lambda_function.cs_common_lambda_auth.invoke_arn
+  authorizer_credentials           = aws_iam_role.iam_for_lambda_auth.arn
+  authorizer_result_ttl_in_seconds = 0
+  identity_source                  = "method.request.header.Authorization"
+  depends_on                       = [aws_lambda_function.cs_common_lambda_auth, data.aws_api_gateway_rest_api.rest_api]
+}
+
+resource "aws_api_gateway_vpc_link" "rest_api_health_check_vpc_link" {
+  name        = "mc-nlb-vpc-link-${var.project}-${var.venue}"
+  description = "mc-nlb-vpc-link-${var.project}-${var.venue}"
+  target_arns = [data.aws_lb.unity_mc_nlb.arn]
+}
+
+resource "aws_api_gateway_integration" "rest_api_integration_for_health_check" {
+  rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.rest_api_resource_health_checks_path.id
+  http_method             = aws_api_gateway_method.rest_api_method_for_health_check_method.http_method
+  type                    = "HTTP"
+  uri                     = format("%s://%s:%s", "http", data.aws_lb.unity_mc_nlb.dns_name, "8080/api/health_checks")
+  integration_http_method = "GET"
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
+  content_handling        = "CONVERT_TO_TEXT"
+  connection_type         = "VPC_LINK"
+  connection_id           = aws_api_gateway_vpc_link.rest_api_health_check_vpc_link.id
+
+  depends_on = [aws_api_gateway_vpc_link.rest_api_health_check_vpc_link]
+}
+
 resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
