@@ -32,13 +32,20 @@ with DAG(
         dag_run_id = context["dag_run"].run_id
         start = params["start_index"]
         end = params["end_index"]
-        return [{"conf": {"first_val": i, "second_val": i}} for i in range(start, end)]
+        ret_list = []
+        for i in range(start, end):
+            ret_list.append(
+                {
+                    "trigger_dag_id": "test_sum" if i % 2 == 0 else "test_sum2",
+                    "conf": {"first_val": i, "second_val": i},
+                }
+            )
+        return ret_list
 
     enumerate_list_task = enumerate_list()
 
     trigger_sum_task = TriggerDagRunOperator.partial(
         task_id="trigger_sum",
-        trigger_dag_id="test_sum",
         reset_dag_run=True,
         map_index_template="{{ task.trigger_run_id }}",
         wait_for_completion=False,
