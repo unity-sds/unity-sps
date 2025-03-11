@@ -4,17 +4,16 @@ import subprocess
 from datetime import datetime
 from urllib.parse import urlparse
 
+from airflow.decorators import task
+from airflow.exceptions import AirflowFailException
+from airflow.models.param import Param
+from airflow.operators.python import PythonOperator, ShortCircuitOperator, get_current_context
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 
 from airflow import DAG
-from airflow.decorators import task
-from airflow.operators.trigger_dagrun import TriggerDagRunOperator
-from airflow.utils.trigger_rule import TriggerRule
-from airflow.operators.python import PythonOperator, get_current_context, ShortCircuitOperator
-from airflow.models.param import Param
-from airflow.exceptions import AirflowFailException
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-
 
 default_args = {"owner": "unity-sps", "start_date": datetime.utcfromtimestamp(0)}
 

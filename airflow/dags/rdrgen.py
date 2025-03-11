@@ -1,22 +1,20 @@
 import os
-import subprocess
 import shutil
+import subprocess
 from datetime import datetime
-from urllib.parse import urlparse
 from glob import glob
+from urllib.parse import urlparse
 
+import unity_sps_utils
+from airflow.decorators import task
+from airflow.models.param import Param
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python import PythonOperator, get_current_context
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
 from airflow import DAG
-from airflow.decorators import task
-from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
-from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.operators.python import PythonOperator, get_current_context
-from airflow.operators.bash_operator import BashOperator
-from airflow.models.param import Param
-
-import unity_sps_utils
-
 
 default_args = {"owner": "unity-sps", "start_date": datetime.utcfromtimestamp(0)}
 
@@ -130,7 +128,7 @@ with DAG(
         labels={"pod": unity_sps_utils.POD_LABEL},
         annotations={"karpenter.sh/do-not-disrupt": "true"},
         affinity=unity_sps_utils.get_affinity(
-            capacity_type=["spot"], anti_affinity_label=unity_sps_utils.POD_LABEL
+            capacity_type=["on-demand"], anti_affinity_label=unity_sps_utils.POD_LABEL
         ),
     )
 
