@@ -1,17 +1,14 @@
 import os
 import re
-import subprocess
 from datetime import datetime
-from urllib.parse import urlparse
 
 from airflow.decorators import task
 from airflow.exceptions import AirflowFailException
 from airflow.models.param import Param
-from airflow.operators.python import PythonOperator, ShortCircuitOperator, get_current_context
+from airflow.operators.python import get_current_context
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.utils.trigger_rule import TriggerRule
-from kubernetes.client import models as k8s
 
 from airflow import DAG
 
@@ -37,8 +34,6 @@ with DAG(
 
     @task
     def evaluate_edrgen(params: dict):
-        context = get_current_context()
-        dag_run_id = context["dag_run"].run_id
         s3_hook = S3Hook()
 
         # parse triggering payload
