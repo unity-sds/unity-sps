@@ -24,7 +24,9 @@ from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import (
+from unity_sps_utils import (  
+    CS_SHARED_SERVICES_ACCOUNT_ID,
+    CS_SHARED_SERVICES_ACCOUNT_REGION,
     DEFAULT_LOG_LEVEL,
     DS_S3_BUCKET_PARAM,
     EC2_TYPES,
@@ -33,6 +35,7 @@ from unity_sps_utils import (
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
+    SPS_COGNITO_CLIENT_ID,
     SPS_DOCKER_CWL_IMAGE,
     build_ec2_type_label,
     get_affinity,
@@ -41,7 +44,8 @@ from unity_sps_utils import (
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_in_log_level.cwl"
+SSM_CLIENT = boto3.client("ssm", region_name="us-west-2")
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/351-stage-in-unity/demos/cwl_dag_modular_stage_in.cwl"
 STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_out_cwl_log_level.cwl"
 LOCAL_DIR = "/shared-task-data"
 
@@ -120,6 +124,9 @@ dag = DAG(
         "request_storage": Param(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
+        "stac_auth_type": Param(
+            "DAAC", type="string", enum=["DAAC", "UNITY"], title="STAC JSON authentication type"
+        ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
     },
 )
@@ -167,13 +174,32 @@ def select_ecr(ti, use_ecr):
         logging.info("ECR login: %s", ecr_login)
 
 
+def select_stage_in(ti, stac_json, stac_auth_type):
+    """Retrieve stage in arguments based on authentication type parameter."""
+    stage_in_args = {"stac_json": stac_json, "stac_auth_type": stac_auth_type}
+    if stac_auth_type == "UNITY":
+        shared_services_account = SSM_CLIENT.get_parameter(
+            Name=CS_SHARED_SERVICES_ACCOUNT_ID, WithDecryption=True
+        )["Parameter"]["Value"]
+        shared_services_region = SSM_CLIENT.get_parameter(
+            Name=CS_SHARED_SERVICES_ACCOUNT_REGION, WithDecryption=True
+        )["Parameter"]["Value"]
+        unity_client_id = SSM_CLIENT.get_parameter(
+            Name=f"arn:aws:ssm:{shared_services_region}:{shared_services_account}:parameter{SPS_COGNITO_CLIENT_ID}",
+            WithDecryption=True,
+        )["Parameter"]["Value"]
+        stage_in_args["unity_client_id"] = unity_client_id
+
+    stage_in_args = json.dumps(stage_in_args)
+    logging.info(f"Selecting stage in args={stage_in_args}")
+    ti.xcom_push(key="stage_in_args", value=stage_in_args)
+
+
 def select_stage_out(ti):
     """Retrieve stage out input parameters from SSM parameter store."""
-    ssm_client = boto3.client("ssm", region_name="us-west-2")
-
     project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
     venue = os.environ["AIRFLOW_VAR_UNITY_VENUE"]
-    staging_bucket = ssm_client.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
+    staging_bucket = SSM_CLIENT.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
         "Value"
     ]
 
@@ -198,6 +224,9 @@ def setup(ti=None, **context):
 
     # select "use_ecr" argument and determine if ECR login is required
     select_ecr(ti, context["params"]["use_ecr"])
+
+    # retrieve stage in auth type and arguments
+    select_stage_in(ti, context["params"]["stac_json"], context["params"]["stac_auth_type"])
 
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
@@ -224,7 +253,7 @@ cwl_task_processing = KubernetesPodOperator(
         "-i",
         STAGE_IN_WORKFLOW,
         "-s",
-        "{{ params.stac_json }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='stage_in_args') }}",
         "-w",
         "{{ params.process_workflow }}",
         "-j",
