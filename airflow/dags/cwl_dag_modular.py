@@ -24,7 +24,7 @@ from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import (  
+from unity_sps_utils import (
     CS_SHARED_SERVICES_ACCOUNT_ID,
     CS_SHARED_SERVICES_ACCOUNT_REGION,
     DEFAULT_LOG_LEVEL,
