@@ -124,8 +124,8 @@ dag = DAG(
         "request_storage": Param(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
-        "stac_auth_type": Param(
-            "DAAC", type="string", enum=["DAAC", "UNITY"], title="STAC JSON authentication type"
+        "unity_stac_auth_type": Param(
+            False, type="boolean", title="STAC JSON authentication for Unity hosted files"
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
     },
@@ -174,10 +174,10 @@ def select_ecr(ti, use_ecr):
         logging.info("ECR login: %s", ecr_login)
 
 
-def select_stage_in(ti, stac_json, stac_auth_type):
+def select_stage_in(ti, stac_json, unity_stac_auth_type):
     """Retrieve stage in arguments based on authentication type parameter."""
-    stage_in_args = {"stac_json": stac_json, "stac_auth_type": stac_auth_type}
-    if stac_auth_type == "UNITY":
+    stage_in_args = {"stac_json": stac_json, "stac_auth_type": "NONE"}
+    if unity_stac_auth_type:
         shared_services_account = SSM_CLIENT.get_parameter(
             Name=CS_SHARED_SERVICES_ACCOUNT_ID, WithDecryption=True
         )["Parameter"]["Value"]
@@ -189,6 +189,7 @@ def select_stage_in(ti, stac_json, stac_auth_type):
             WithDecryption=True,
         )["Parameter"]["Value"]
         stage_in_args["unity_client_id"] = unity_client_id
+        stage_in_args["stac_auth_type"] = "UNITY"
 
     stage_in_args = json.dumps(stage_in_args)
     logging.info(f"Selecting stage in args={stage_in_args}")
@@ -226,7 +227,7 @@ def setup(ti=None, **context):
     select_ecr(ti, context["params"]["use_ecr"])
 
     # retrieve stage in auth type and arguments
-    select_stage_in(ti, context["params"]["stac_json"], context["params"]["stac_auth_type"])
+    select_stage_in(ti, context["params"]["stac_json"], context["params"]["unity_stac_auth_type"])
 
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
