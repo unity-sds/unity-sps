@@ -21,10 +21,10 @@ SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.5"
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
-DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 CS_SHARED_SERVICES_ACCOUNT_ID = "/unity/shared-services/aws/account"
 CS_SHARED_SERVICES_ACCOUNT_REGION = "/unity/shared-services/aws/account/region"
-SPS_COGNITO_CLIENT_ID = "/unity/shared-services/cognito/airflow-ui-client-id"
+DS_COGNITO_CLIENT_ID = "/unity/shared-services/dapa/client-id"
+DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
 DEFAULT_LOG_LEVEL = 20
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}

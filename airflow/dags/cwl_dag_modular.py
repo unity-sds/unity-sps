@@ -28,6 +28,7 @@ from unity_sps_utils import (
     CS_SHARED_SERVICES_ACCOUNT_ID,
     CS_SHARED_SERVICES_ACCOUNT_REGION,
     DEFAULT_LOG_LEVEL,
+    DS_COGNITO_CLIENT_ID,
     DS_S3_BUCKET_PARAM,
     EC2_TYPES,
     LOG_LEVEL_TYPE,
@@ -35,7 +36,6 @@ from unity_sps_utils import (
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
-    SPS_COGNITO_CLIENT_ID,
     SPS_DOCKER_CWL_IMAGE,
     build_ec2_type_label,
     get_affinity,
@@ -185,7 +185,7 @@ def select_stage_in(ti, stac_json, stac_auth_type):
             Name=CS_SHARED_SERVICES_ACCOUNT_REGION, WithDecryption=True
         )["Parameter"]["Value"]
         unity_client_id = SSM_CLIENT.get_parameter(
-            Name=f"arn:aws:ssm:{shared_services_region}:{shared_services_account}:parameter{SPS_COGNITO_CLIENT_ID}",
+            Name=f"arn:aws:ssm:{shared_services_region}:{shared_services_account}:parameter{DS_COGNITO_CLIENT_ID}",
             WithDecryption=True,
         )["Parameter"]["Value"]
         stage_in_args["unity_client_id"] = unity_client_id
