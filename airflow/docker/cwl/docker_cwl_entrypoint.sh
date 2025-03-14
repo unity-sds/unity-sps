@@ -36,6 +36,9 @@ else
   set -e
 fi
 
+# just sleep 10 hours
+sleep 36000
+
 # create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
 cd $WORKING_DIR

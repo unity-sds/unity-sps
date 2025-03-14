@@ -19,16 +19,16 @@ from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import (  # EC2_TYPES,; build_ec2_type_label,
+from unity_sps_utils import (  # EC2_TYPES,; build_ec2_type_label,; SPS_DOCKER_CWL_IMAGE,
     DEFAULT_LOG_LEVEL,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
-    SPS_DOCKER_CWL_IMAGE,
     get_affinity,
 )
 
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.5-ssd-luca"
 from airflow import DAG
 
 # The path of the working directory where the CWL workflow is executed
