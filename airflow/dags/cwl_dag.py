@@ -19,13 +19,15 @@ from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import (  # EC2_TYPES,; build_ec2_type_label,
+from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
+    EC2_TYPES,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
     SPS_DOCKER_CWL_IMAGE,
+    build_ec2_type_label,
     get_affinity,
 )
 
@@ -52,89 +54,6 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
 )
 
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
-
-EC2_TYPES = {
-    "m5ad.xlarge": {
-        "desc": "General Purpose",
-        "cpu": 4,
-        "memory": 16,
-    },
-    "t3.micro": {
-        "desc": "General Purpose",
-        "cpu": 1,
-        "memory": 1,
-    },
-    "t3.small": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 2,
-    },
-    "t3.medium": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 4,
-    },
-    "t3.large": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 8,
-    },
-    "t3.xlarge": {
-        "desc": "General Purpose",
-        "cpu": 4,
-        "memory": 16,
-    },
-    "t3.2xlarge": {
-        "desc": "General Purpose",
-        "cpu": 8,
-        "memory": 32,
-    },
-    "r7i.xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 4,
-        "memory": 32,
-    },
-    "r7i.2xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 8,
-        "memory": 64,
-    },
-    "r7i.4xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 16,
-        "memory": 128,
-    },
-    "r7i.8xlarge": {
-        "desc": "Memory Optimized",
-        "cpu": 32,
-        "memory": 256,
-    },
-    "c6i.xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 4,
-        "memory": 8,
-    },
-    "c6i.2xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 8,
-        "memory": 16,
-    },
-    "c6i.4xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 16,
-        "memory": 32,
-    },
-    "c6i.8xlarge": {
-        "desc": "Compute Optimized",
-        "cpu": 32,
-        "memory": 64,
-    },
-}
-
-
-def build_ec2_type_label(key):
-    return f"{key} ({EC2_TYPES.get(key)['desc']}: {EC2_TYPES.get(key)['cpu']}vCPU, {EC2_TYPES.get(key)['memory']}GiB)"
-
 
 # Default DAG configuration
 dag_default_args = {
@@ -183,7 +102,9 @@ dag = DAG(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
-        "use_instance_store": Param(False, type="boolean", title="Use SSD instance store (overrides instance type selection)")
+        "use_instance_store": Param(
+            False, type="boolean", title="Use SSD instance store (overrides instance type selection)"
+        ),
     },
 )
 
@@ -275,7 +196,7 @@ cwl_task = KubernetesPodOperator(
     # ],
     volume_mounts=[
         k8s.V1VolumeMount(name="workers-data", mount_path=WORKING_DIR),
-        k8s.V1VolumeMount(name="workers-docker", mount_path="/var/lib/docker/")
+        k8s.V1VolumeMount(name="workers-docker", mount_path="/var/lib/docker/"),
     ],
     volumes=[
         k8s.V1Volume(
@@ -285,7 +206,7 @@ cwl_task = KubernetesPodOperator(
         k8s.V1Volume(
             name="workers-docker",
             empty_dir=k8s.V1EmptyDirVolumeSource(medium=""),
-        )
+        ),
     ],
     dag=dag,
     node_selector={

@@ -101,7 +101,7 @@ EC2_TYPES = {
         "desc": "General Purpose",
         "cpu": 4,
         "memory": 16,
-    }
+    },
 }
 
 
