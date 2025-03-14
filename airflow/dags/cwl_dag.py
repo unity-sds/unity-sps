@@ -35,11 +35,10 @@ from airflow import DAG
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
-# This is fixed to /data for the Kubernetes emptyDir use of SSD instance store
-WORKING_DIR = "/data"
-
 # This is fixed to the EFS /scratch directory in this DAG.
 # WORKING_DIR = "/scratch"
+WORKING_DIR = "/data"
+
 
 # default parameters
 DEFAULT_CWL_WORKFLOW = (
