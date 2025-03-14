@@ -24,8 +24,7 @@ fi
 # Create a filesystem path to mount the disk
 # The location is CRITIAL here. It it root path used by kubelets to host
 # the scratch directories requested by Pods
-# MOUNT_LOCATION="/var/lib/kubelet/pods"
-MOUNT_LOCATION="/data"
+MOUNT_LOCATION="/var/lib/kubelet/pods"
 mkdir -p $MOUNT_LOCATION
 
 #

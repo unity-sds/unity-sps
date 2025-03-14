@@ -269,18 +269,18 @@ cwl_task = KubernetesPodOperator(
     #         persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="airflow-kpo"),
     #     )
     # ],
-    # volume_mounts=[k8s.V1VolumeMount(name="workers-data", mount_path=WORKING_DIR)],
-    # volumes=[
-    #     k8s.V1Volume(
-    #         name="workers-data",
-    #         empty_dir=k8s.V1EmptyDirVolumeSource(medium=""),
-    #     )
-    # ],
-    volume_mounts=[k8s.V1VolumeMount(name="workers-data", mount_path=WORKING_DIR)],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="workers-data", mount_path=WORKING_DIR),
+        k8s.V1VolumeMount(name="workers-docker", mount_path="/var/lib/docker/")
+    ],
     volumes=[
         k8s.V1Volume(
             name="workers-data",
-            host_path=k8s.V1HostPathVolumeSource(path=WORKING_DIR, type="DirectoryOrCreate"),
+            empty_dir=k8s.V1EmptyDirVolumeSource(medium=""),
+        ),
+        k8s.V1Volume(
+            name="workers-docker",
+            empty_dir=k8s.V1EmptyDirVolumeSource(medium=""),
         )
     ],
     dag=dag,
