@@ -101,9 +101,6 @@ dag = DAG(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
-        "use_instance_store": Param(
-            False, type="boolean", title="Use SSD instance store (overrides instance type selection)"
-        ),
     },
 )
 
@@ -128,11 +125,8 @@ def setup(ti=None, **context):
     container_storage = int(storage[0:-2])  # 100
     ti.xcom_push(key="container_storage", value=container_storage)
 
-    # determine if selecting instance store
-    if context["params"]["use_instance_store"]:
-        instance_type = "m5ad.xlarge"
-    else:
-        instance_type = context["params"]["request_instance_type"]
+    # from "t3.large (General Purpose: 2vCPU, 8GiB)" to "t3.large"
+    instance_type = context["params"]["request_instance_type"]
     cpu = EC2_TYPES[instance_type]["cpu"]
     memory = EC2_TYPES[instance_type]["memory"]
     ti.xcom_push(key="instance_type", value=instance_type)

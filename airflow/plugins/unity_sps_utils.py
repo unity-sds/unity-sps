@@ -97,10 +97,25 @@ EC2_TYPES = {
         "cpu": 32,
         "memory": 64,
     },
+    "m5ad.large": {
+        "desc": "General Purpose",
+        "cpu": 2,
+        "memory": 8,
+    },
     "m5ad.xlarge": {
         "desc": "General Purpose",
         "cpu": 4,
         "memory": 16,
+    },
+    "m5ad.2xlarge": {
+        "desc": "General Purpose",
+        "cpu": 8,
+        "memory": 32,
+    },
+    "m5ad.4xlarge": {
+        "desc": "General Purpose",
+        "cpu": 16,
+        "memory": 64,
     },
 }
 
