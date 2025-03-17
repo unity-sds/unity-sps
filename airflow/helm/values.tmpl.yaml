@@ -93,10 +93,10 @@ scheduler:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["c6i", "c5"] # Choosing compute-optimized instances
+            values: ["r5"] # Choosing compute-optimized instances
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["2", "4"] # Scheduler might benefit from higher CPU
+            values: ["8"] # Scheduler might benefit from higher CPU
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -124,6 +124,22 @@ postgresql:
 pgbouncer:
   enabled: true
   replicas: 3
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-core-components"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "karpenter.sh/capacity-type"
+                operator: "In"
+                values: [ "on-demand" ]
+              - key: "karpenter.k8s.aws/instance-family"
+                operator: "In"
+                values: [ "r5" ] # Choosing compute-optimized instances
+              - key: "karpenter.k8s.aws/instance-cpu"
+                operator: "In"
+                values: [ "8" ] # Scheduler might benefit from higher CPU
 
 webserverSecretKeySecretName: ${webserver_secret_name}
 
@@ -147,10 +163,10 @@ webserver:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["c6i", "c5"] # Choosing compute-optimized instances
+            values: ["r5"] # Choosing compute-optimized instances
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["2", "4"] # Balancing between CPU and memory
+            values: ["8"] # Balancing between CPU and memory
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -184,10 +200,10 @@ workers:
         - matchExpressions:
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["t3"]
+            values: ["r5"]
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["2", "4"]
+            values: ["8"]
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -263,6 +279,22 @@ dags:
 dagProcessor:
   enabled: true
   replicas: 3
+  nodeSelector:
+    "karpenter.sh/nodepool": "airflow-core-components"
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: "karpenter.sh/capacity-type"
+                operator: "In"
+                values: [ "on-demand" ]
+              - key: "karpenter.k8s.aws/instance-family"
+                operator: "In"
+                values: [ "r5" ] # Choosing compute-optimized instances
+              - key: "karpenter.k8s.aws/instance-cpu"
+                operator: "In"
+                values: [ "8" ] # Scheduler might benefit from higher CPU
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"

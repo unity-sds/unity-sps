@@ -156,7 +156,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5", "m5ad"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -199,7 +199,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5", "m5ad"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -219,7 +219,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["32769"] // 32 GiB = 32768 MiB
+          values   = ["65537"] // 64 GiB = 65536 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -242,7 +242,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5", "m5ad"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -252,17 +252,17 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-cpu"
           operator = "Lt"
-          values   = ["9"] // To 8 inclusive
+          values   = ["17"] // To 16 inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // From 8 GB inclusive
+          values   = ["4095"] // From 4 GB inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["32769"] // To 32 GB inclusive
+          values   = ["65537"] // To 64 GB inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -285,7 +285,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5", "m5ad"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -300,12 +300,12 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["8191"] // From 8 GB inclusive
+          values   = ["4095"] // From 4 GB inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["32769"] // To 32 GB inclusive
+          values   = ["65537"] // To 64 GB inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
