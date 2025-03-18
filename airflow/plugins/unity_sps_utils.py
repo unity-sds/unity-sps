@@ -27,16 +27,16 @@ DEFAULT_LOG_LEVEL = 20
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
 
 EC2_TYPES = {
-    "t3.nano": {
-        "desc": "General Purpose",
-        "cpu": 1,
-        "memory": 0.5,
-    },
-    "t3.micro": {
-        "desc": "General Purpose",
-        "cpu": 2,
-        "memory": 1,
-    },
+    # "t3.nano": {
+    #     "desc": "General Purpose",
+    #     "cpu": 1,
+    #     "memory": 0.5,
+    # },
+    # "t3.micro": {
+    #     "desc": "General Purpose",
+    #     "cpu": 2,
+    #     "memory": 1,
+    # },
     "t3.small": {
         "desc": "General Purpose",
         "cpu": 2,
