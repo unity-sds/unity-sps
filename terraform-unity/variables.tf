@@ -73,7 +73,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.4.0"
+      tag  = "2.5.6"
     }
   }
 }
@@ -176,7 +176,8 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["131073"] // 128 GiB = 131072 MiB
+          # values   = ["131073"] // 128 GiB = 131072 MiB
+          values = ["262145"] // 256 GiB = 262144 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -214,7 +215,8 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["4095"] // 4 GiB = 4096 MiB
+          # values   = ["4095"] // 4 GiB = 4096 MiB
+          values = ["511"] // 0.5 GiB = 512 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
@@ -334,7 +336,7 @@ variable "dag_catalog_repo" {
   })
   default = {
     url                 = "https://github.com/unity-sds/unity-sps.git"
-    ref                 = "2.4.0"
+    ref                 = "2.5.6"
     dags_directory_path = "airflow/dags"
   }
 }

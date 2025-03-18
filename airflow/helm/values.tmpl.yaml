@@ -93,10 +93,11 @@ scheduler:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["r5"] # Choosing compute-optimized instances
+            # values: ["c6i", "c5"] # Choosing compute-optimized instances
+            values: ["r5"] # Choosing memory-optimized instance
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["8"] # Scheduler might benefit from higher CPU
+            values: ["8"]
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -136,7 +137,8 @@ pgbouncer:
                 values: [ "on-demand" ]
               - key: "karpenter.k8s.aws/instance-family"
                 operator: "In"
-                values: [ "r5" ] # Choosing compute-optimized instances
+                # values: ["c6i", "c5"] # Choosing compute-optimized instances
+                values: [ "r5" ] # Choosing memory-optimized instance
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
                 values: [ "8" ] # Scheduler might benefit from higher CPU
@@ -163,7 +165,8 @@ webserver:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["r5"] # Choosing compute-optimized instances
+            # values: ["c6i", "c5"] # Choosing compute-optimized instances
+            values: ["r5"] # Choosing memory-optimized instance
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["8"] # Balancing between CPU and memory
@@ -200,7 +203,8 @@ workers:
         - matchExpressions:
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            values: ["r5"]
+            # values: ["c6i", "c5"] # Choosing compute-optimized instances
+            values: ["r5"] # Choosing memory-optimized instance
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
             values: ["8"]
@@ -291,7 +295,8 @@ dagProcessor:
                 values: [ "on-demand" ]
               - key: "karpenter.k8s.aws/instance-family"
                 operator: "In"
-                values: [ "r5" ] # Choosing compute-optimized instances
+                # values: ["c6i", "c5"] # Choosing compute-optimized instances
+                values: [ "r5" ] # Choosing memory-optimized instance
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
                 values: [ "8" ] # Scheduler might benefit from higher CPU

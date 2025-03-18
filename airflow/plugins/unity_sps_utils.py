@@ -27,9 +27,19 @@ DEFAULT_LOG_LEVEL = 20
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
 
 EC2_TYPES = {
-    "t3.micro": {
+    "m5ad.xlarge": {
+        "desc": "General Purpose with Local Storage",
+        "cpu": 4,
+        "memory": 16,
+    },
+    "t3.nano": {
         "desc": "General Purpose",
         "cpu": 1,
+        "memory": 0.5,
+    },
+    "t3.micro": {
+        "desc": "General Purpose",
+        "cpu": 2,
         "memory": 1,
     },
     "t3.small": {
@@ -96,6 +106,16 @@ EC2_TYPES = {
         "desc": "Compute Optimized",
         "cpu": 32,
         "memory": 64,
+    },
+    "c6i.12xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 48,
+        "memory": 96,
+    },
+    "c6i.16xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 64,
+        "memory": 128,
     },
 }
 
