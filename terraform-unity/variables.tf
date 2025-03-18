@@ -161,7 +161,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-cpu"
           operator = "Gt"
-          values   = ["1"] // From 2 inclusive
+          values   = ["0"] // From 0.5 inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -171,7 +171,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Gt"
-          values   = ["4095"] // 4 GiB = 4096 MiB
+          values   = ["511"] // 0.5 GiB = 512 MiB
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
@@ -205,7 +205,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-cpu"
           operator = "Gt"
-          values   = ["1"] // From 2 inclusive
+          values   = ["0"] // From 0.5 inclusive
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
