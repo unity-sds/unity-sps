@@ -186,8 +186,8 @@ variable "karpenter_node_pools" {
         }
       ]
       limits = {
-        cpu    = "528"    // 11 x 48
-        memory = "1056Gi" // 11 x 96
+        cpu    = "6400"    # 64 CPU X 100
+        memory = "12800Gi" # 128 Gi X 100
       }
       disruption = {
         consolidationPolicy = "WhenEmpty"
@@ -230,8 +230,8 @@ variable "karpenter_node_pools" {
         }
       ]
       limits = {
-        cpu    = "100"
-        memory = "400Gi"
+        cpu    = "6400"    # 64 CPU X 100
+        memory = "12800Gi" # 128 Gi X 100
       }
       disruption = {
         consolidationPolicy = "WhenEmpty"
