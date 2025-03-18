@@ -27,11 +27,6 @@ DEFAULT_LOG_LEVEL = 20
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
 
 EC2_TYPES = {
-    "m5ad.xlarge": {
-        "desc": "General Purpose with Local Storage",
-        "cpu": 4,
-        "memory": 16,
-    },
     "t3.nano": {
         "desc": "General Purpose",
         "cpu": 1,
@@ -116,6 +111,21 @@ EC2_TYPES = {
         "desc": "Compute Optimized",
         "cpu": 64,
         "memory": 128,
+    },
+    "m5ad.xlarge": {
+        "desc": "General Purpose with SSD storage",
+        "cpu": 4,
+        "memory": 16,
+    },
+    "m5ad.2xlarge": {
+        "desc": "General Purpose with SSD storage",
+        "cpu": 8,
+        "memory": 32,
+    },
+    "m5ad.4xlarge": {
+        "desc": "General Purpose with SSD storage",
+        "cpu": 16,
+        "memory": 64,
     },
 }
 
