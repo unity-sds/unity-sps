@@ -340,15 +340,15 @@ resource "aws_api_gateway_resource" "rest_api_resource_api_path" {
   path_part   = "api"
 }
 
-resource "aws_api_gateway_resource" "rest_api_resource_health_checks_path" {
+resource "aws_api_gateway_resource" "rest_api_resource_ogc_api_path" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
   parent_id   = aws_api_gateway_resource.rest_api_resource_api_path.id
   path_part   = "ogc"
 }
 
-resource "aws_api_gateway_method" "rest_api_method_for_health_check_method" {
+resource "aws_api_gateway_method" "rest_api_method_for_ogc_api_method" {
   rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id   = aws_api_gateway_resource.rest_api_resource_health_checks_path.id
+  resource_id   = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
   http_method   = "GET"
   authorization = "CUSTOM"
   authorizer_id = aws_api_gateway_authorizer.unity_cs_common_authorizer.id
@@ -399,8 +399,8 @@ resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
 
 resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
   rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.rest_api_resource_health_checks_path.id
-  http_method             = aws_api_gateway_method.rest_api_method_for_health_check_method.http_method
+  resource_id             = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
+  http_method             = aws_api_gateway_method.rest_api_method_for_ogc_api_method.http_method
   type                    = "HTTP"
   uri                     = format("%s://%s:%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/ogc/")
   integration_http_method = "GET"
