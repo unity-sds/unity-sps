@@ -113,17 +113,17 @@ EC2_TYPES = {
         "memory": 128,
     },
     "m5ad.xlarge": {
-        "desc": "General Purpose with SSD storage",
+        "desc": "General Purpose with SSD local storage",
         "cpu": 4,
         "memory": 16,
     },
     "m5ad.2xlarge": {
-        "desc": "General Purpose with SSD storage",
+        "desc": "General Purpose with SSD local storage",
         "cpu": 8,
         "memory": 32,
     },
     "m5ad.4xlarge": {
-        "desc": "General Purpose with SSD storage",
+        "desc": "General Purpose with SSD local storage",
         "cpu": 16,
         "memory": 64,
     },
