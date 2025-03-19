@@ -4,7 +4,7 @@ FROM docker:25.0.3-dind
 
 # install Python
 RUN apk add --update --no-cache python3 && ln -sf python3 /usr/bin/python
-RUN apk add gcc musl-dev linux-headers python3-dev jq
+RUN apk add gcc musl-dev linux-headers python3-dev jq curl
 RUN apk add --no-cache python3 py3-pip
 RUN apk add vim
 
