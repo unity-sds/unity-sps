@@ -25,21 +25,27 @@ from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperato
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
-    CS_SHARED_SERVICES_ACCOUNT_ID,
-    CS_SHARED_SERVICES_ACCOUNT_REGION,
+    # CS_SHARED_SERVICES_ACCOUNT_ID,
+    # CS_SHARED_SERVICES_ACCOUNT_REGION,
     DEFAULT_LOG_LEVEL,
-    DS_COGNITO_CLIENT_ID,
-    DS_S3_BUCKET_PARAM,
+    # DS_COGNITO_CLIENT_ID,
+    # DS_S3_BUCKET_PARAM,
     EC2_TYPES,
     LOG_LEVEL_TYPE,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
-    SPS_DOCKER_CWL_IMAGE,
+    # SPS_DOCKER_CWL_IMAGE,
     build_ec2_type_label,
     get_affinity,
 )
+
+CS_SHARED_SERVICES_ACCOUNT_ID = "/unity/shared-services/aws/account"
+CS_SHARED_SERVICES_ACCOUNT_REGION = "/unity/shared-services/aws/account/region"
+DS_COGNITO_CLIENT_ID = "/unity/shared-services/dapa/client-id"
+DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:351-stage-in-unity"
 
 from airflow import DAG
 
@@ -198,7 +204,8 @@ def select_stage_in(ti, stac_json, unity_stac_auth_type):
 
 def select_stage_out(ti):
     """Retrieve stage out input parameters from SSM parameter store."""
-    project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
+    # project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
+    project = "unity"
     venue = os.environ["AIRFLOW_VAR_UNITY_VENUE"]
     staging_bucket = SSM_CLIENT.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
         "Value"
