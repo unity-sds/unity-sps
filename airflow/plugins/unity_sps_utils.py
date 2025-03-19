@@ -112,6 +112,21 @@ EC2_TYPES = {
         "cpu": 64,
         "memory": 128,
     },
+    "c6id.xlarge": {
+        "desc": "Compute Optimized with SSD local storage",
+        "cpu": 4,
+        "memory": 8,
+    },
+    "c6id.2xlarge": {
+        "desc": "Compute Optimized with SSD local storage",
+        "cpu": 8,
+        "memory": 16,
+    },
+    "c6id.4xlarge": {
+        "desc": "Compute Optimized with SSD local storage",
+        "cpu": 16,
+        "memory": 32,
+    },
     "m5ad.xlarge": {
         "desc": "General Purpose with SSD local storage",
         "cpu": 4,

@@ -17,7 +17,7 @@ echo "Instance family: $instance_family"
 #
 # Exit if instance family does not support NVME SSD instance store
 #
-if [[ $instance_family != "m5ad" ]]; then
+if [[ $instance_family != "m5ad" ]] && [[ $instance_family != "c6id" ]]; then
   exit 0
 fi
 
