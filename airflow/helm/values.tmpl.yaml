@@ -362,3 +362,7 @@ extraEnv: |
     value: "10"
   - name: AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL
     value: "5"
+  - name: AIRFLOW__CORE__DEFAULT_POOL_TASK_SLOT_COUNT
+    value: "1000"
+  - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
+    value: "True"
