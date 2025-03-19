@@ -69,8 +69,8 @@ dag = DAG(
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=100,
-    max_active_tasks=300,
+    max_active_runs=1000,
+    max_active_tasks=3000,
     default_args=dag_default_args,
     params={
         "cwl_workflow": Param(

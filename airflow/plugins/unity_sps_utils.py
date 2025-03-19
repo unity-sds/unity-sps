@@ -16,7 +16,7 @@ POD_LABEL = "cwl_task" + datetime.now().strftime(
 
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.5"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.6"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
@@ -27,11 +27,16 @@ DEFAULT_LOG_LEVEL = 20
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
 
 EC2_TYPES = {
-    "t3.micro": {
-        "desc": "General Purpose",
-        "cpu": 1,
-        "memory": 1,
-    },
+    # "t3.nano": {
+    #     "desc": "General Purpose",
+    #     "cpu": 1,
+    #     "memory": 0.5,
+    # },
+    # "t3.micro": {
+    #     "desc": "General Purpose",
+    #     "cpu": 2,
+    #     "memory": 1,
+    # },
     "t3.small": {
         "desc": "General Purpose",
         "cpu": 2,
@@ -97,23 +102,28 @@ EC2_TYPES = {
         "cpu": 32,
         "memory": 64,
     },
-    "m5ad.large": {
-        "desc": "General Purpose with SSD storage",
-        "cpu": 2,
-        "memory": 8,
+    "c6i.12xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 48,
+        "memory": 96,
+    },
+    "c6i.16xlarge": {
+        "desc": "Compute Optimized",
+        "cpu": 64,
+        "memory": 128,
     },
     "m5ad.xlarge": {
-        "desc": "General Purpose with SSD storage",
+        "desc": "General Purpose with SSD local storage",
         "cpu": 4,
         "memory": 16,
     },
     "m5ad.2xlarge": {
-        "desc": "General Purpose with SSD storage",
+        "desc": "General Purpose with SSD local storage",
         "cpu": 8,
         "memory": 32,
     },
     "m5ad.4xlarge": {
-        "desc": "General Purpose with SSD storage",
+        "desc": "General Purpose with SSD local storage",
         "cpu": 16,
         "memory": 64,
     },
