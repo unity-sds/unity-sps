@@ -156,7 +156,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "m5ad", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "m5ad", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -200,7 +200,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "m5ad", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "m5ad", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -244,7 +244,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5", "m5ad"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5", "m5ad"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -287,7 +287,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5", "r7i", "r6i", "r5", "m5ad"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5", "m5ad"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
