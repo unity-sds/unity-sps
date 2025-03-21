@@ -10,20 +10,17 @@ Parameter args_as_json: JSON string contained the specific values for the workfl
 import json
 import logging
 import os
-import shutil
 from datetime import datetime
 
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
-from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import (
+from unity_sps_utils import (  # POD_LABEL,
     EC2_TYPES,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
-    POD_LABEL,
     POD_NAMESPACE,
     build_ec2_type_label,
     get_affinity,
@@ -34,6 +31,7 @@ from airflow import DAG
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
 SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.3"
+POD_LABEL = "cwl_task"
 
 # The path of the working directory where the CWL workflow is executed
 # (aka the starting directory for cwl-runner).
@@ -68,8 +66,8 @@ dag = DAG(
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
-    max_active_runs=100,
-    max_active_tasks=300,
+    max_active_runs=1000,
+    max_active_tasks=3000,
     default_args=dag_default_args,
     params={
         "cwl_workflow": Param(
@@ -191,26 +189,27 @@ cwl_task = KubernetesPodOperator(
 )
 
 
-def cleanup(**context):
-    """
-    Tasks that deletes all data shared between Tasks
-    from the Kubernetes PersistentVolume
-    """
-    dag_run_id = context["dag_run"].run_id
-    local_dir = f"/shared-task-data/{dag_run_id}"
-    if os.path.exists(local_dir):
-        logging.info(f"Content of directory: {local_dir}")
-        files = os.listdir(local_dir)
-        for f in files:
-            logging.info(os.path.join(local_dir, f))
-        shutil.rmtree(local_dir)
-        logging.info(f"Deleted directory: {local_dir}")
-    else:
-        logging.info(f"Directory does not exist, no need to delete: {local_dir}")
+# def cleanup(**context):
+#     """
+#     Tasks that deletes all data shared between Tasks
+#     from the Kubernetes PersistentVolume
+#     """
+#     dag_run_id = context["dag_run"].run_id
+#     local_dir = f"/shared-task-data/{dag_run_id}"
+#     if os.path.exists(local_dir):
+#         logging.info(f"Content of directory: {local_dir}")
+#         files = os.listdir(local_dir)
+#         for f in files:
+#             logging.info(os.path.join(local_dir, f))
+#         shutil.rmtree(local_dir)
+#         logging.info(f"Deleted directory: {local_dir}")
+#     else:
+#         logging.info(f"Directory does not exist, no need to delete: {local_dir}")
+#
+#
+# cleanup_task = PythonOperator(
+#     task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
+# )
 
-
-cleanup_task = PythonOperator(
-    task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
-)
-
-chain(setup_task.as_setup(), cwl_task, cleanup_task.as_teardown(setups=setup_task))
+# chain(setup_task.as_setup(), cwl_task, cleanup_task.as_teardown(setups=setup_task))
+chain(setup_task.as_setup(), cwl_task)
