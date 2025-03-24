@@ -22,6 +22,13 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_api_gateway_authorizer.unity_cs_common_authorizer](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_authorizer) | resource |
+| [aws_api_gateway_integration.rest_api_integration_for_ogc_api_get](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
+| [aws_api_gateway_integration.rest_api_integration_for_ogc_api_post](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
+| [aws_api_gateway_method.rest_api_method_for_ogc_api_method](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_method) | resource |
+| [aws_api_gateway_resource.rest_api_resource_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
+| [aws_api_gateway_resource.rest_api_resource_management_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
+| [aws_api_gateway_resource.rest_api_resource_ogc_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/lambda_invocation) | resource |
 | [aws_security_group.ogc_ingress_sg_internal](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
 | [aws_ssm_parameter.ogc_processes_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
@@ -34,8 +41,12 @@ No modules.
 | [kubernetes_service.ogc_processes_api](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
 | [kubernetes_service.ogc_processes_api_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
 | [kubernetes_service.redis](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
+| [aws_api_gateway_rest_api.rest_api](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_rest_api) | data source |
+| [aws_api_gateway_vpc_link.rest_api_unity_vpc_link](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_vpc_link) | data source |
 | [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/db_instance) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
+| [aws_iam_role.iam_for_lambda_auth](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/iam_role) | data source |
+| [aws_lambda_function.cs_common_lambda_auth](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lambda_function) | data source |
 | [aws_lambda_functions.lambda_check_all](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lambda_functions) | data source |
 | [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_groups.venue_proxy_sg](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/security_groups) | data source |
@@ -65,6 +76,7 @@ No modules.
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | n/a | yes |
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | n/a | yes |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed | `string` | n/a | yes |
+| <a name="input_unity_cs_lambda_authorizer_function_name"></a> [unity\_cs\_lambda\_authorizer\_function\_name](#input\_unity\_cs\_lambda\_authorizer\_function\_name) | Function name of the CS Lambda Authorizer | `string` | `"unity-cs-common-lambda-authorizer"` | no |
 | <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the cluster will be deployed (dev, test, prod) | `string` | n/a | yes |
 
 ## Outputs

@@ -580,37 +580,14 @@ resource "aws_api_gateway_method" "rest_api_method_for_airflow_api_method" {
   authorizer_id = aws_api_gateway_authorizer.unity_cs_common_authorizer.id
 }
 
-resource "null_resource" "download_lambda_zip" {
-  provisioner "local-exec" {
-    command = "wget --no-check-certificate ${var.unity_cs_lambda_authorizer_zip_path}  -O ucs-common-lambda-auth.zip"
-  }
-}
-
-resource "aws_lambda_function" "cs_common_lambda_auth" {
-  filename      = "ucs-common-lambda-auth.zip"
-  function_name = "${var.project}-${var.venue}-${var.unity_cs_lambda_authorizer_function_name}"
-  role          = data.aws_iam_role.iam_for_lambda_auth.arn
-  handler       = "index.handler"
-  runtime       = "nodejs20.x"
-  depends_on    = [null_resource.download_lambda_zip]
-
-  environment {
-    variables = {
-      COGNITO_CLIENT_ID_LIST = "deprecated"
-      COGNITO_USER_POOL_ID   = data.aws_ssm_parameter.api_gateway_cs_lambda_authorizer_cognito_user_pool_id.value
-      COGNITO_GROUPS_ALLOWED = data.aws_ssm_parameter.api_gateway_cs_lambda_authorizer_cognito_user_groups_list.value
-    }
-  }
-}
-
 resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
   name                             = "Unity_CS_Common_Authorizer"
   rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
-  authorizer_uri                   = aws_lambda_function.cs_common_lambda_auth.invoke_arn
+  authorizer_uri                   = data.aws_lambda_function.cs_common_lambda_auth.invoke_arn
   authorizer_credentials           = data.aws_iam_role.iam_for_lambda_auth.arn
   authorizer_result_ttl_in_seconds = 0
   identity_source                  = "method.request.header.Authorization"
-  depends_on                       = [aws_lambda_function.cs_common_lambda_auth, data.aws_api_gateway_rest_api.rest_api]
+  depends_on                       = [data.aws_lambda_function.cs_common_lambda_auth, data.aws_api_gateway_rest_api.rest_api]
 }
 
 resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
