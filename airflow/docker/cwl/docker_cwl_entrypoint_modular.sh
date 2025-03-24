@@ -15,10 +15,6 @@
 #        (example: <aws_account_id>.dkr.ecr.<region>.amazonaws.com) [optional]
 # -f: path to an output JSON file that needs to be shared as Airflow "xcom" data [optional]
 
-# Can be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
-# that executes this script to execute on EFS.
-WORKING_DIR="/data"    # Set to EBS directory
-
 get_job_args() {
   local job_args=$1
   workflow=$2
@@ -58,6 +54,15 @@ if [ "$log_level" -eq 10 ]; then
 else
   set -e
 fi
+
+# Echo instance ID to logs
+TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+instance_id=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.254/latest/meta-data/instance-id)
+echo INSTANCE ID: $instance_id
+
+# Can be the same as the path of the Persistent Volume mounted by the Airflow KubernetesPodOperator
+# that executes this script to execute on EFS.
+WORKING_DIR="/data"    # Set to EBS directory
 
 # Create working directory if it doesn't exist
 mkdir -p "$WORKING_DIR"
