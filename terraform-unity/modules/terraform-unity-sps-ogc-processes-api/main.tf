@@ -363,7 +363,7 @@ resource "null_resource" "download_lambda_zip" {
 resource "aws_lambda_function" "cs_common_lambda_auth" {
   filename      = "ucs-common-lambda-auth.zip"
   function_name = "${var.project}-${var.venue}-${var.unity_cs_lambda_authorizer_function_name}"
-  role          = aws_iam_role.iam_for_lambda_auth.arn
+  role          = data.aws_iam_role.iam_for_lambda_auth.arn
   handler       = "index.handler"
   runtime       = "nodejs20.x"
   depends_on    = [null_resource.download_lambda_zip]
@@ -377,21 +377,11 @@ resource "aws_lambda_function" "cs_common_lambda_auth" {
   }
 }
 
-resource "aws_iam_role" "iam_for_lambda_auth" {
-  name = "${var.project}-${var.venue}-iam_for_lambda_auth"
-  inline_policy {
-    name   = "unity-cs-lambda-auth-inline-policy"
-    policy = data.aws_iam_policy_document.inline_policy.json
-  }
-  assume_role_policy   = data.aws_iam_policy_document.assume_role.json
-  permissions_boundary = data.aws_iam_policy.mcp_operator_policy.arn
-}
-
 resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
   name                             = "Unity_CS_Common_Authorizer"
   rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
   authorizer_uri                   = aws_lambda_function.cs_common_lambda_auth.invoke_arn
-  authorizer_credentials           = aws_iam_role.iam_for_lambda_auth.arn
+  authorizer_credentials           = data.aws_iam_role.iam_for_lambda_auth.arn
   authorizer_result_ttl_in_seconds = 0
   identity_source                  = "method.request.header.Authorization"
   depends_on                       = [aws_lambda_function.cs_common_lambda_auth, data.aws_api_gateway_rest_api.rest_api]

@@ -603,16 +603,6 @@ resource "aws_lambda_function" "cs_common_lambda_auth" {
   }
 }
 
-resource "aws_iam_role" "iam_for_lambda_auth" {
-  name = "${var.project}-${var.venue}-iam_for_lambda_auth"
-  inline_policy {
-    name   = "unity-cs-lambda-auth-inline-policy"
-    policy = data.aws_iam_policy_document.inline_policy.json
-  }
-  assume_role_policy   = data.aws_iam_policy_document.assume_role.json
-  permissions_boundary = data.aws_iam_policy.mcp_operator_policy.arn
-}
-
 resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
   name                             = "Unity_CS_Common_Authorizer"
   rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id

@@ -70,6 +70,10 @@ data "aws_iam_policy" "mcp_operator_policy" {
   name = "mcp-tenantOperator-AMI-APIG"
 }
 
+data "aws_iam_role" "iam_for_lambda_auth" {
+  name = "${var.project}-${var.venue}-iam_for_lambda_auth"
+}
+
 data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
