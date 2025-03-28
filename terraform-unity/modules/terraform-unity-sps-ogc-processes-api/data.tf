@@ -81,3 +81,12 @@ data "aws_api_gateway_vpc_link" "rest_api_unity_vpc_link" {
 data "aws_api_gateway_rest_api" "rest_api" {
   name = "unity-${var.project}-${var.venue}-rest-api-gateway"
 }
+
+data "aws_api_gateway_authorizers" "unity_cs_common_authorizers_list" {
+  rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
+}
+
+data "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
+  rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
+  authorizer_id                    = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
+}

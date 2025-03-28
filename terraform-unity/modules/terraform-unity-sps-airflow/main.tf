@@ -577,17 +577,7 @@ resource "aws_api_gateway_method" "rest_api_method_for_airflow_api_method" {
   resource_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
   http_method   = "GET"
   authorization = "CUSTOM"
-  authorizer_id = aws_api_gateway_authorizer.unity_cs_common_authorizer.id
-}
-
-resource "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
-  name                             = "Unity_CS_Common_Authorizer"
-  rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
-  authorizer_uri                   = data.aws_lambda_function.cs_common_lambda_auth.invoke_arn
-  authorizer_credentials           = data.aws_iam_role.iam_for_lambda_auth.arn
-  authorizer_result_ttl_in_seconds = 0
-  identity_source                  = "method.request.header.Authorization"
-  depends_on                       = [data.aws_lambda_function.cs_common_lambda_auth, data.aws_api_gateway_rest_api.rest_api]
+  authorizer_id = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
 }
 
 resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
