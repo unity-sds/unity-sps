@@ -328,11 +328,11 @@ resource "kubernetes_service" "ogc_processes_api_ingress_internal" {
   depends_on             = [kubernetes_deployment.ogc_processes_api]
 }
 
-resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
-  path_part   = "sps"
-}
+# resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
+#   path_part   = "sps"
+# }
 
 resource "aws_api_gateway_resource" "rest_api_resource_api_path" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id

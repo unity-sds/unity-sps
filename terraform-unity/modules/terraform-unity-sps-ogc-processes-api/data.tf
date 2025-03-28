@@ -90,3 +90,8 @@ data "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
   rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
   authorizer_id                    = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
 }
+
+data "aws_api_gateway_resource" "rest_api_resource_management_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  path        = "/sps"
+}
