@@ -336,7 +336,7 @@ resource "kubernetes_service" "ogc_processes_api_ingress_internal" {
 
 resource "aws_api_gateway_resource" "rest_api_resource_api_path" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = aws_api_gateway_resource.rest_api_resource_management_path.id
+  parent_id   = data.aws_api_gateway_resource.rest_api_resource_management_path.id
   path_part   = "api"
 }
 

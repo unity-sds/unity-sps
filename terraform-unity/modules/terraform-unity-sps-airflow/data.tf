@@ -83,10 +83,10 @@ data "aws_lambda_function" "cs_common_lambda_auth" {
 }
 
 data "aws_api_gateway_authorizers" "unity_cs_common_authorizers_list" {
-  rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
 }
 
 data "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
-  rest_api_id                      = data.aws_api_gateway_rest_api.rest_api.id
-  authorizer_id                    = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
+  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
+  authorizer_id = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
 }
