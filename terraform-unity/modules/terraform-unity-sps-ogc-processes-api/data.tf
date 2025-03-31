@@ -66,14 +66,6 @@ data "aws_ssm_parameter" "venue_proxy_baseurl" {
   name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
 }
 
-data "aws_iam_role" "iam_for_lambda_auth" {
-  name = "${var.project}-${var.venue}-iam_for_lambda_auth"
-}
-
-data "aws_lambda_function" "cs_common_lambda_auth" {
-  function_name = "${var.project}-${var.venue}-${var.unity_cs_lambda_authorizer_function_name}"
-}
-
 data "aws_api_gateway_vpc_link" "rest_api_unity_vpc_link" {
   name = "mc-nlb-vpc-link-${var.project}-${var.venue}"
 }

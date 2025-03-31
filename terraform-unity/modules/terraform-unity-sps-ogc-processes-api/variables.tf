@@ -79,9 +79,3 @@ variable "karpenter_node_pools" {
   description = "Names of the Karpenter node pools"
   type        = list(string)
 }
-
-variable "unity_cs_lambda_authorizer_function_name" {
-  type        = string
-  description = "Function name of the CS Lambda Authorizer"
-  default     = "unity-cs-common-lambda-authorizer"
-}

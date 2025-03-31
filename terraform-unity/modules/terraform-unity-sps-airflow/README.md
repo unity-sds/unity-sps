@@ -32,11 +32,10 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_api_gateway_authorizer.unity_cs_common_authorizer](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_authorizer) | resource |
-| [aws_api_gateway_integration.rest_api_integration_for_airflow_api](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
+| [aws_api_gateway_integration.rest_api_integration_for_airflow_api_get](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
+| [aws_api_gateway_integration.rest_api_integration_for_airflow_api_post](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
 | [aws_api_gateway_method.rest_api_method_for_airflow_api_method](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_method) | resource |
 | [aws_api_gateway_resource.rest_api_resource_airflow_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
-| [aws_api_gateway_resource.rest_api_resource_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_api_gateway_resource.rest_api_resource_management_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_efs_access_point.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_access_point) | resource |
@@ -73,14 +72,14 @@ No modules.
 | [null_resource.remove_keda_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.3/docs/resources/resource) | resource |
 | [random_id.airflow_webserver_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/id) | resource |
 | [time_sleep.wait_for_efs_mount_target_dns_propagation](https://registry.terraform.io/providers/hashicorp/time/0.12.1/docs/resources/sleep) | resource |
+| [aws_api_gateway_authorizer.unity_cs_common_authorizer](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_authorizer) | data source |
+| [aws_api_gateway_authorizers.unity_cs_common_authorizers_list](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_authorizers) | data source |
 | [aws_api_gateway_rest_api.rest_api](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_rest_api) | data source |
 | [aws_api_gateway_vpc_link.rest_api_unity_vpc_link](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_vpc_link) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/caller_identity) | data source |
 | [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/db_instance) | data source |
 | [aws_efs_file_system.efs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/efs_file_system) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
-| [aws_iam_role.iam_for_lambda_auth](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/iam_role) | data source |
-| [aws_lambda_function.cs_common_lambda_auth](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lambda_function) | data source |
 | [aws_lambda_functions.lambda_check_all](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lambda_functions) | data source |
 | [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_groups.venue_proxy_sg](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/security_groups) | data source |
@@ -110,7 +109,6 @@ No modules.
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | n/a | yes |
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | n/a | yes |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed | `string` | n/a | yes |
-| <a name="input_unity_cs_lambda_authorizer_function_name"></a> [unity\_cs\_lambda\_authorizer\_function\_name](#input\_unity\_cs\_lambda\_authorizer\_function\_name) | Function name of the CS Lambda Authorizer | `string` | `"unity-cs-common-lambda-authorizer"` | no |
 | <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the cluster will be deployed (dev, test, prod) | `string` | n/a | yes |
 
 ## Outputs
