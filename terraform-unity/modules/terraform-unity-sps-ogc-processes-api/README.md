@@ -22,8 +22,7 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [aws_api_gateway_integration.rest_api_integration_for_ogc_api_get](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
-| [aws_api_gateway_integration.rest_api_integration_for_ogc_api_post](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
+| [aws_api_gateway_integration.rest_api_integration_for_ogc_api](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
 | [aws_api_gateway_method.rest_api_method_for_ogc_api_method](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_method) | resource |
 | [aws_api_gateway_resource.rest_api_resource_management_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_api_gateway_resource.rest_api_resource_ogc_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |

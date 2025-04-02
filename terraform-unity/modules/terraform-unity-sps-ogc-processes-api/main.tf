@@ -348,28 +348,13 @@ resource "aws_api_gateway_method" "rest_api_method_for_ogc_api_method" {
   authorizer_id = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
 }
 
-resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api_get" {
+resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
   rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
   resource_id             = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
   http_method             = aws_api_gateway_method.rest_api_method_for_ogc_api_method.http_method
   type                    = "HTTP_PROXY"
   uri                     = format("%s://%s:%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/ogc/")
-  integration_http_method = "GET"
-  passthrough_behavior    = "WHEN_NO_TEMPLATES"
-  content_handling        = "CONVERT_TO_TEXT"
-  connection_type         = "VPC_LINK"
-  connection_id           = data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link.id
-
-  depends_on = [data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link]
-}
-
-resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api_post" {
-  rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
-  http_method             = aws_api_gateway_method.rest_api_method_for_ogc_api_method.http_method
-  type                    = "HTTP_PROXY"
-  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/ogc/")
-  integration_http_method = "POST"
+  integration_http_method = "ANY"
   passthrough_behavior    = "WHEN_NO_TEMPLATES"
   content_handling        = "CONVERT_TO_TEXT"
   connection_type         = "VPC_LINK"
