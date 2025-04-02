@@ -569,7 +569,7 @@ resource "aws_api_gateway_resource" "rest_api_resource_airflow_api_path" {
 resource "aws_api_gateway_method" "rest_api_method_for_airflow_api_method" {
   rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
   resource_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
-  http_method   = "GET"
+  http_method   = "ANY"
   authorization = "CUSTOM"
   authorizer_id = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
 }
