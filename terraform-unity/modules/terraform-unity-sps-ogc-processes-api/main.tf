@@ -340,12 +340,19 @@ resource "aws_api_gateway_resource" "rest_api_resource_ogc_api_path" {
   path_part   = "api"
 }
 
+resource "aws_api_gateway_resource" "rest_api_resource_ogc_proxy_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
+  path_part   = "{proxy+}"
+}
+
 resource "aws_api_gateway_method" "rest_api_method_for_ogc_api_method" {
-  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id   = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
-  http_method   = "ANY"
-  authorization = "CUSTOM"
-  authorizer_id = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+  rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id        = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
+  http_method        = "ANY"
+  authorization      = "CUSTOM"
+  authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+  request_parameters = { "method.request.path.proxy" = true }
 }
 
 resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
@@ -353,7 +360,7 @@ resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
   resource_id             = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
   http_method             = aws_api_gateway_method.rest_api_method_for_ogc_api_method.http_method
   type                    = "HTTP_PROXY"
-  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/ogc/")
+  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/ogc/{proxy}")
   integration_http_method = "ANY"
   passthrough_behavior    = "WHEN_NO_TEMPLATES"
   content_handling        = "CONVERT_TO_TEXT"

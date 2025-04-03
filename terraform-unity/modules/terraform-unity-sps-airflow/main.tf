@@ -554,7 +554,7 @@ resource "kubernetes_service" "airflow_ingress_internal" {
   depends_on             = [helm_release.airflow]
 }
 
-resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
+resource "aws_api_gateway_resource" "rest_api_resource_sps_path" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
   parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
   path_part   = "sps"
@@ -562,16 +562,23 @@ resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
 
 resource "aws_api_gateway_resource" "rest_api_resource_airflow_api_path" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = aws_api_gateway_resource.rest_api_resource_management_path.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_sps_path.id
   path_part   = "api"
 }
 
+resource "aws_api_gateway_resource" "rest_api_resource_airflow_proxy_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
+  path_part   = "{proxy+}"
+}
+
 resource "aws_api_gateway_method" "rest_api_method_for_airflow_api_method" {
-  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
-  http_method   = "ANY"
-  authorization = "CUSTOM"
-  authorizer_id = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+  rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id        = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+  http_method        = "ANY"
+  authorization      = "CUSTOM"
+  authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+  request_parameters = { "method.request.path.proxy" = true }
 }
 
 resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
@@ -579,7 +586,7 @@ resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
   resource_id             = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
   http_method             = aws_api_gateway_method.rest_api_method_for_airflow_api_method.http_method
   type                    = "HTTP_PROXY"
-  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/sps/api/v1/")
+  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/sps/api/{proxy}")
   integration_http_method = "ANY"
   passthrough_behavior    = "WHEN_NO_TEMPLATES"
   content_handling        = "CONVERT_TO_TEXT"
