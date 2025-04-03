@@ -165,6 +165,9 @@ webserverSecretKeySecretName: ${webserver_secret_name}
 webserver:
   replicas: 3
 
+  webserverConfig: |-
+    ${webserver_config}
+
   startupProbe:
     timeoutSeconds: 20
     failureThreshold: 60 # Number of tries before giving up (10 minutes with periodSeconds of 10)
@@ -331,6 +334,14 @@ env:
     value: "${karpenter_node_pools}"
   - name: "AIRFLOW_VAR_ECR_URI"
     value: "${cwl_dag_ecr_uri}"
+  - name: "COGNITO_CLIENT_ID"
+    value: "${cognito_client_id}"
+  - name: "COGNITO_CLIENT_SECRET"
+    value: "${cognito_client_secret}"
+  - name: "COGNITO_BASE_URL"
+    value: "${cognito_base_url}"
+  - name: "COGNITO_USER_POOL_ID"
+    value: "${cognito_user_pool_id}"
 
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |

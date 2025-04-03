@@ -65,3 +65,23 @@ data "aws_ssm_parameter" "shared_services_domain" {
 data "aws_ssm_parameter" "venue_proxy_baseurl" {
   name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
 }
+
+data "aws_ssm_parameter" "shared_services_acct_num" {
+  name = "/unity/shared-services/aws/account"
+}
+
+data "aws_ssm_parameter" "cognito_base_url" {
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.shared_services_acct_num.value}:parameter/unity/shared-services/cognito/base-url"
+}
+
+data "aws_ssm_parameter" "cognito_client_id" {
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.shared_services_acct_num.value}:parameter/unity/shared-services/cognito/airflow-ui-client-id"
+}
+
+data "aws_ssm_parameter" "cognito_client_secret" {
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.shared_services_acct_num.value}:parameter/unity/shared-services/cognito/airflow-ui-client-secret"
+}
+
+data "aws_ssm_parameter" "cognito_user_pool_id" {
+  name = "arn:aws:ssm:us-west-2:${data.aws_ssm_parameter.shared_services_acct_num.value}:parameter/unity/shared-services/cognito/user-pool-id"
+}
