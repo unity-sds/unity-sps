@@ -367,7 +367,7 @@ resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
   connection_type         = "VPC_LINK"
   connection_id           = data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link.id
 
-  depends_on = [data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link,aws_api_gateway_method]
+  depends_on = [data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link]
 }
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {
