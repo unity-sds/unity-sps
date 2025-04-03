@@ -3,20 +3,17 @@ Module containing common utilities for the Unity Science Processing System.
 """
 
 import os
-from datetime import datetime
 
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
 # Shared constants
 POD_NAMESPACE = "sps"  # The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_LABEL = "cwl_task" + datetime.now().strftime(
-    "%Y%m%d_%H%M%S_%f"
-)  # unique pod label to assure each job runs on its own pod
+POD_LABEL = "cwl_task"
 
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.8"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.10"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
