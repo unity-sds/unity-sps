@@ -592,6 +592,7 @@ resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
   content_handling        = "CONVERT_TO_TEXT"
   connection_type         = "VPC_LINK"
   connection_id           = data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link.id
+  request_parameters      = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.request_parameters
 
   depends_on = [data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link]
 }
