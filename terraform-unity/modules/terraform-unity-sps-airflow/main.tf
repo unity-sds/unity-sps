@@ -583,8 +583,8 @@ resource "aws_api_gateway_method" "rest_api_method_for_airflow_api_method" {
 
 resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
   rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
-  http_method             = aws_api_gateway_method.rest_api_method_for_airflow_api_method.http_method
+  resource_id             = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+  http_method             = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
   type                    = "HTTP_PROXY"
   uri                     = format("%s://%s:%s", "http", data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/sps/api/{proxy}")
   integration_http_method = "ANY"
