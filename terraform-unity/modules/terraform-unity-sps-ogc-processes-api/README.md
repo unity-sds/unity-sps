@@ -26,6 +26,7 @@ No modules.
 | [aws_api_gateway_method.rest_api_method_for_ogc_api_method](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_method) | resource |
 | [aws_api_gateway_resource.rest_api_resource_management_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_api_gateway_resource.rest_api_resource_ogc_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
+| [aws_api_gateway_resource.rest_api_resource_ogc_proxy_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_lambda_invocation.unity_proxy_lambda_invocation](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/lambda_invocation) | resource |
 | [aws_security_group.ogc_ingress_sg_internal](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/security_group) | resource |
 | [aws_ssm_parameter.ogc_processes_api_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
