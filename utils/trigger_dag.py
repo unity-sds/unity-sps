@@ -23,8 +23,13 @@ from requests.auth import HTTPBasicAuth
 # EMIT parameters
 cwl_workflow = "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl"
 cwl_args = "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json"
+
 ec2_instance_type = "r7i.2xlarge"
 request_storage = "100Gi"
+
+# ec2_instance_type = "c6id.2xlarge"
+# request_storage = "100Gi"
+
 
 # cwl_workflow = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
 # cwl_args = '{"message": "Hello Unity"}'
