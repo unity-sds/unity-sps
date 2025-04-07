@@ -21,6 +21,8 @@ COGNITO_CLIENT_ID = os.environ["COGNITO_CLIENT_ID"]
 COGNITO_CLIENT_SECRET = os.environ["COGNITO_CLIENT_SECRET"]
 COGNITO_USER_POOL_ID = os.environ["COGNITO_USER_POOL_ID"]
 
+logging.info("Constant COGNITO_BASE_URL: %s", COGNITO_BASE_URL)
+
 # Authentication constants
 AUTH_TYPE = AUTH_OAUTH
 # AUTH_USER_REGISTRATION = True  # allow users not in the FAB DB
@@ -106,6 +108,8 @@ class CognitoAuthorizer(FabAirflowSecurityManagerOverride):
 
     def get_oauth_user_info(self, provider: str, resp: dict[str, Any]) -> dict[str, Any]:
         """Override method to login with Cognito specific data."""
+
+        logging.info("Inside get_oauth_user_info COGNITO_BASE_URL: %s", COGNITO_BASE_URL)
 
         if provider == "Cognito":
             user_info = resp["userinfo"]
