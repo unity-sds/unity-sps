@@ -526,41 +526,77 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
   depends_on             = [helm_release.airflow]
 }*/
 
-resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
+resource "kubernetes_service" "airflow_ingress_internal" {
   metadata {
     name      = "airflow-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
-      "alb.ingress.kubernetes.io/scheme"                              = "internal"
-      "alb.ingress.kubernetes.io/target-type"                         = "ip"
-      "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
-      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
-      "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
-      "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
-      "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internal"
+      "service.beta.kubernetes.io/aws-load-balancer-type"             = "external"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"          = jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]
+      "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path" = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-attributes"       = "load_balancing.cross_zone.enabled=true"
     }
   }
   spec {
-    ingress_class_name = "alb"
-    rule {
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "airflow-webserver"
-              port {
-                number = 8080
-              }
-            }
-          }
-        }
-      }
+    selector = {
+      app       = "airflow"
+      component = "webserver"
+    }
+    type = "LoadBalancer"
+    port {
+      port        = local.load_balancer_port
+      target_port = 8080
     }
   }
   wait_for_load_balancer = true
   depends_on             = [helm_release.airflow]
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_sps_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
+  path_part   = "sps"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_airflow_api_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_sps_path.id
+  path_part   = "api"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_airflow_proxy_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
+  path_part   = "{proxy+}"
+}
+
+resource "aws_api_gateway_method" "rest_api_method_for_airflow_proxy_method" {
+  rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id        = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+  http_method        = "ANY"
+  authorization      = "CUSTOM"
+  authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+  request_parameters = { "method.request.path.proxy" = true }
+}
+
+resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
+  rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+  http_method             = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
+  type                    = "HTTP_PROXY"
+  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/sps/api/{proxy}")
+  integration_http_method = "ANY"
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
+  content_handling        = "CONVERT_TO_TEXT"
+  connection_type         = "VPC_LINK"
+  connection_id           = data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link.id
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+
+  depends_on = [data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link]
 }
 
 resource "aws_ssm_parameter" "airflow_ui_url" {
@@ -642,7 +678,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       Redirect "/${var.project}/${var.venue}/sps/home"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
+      ProxyPassMatch "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html

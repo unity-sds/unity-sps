@@ -301,40 +301,76 @@ resource "kubernetes_ingress_v1" "ogc_processes_api_ingress" {
   wait_for_load_balancer = true
 }*/
 
-resource "kubernetes_ingress_v1" "ogc_processes_api_ingress_internal" {
+resource "kubernetes_service" "ogc_processes_api_ingress_internal" {
   metadata {
     name      = "ogc-processes-api-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
-      "alb.ingress.kubernetes.io/scheme"                              = "internal"
-      "alb.ingress.kubernetes.io/target-type"                         = "ip"
-      "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
-      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
-      "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.ogc_ingress_sg_internal.id
-      "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
-      "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"           = "internal"
+      "service.beta.kubernetes.io/aws-load-balancer-type"             = "external"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"  = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"          = jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"][0]
+      "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path" = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-attributes"       = "load_balancing.cross_zone.enabled=true"
     }
   }
   spec {
-    ingress_class_name = "alb"
-    rule {
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = kubernetes_service.ogc_processes_api.metadata[0].name
-              port {
-                number = 80
-              }
-            }
-          }
-        }
-      }
+    selector = {
+      app = "ogc-processes-api"
+    }
+    type = "LoadBalancer"
+    port {
+      port        = local.load_balancer_port
+      target_port = 80
     }
   }
   wait_for_load_balancer = true
+  depends_on             = [kubernetes_deployment.ogc_processes_api]
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
+  path_part   = "ogc"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_ogc_api_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_management_path.id
+  path_part   = "api"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_ogc_proxy_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
+  path_part   = "{proxy+}"
+}
+
+resource "aws_api_gateway_method" "rest_api_method_for_ogc_proxy_method" {
+  rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id        = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
+  http_method        = "ANY"
+  authorization      = "CUSTOM"
+  authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+  request_parameters = { "method.request.path.proxy" = true }
+}
+
+resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
+  rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
+  http_method             = aws_api_gateway_method.rest_api_method_for_ogc_proxy_method.http_method
+  type                    = "HTTP_PROXY"
+  uri                     = format("%s://%s:%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, "5001/ogc/{proxy}")
+  integration_http_method = "ANY"
+  passthrough_behavior    = "WHEN_NO_TEMPLATES"
+  content_handling        = "CONVERT_TO_TEXT"
+  connection_type         = "VPC_LINK"
+  connection_id           = data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link.id
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+
+  depends_on = [data.aws_api_gateway_vpc_link.rest_api_unity_vpc_link]
 }
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {
@@ -393,7 +429,7 @@ resource "aws_ssm_parameter" "unity_proxy_ogc_api" {
       ProxyPassReverse "/"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/ogc/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001/$1" retry=5 disablereuse=On
+      ProxyPassMatch "http://${data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5001/$1" retry=5 disablereuse=On
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html

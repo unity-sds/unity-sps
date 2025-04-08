@@ -26,9 +26,9 @@ data "kubernetes_ingress_v1" "airflow_ingress" {
   }
 }*/
 
-data "kubernetes_ingress_v1" "airflow_ingress_internal" {
+data "kubernetes_service" "airflow_ingress_internal" {
   metadata {
-    name      = kubernetes_ingress_v1.airflow_ingress_internal.metadata[0].name
+    name      = kubernetes_service.airflow_ingress_internal.metadata[0].name
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
   }
 }
@@ -64,4 +64,21 @@ data "aws_ssm_parameter" "shared_services_domain" {
 
 data "aws_ssm_parameter" "venue_proxy_baseurl" {
   name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
+}
+
+data "aws_api_gateway_vpc_link" "rest_api_unity_vpc_link" {
+  name = "mc-nlb-vpc-link-${var.project}-${var.venue}"
+}
+
+data "aws_api_gateway_rest_api" "rest_api" {
+  name = "unity-${var.project}-${var.venue}-rest-api-gateway"
+}
+
+data "aws_api_gateway_authorizers" "unity_cs_common_authorizers_list" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+}
+
+data "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
+  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
+  authorizer_id = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
 }
