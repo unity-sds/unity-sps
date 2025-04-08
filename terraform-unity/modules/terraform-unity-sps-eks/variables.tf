@@ -67,7 +67,7 @@ variable "nodegroups" {
   }))
   default = {
     defaultGroup = {
-      instance_types = ["t3.2xlarge"]
+      instance_types = ["m5.2xlarge"]
       min_size       = 1
       max_size       = 1
       desired_size   = 1
