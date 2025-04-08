@@ -27,6 +27,14 @@ and image format conversion.
 
 Finally, all documentation has been revised and updated.
 
+## Caveats
+- Unless ports are specifically opened, this SPS installation is only accessible
+  through the top-level MDPS proxies. Users will need to login first with their
+  Cognito credentials, then with their Airflow credentials. This issue will be fixed
+  when the Airflow/Cognito integration is complete.
+- For the same reason, unless ports are specifically opened, the Airflow and OGC
+  APIs will not be accessible.
+
 ## Upgrade Guide
 
 - This release is backward compatible with the previous version: it includes additional functionality and
