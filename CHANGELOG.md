@@ -5,6 +5,94 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [Unity Release 25.1] - 2025-04-14
+
+- SPS Version 2.6.0 (new)
+- OGC API Version 2.0.0 (unchanged)
+- OGC Python Client Version 2.0.1 (unchanged)
+
+## Overview
+
+This release contains several performance improvements to increase the scalability of the SPS system, including:
+- New EC2 types available when using the CWL DAG or CWL Modular DAG, including EC2 types with attached SSD storage.
+- Prioritization of downstream tasks of running DAGs with respect to upstream tasks of queued DAGs.
+- Removal access to shared EFS partition
+- Using EC2 types with increased CPU and memory for the core EKS node and core Airflow Pods
+
+Also, the Airflow database is backed up every day, and restored when the SPS system is redeployed.
+
+Additionally, this release includes much expanded support for the SRL (Sample Return Lander) use case,
+demonstrating triggering and chaining of data procesisng workflows for generation pof EDR and RDR products
+and image format conversion.
+
+Finally, all documentation has been revised and updated.
+
+## Upgrade Guide
+
+- This release is backward compatible with the previous version: it includes additional functionality and
+  performance improvements, but there are no API changes.
+- Because some configuration parameters have changed, the .tfvars files used to deploy EKS, Karpenter and Airflow via Terraform
+  should be re-generated to pick up the new values.
+
+## Repositories
+
+- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/2.6.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.0.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.1>
+
+## Epics
+
+- EPIC: SPS Infrastructure
+  - [[Enhancement]: Update the Management Console to use the latest SDS version](https://github.com/unity-sds/unity-sps/issues/280)
+  - [[Bug]: Fix placement of Pods over Nodes](https://github.com/unity-sds/unity-sps/issues/304)
+  - [[Enhancement] Remove access to shared EFS partition in the CWL DAG](https://github.com/unity-sds/unity-sps/issues/318)
+  - [[Bug]: Update CPU and memory limits for worker nodes](https://github.com/unity-sds/unity-sps/issues/330)
+  - [[New Feature]: Experiment with using EC2 types with attached storage for better performance](https://github.com/unity-sds/unity-sps/issues/339)
+  - [[New Feature]: Log the EC2 Instance Id](https://github.com/unity-sds/unity-sps/issues/357)
+  - [[New Feature]: Scale up the SPS core resources](https://github.com/unity-sds/unity-sps/issues/358)
+  - [[New Feature]: Prioritize downstream tasks](https://github.com/unity-sds/unity-sps/issues/382)
+- EPIC: Deployment Enhancements
+  - [[New Feature]: Migrate database content during SPS upgrades](https://github.com/unity-sds/unity-sps/issues/253)
+- EPIC: Documentation Updates
+  - [[Documentation] OGC Documentation Enhancements](https://github.com/unity-sds/unity-sps/issues/274)
+  - [[Documentation]: Revise and update the OGC API Jupyter Notebook](https://github.com/unity-sds/unity-sps/issues/294)
+  - [[Documentation]: Provide a high level overview of the OGC Processes API](https://github.com/unity-sds/unity-sps/issues/295)
+  - [[Documentation]: Revise and update the OGC tutorial using CURL](https://github.com/unity-sds/unity-sps/issues/296)
+  - [[Documentation]: SPS overview for developers](https://github.com/unity-sds/unity-sps/issues/297)
+- EPIC: Continue Application Package Standardization
+  - [[New Feature]: Modularize the EMIT workflow](https://github.com/unity-sds/unity-sps/issues/302)
+- EPIC: TROPESS Support
+  - [[Enhancement]: Modular DAG Stage Out step too verbose](https://github.com/unity-sds/unity-sps/issues/307)
+- EPIC: Demonstrate Space Use Case
+  - [[Enhancement]Create SRL Initiator for EDRGen (.dat + .emd)](https://github.com/unity-sds/unity-sps/issues/287)
+  - [[New Feature]: Airflow DAG for EDRgen](https://github.com/unity-sds/unity-sps/issues/278)
+  - [[New Feature]: Airflow DAG for RDRgen](https://github.com/unity-sds/unity-sps/issues/279)
+  - [[New Feature]: Initiators for EDRgen processing](https://github.com/unity-sds/unity-sps/issues/283)
+  - [[New Feature]: Initiators for RDRgen processing](https://github.com/unity-sds/unity-sps/issues/284)
+  - [[New Feature]: Prototype routing via a DAG](https://github.com/unity-sds/unity-sps/issues/308)
+  - [[New Feature]: Investigate router DAG configuration via Airflow Configuration, SSM, S3 file](https://github.com/unity-sds/unity-sps/issues/324)
+
+## Docker Containers
+
+- ghcr.io/unity-sds/unity-sps/sps-airflow:2.6.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.0.0
+
+## Documentation
+
+- For Administrators:
+  - [SPS Deployment with Terraform](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-terraform)
+  - [Interacting with an Existing SPS Deployment](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/interacting-with-an-existing-sps-deployment)
+  - [SPS Airflow Custom Docker Image Build Instructions](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
+  - [SPS Post Deployment Operations](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-post-deployment-operations)
+  - [SPS Deployment with Marketplace](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-marketplace)
+- For Deverlopers:
+  - [OGC Processes API Overview](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/ogc-processes-api-overview)
+  - [Tutorial: Using the OGC Processes API with CURL](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-using-the-ogc-processes-api-with-curl)
+  - [Tutorial: Using the OGC processes API with Python](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-using-the-ogc-processes-api-with-python)
+- For Users:
+  - [Tutorial: Register and Execute a CWL Workflow](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
+
 # [Unity Release 24.4] - 2025-01-02
 
 ## Tags
@@ -40,6 +128,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.1>
 
 ## Epics
+
+Release tickets: https://github.com/orgs/unity-sds/projects/3/views/53
 
 - EPIC: Airflow/WPS-T Integration
   - [[[New Feature]: Publish ogc-api-python-client to PyPi]](https://github.com/unity-sds/unity-sps/issues/225)
