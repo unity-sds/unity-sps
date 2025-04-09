@@ -6,8 +6,8 @@ import json
 import logging
 import os
 from datetime import datetime
-import boto3
 
+import boto3
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
@@ -33,7 +33,7 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     }
 )
 
-# AWS SSM parameter paths for credentials 
+# AWS SSM parameter paths for credentials
 DOCKERHUB_USERNAME = "/unity/ads/app_gen/development/dockerhub_username"
 DOCKERHUB_TOKEN = "/unity/ads/app_gen/development/dockerhub_api_key"
 DOCKSTORE_TOKEN = "/unity/ads/app_gen/development/dockstore_token"
@@ -185,7 +185,7 @@ def setup(ti=None, **context):
     )
     logging.info(ssm_response)
 
-    # Somehow get the correct variables from SSM here 
+    # Somehow get the correct variables from SSM here
     credentials_dict = {}
     for param in ssm_response["Parameters"]:
         if param["Name"] == DOCKERHUB_USERNAME:
@@ -199,8 +199,8 @@ def setup(ti=None, **context):
     # make sure all required credentials are provided
     if (not set(required_credentials).issubset(list(credentials_dict.keys()))):
         logging.error(f"Expected all of credentials to run mdps app generator {required_credentials}")
-    
-    # use xcom to push to avoid putting credentials to the logs 
+
+    # use xcom to push to avoid putting credentials to the logs
     ti.xcom_push(key="dockerhub_username", value=credentials_dict["dockerhub_username"])
     ti.xcom_push(key="dockerhub_token", value=credentials_dict["dockerhub_token"])
     ti.xcom_push(key="dockstore_token", value=credentials_dict["dockstore_token"])
