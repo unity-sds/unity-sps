@@ -80,7 +80,7 @@ labels:
   app: airflow
 
 scheduler:
-  replicas: 3
+  replicas: 4
   nodeSelector:
     "karpenter.sh/nodepool": "airflow-core-components"
   affinity:
@@ -343,7 +343,7 @@ extraEnv: |
   - name: AIRFLOW__API__AUTH_BACKENDS
     value: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
   - name: AIRFLOW__CORE__PARALLELISM
-    value: "32768"
+    value: "64"
   - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
     value: "1024"
   - name: AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG
@@ -366,3 +366,5 @@ extraEnv: |
     value: "1024"
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"
+  - name: AIRFLOW__CELERY__WORKER_AUTOSCALE
+    value: "16,1"
