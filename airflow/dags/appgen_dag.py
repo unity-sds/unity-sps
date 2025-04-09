@@ -143,7 +143,12 @@ dag = DAG(
     max_active_tasks=30,
     default_args=dag_default_args,
     params={
-        "repository": Param("https://github.com/unity-sds/unity-example-application", type="string", title="Repository", description="Repository to build from"),
+        "repository": Param(
+            "https://github.com/unity-sds/unity-example-application",
+            type="string",
+            title="Repository",
+            description="Repository to build from",
+        ),
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
             type="integer",
@@ -167,11 +172,14 @@ dag = DAG(
 )
 
 app_gen_env_vars = [
-    k8s.V1EnvVar(name="DOCKERHUB_USERNAME", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"),
-    k8s.V1EnvVar(name="DOCKERHUB_TOKEN", value= "{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_token') }}"),
+    k8s.V1EnvVar(
+        name="DOCKERHUB_USERNAME", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"
+    ),
+    k8s.V1EnvVar(name="DOCKERHUB_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_token') }}"),
     k8s.V1EnvVar(name="DOCKSTORE_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockstore_token') }}"),
     k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
 ]
+
 
 def setup(ti=None, **context):
     """
@@ -197,7 +205,7 @@ def setup(ti=None, **context):
 
     required_credentials = ["dockerhub_username", "dockerhub_token", "dockstore_token"]
     # make sure all required credentials are provided
-    if (not set(required_credentials).issubset(list(credentials_dict.keys()))):
+    if not set(required_credentials).issubset(list(credentials_dict.keys())):
         logging.error(f"Expected all of credentials to run mdps app generator {required_credentials}")
 
     # use xcom to push to avoid putting credentials to the logs
