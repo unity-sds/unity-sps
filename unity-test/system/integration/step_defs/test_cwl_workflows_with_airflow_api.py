@@ -39,19 +39,16 @@ DAG_PARAMETERS = {
     },
     CWL_DAG_ID: {
         "EMIT": {
-            "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/"
-            "api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/"
-            "versions/9/plain-CWL/descriptor/workflow.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/workflow.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
-                "/test/emit-ghg-dev.json",
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/emit-ghg-dev.json",
                 # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
                 # "/test/emit-ghg-test.json",
             },
             "request_storage": "100Gi",
             # r7i.2xlarge: 8 CPUs, 64 GB memory
             "request_instance_type": "r7i.2xlarge",
-            "use_ecr": False,
+            "use_ecr": True,
         },
         "SBG_E2E_SCALE": {
             "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
