@@ -18,7 +18,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.4"
+  default     = "25.1"
 }
 
 # tflint-ignore: terraform_unused_declarations
@@ -67,7 +67,7 @@ variable "nodegroups" {
   }))
   default = {
     defaultGroup = {
-      instance_types = ["t3.2xlarge"]
+      instance_types = ["m5.2xlarge"]
       min_size       = 1
       max_size       = 1
       desired_size   = 1

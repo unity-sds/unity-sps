@@ -20,15 +20,20 @@ from pprint import pprint
 import requests
 from requests.auth import HTTPBasicAuth
 
-# EMIT parameters
-cwl_workflow = "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl"
-cwl_args = "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json"
-ec2_instance_type = "r7i.2xlarge"
+# EMIT parameters (using DockerHub)
+# cwl_workflow = "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl"
+# cwl_args = "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json"
+# EMIT parameters (using ECR)
+cwl_workflow = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/workflow.cwl"
+cwl_args = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/emit-ghg-dev.json"
 request_storage = "100Gi"
+ec2_instance_type = "r7i.2xlarge"
+use_ecr = True
 
 # cwl_workflow = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/main/demos/echo_message.cwl"
 # cwl_args = '{"message": "Hello Unity"}'
 # ec2_instance_type = "t3.medium"
+# request_storage = "10Gi"
 
 
 def main():
@@ -60,6 +65,7 @@ def main():
                 "cwl_workflow": cwl_workflow,
                 "request_instance_type": ec2_instance_type,
                 "request_storage": request_storage,
+                "use_ecr": use_ecr,
             },
         }
         result = requests.post(

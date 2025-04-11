@@ -149,10 +149,11 @@ def setup(ti=None, **context):
     logging.info(f"Selecting log level: {context['params']['log_level']}.")
 
 
-setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
+setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag, weight_rule="upstream")
 
 cwl_task = KubernetesPodOperator(
     retries=1,
+    weight_rule="upstream",
     task_id="cwl_task",
     namespace=POD_NAMESPACE,
     name="cwl-task-pod",
@@ -238,7 +239,11 @@ def cleanup(**context):
 
 
 cleanup_task = PythonOperator(
-    task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
+    task_id="Cleanup",
+    python_callable=cleanup,
+    dag=dag,
+    trigger_rule=TriggerRule.ALL_DONE,
+    weight_rule="upstream",
 )
 
 chain(setup_task.as_setup(), cwl_task, cleanup_task.as_teardown(setups=setup_task))
