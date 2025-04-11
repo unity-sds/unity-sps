@@ -37,13 +37,10 @@ CWL_DAG_DATA = {
     },
     "SBG_PREPROCESS": {
         "inputs": {
-            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-            "/preprocess/sbg-preprocess-workflow.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-                "/sbg-preprocess-workflow.dev.yml",
-                "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-                "/sbg-preprocess-workflow.test.yml",
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.dev.yml",
+                "test": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.test.yml",
             },
             "request_storage": "10Gi",
             # c6i.xlarge: 4vCPUs, 8 GB memory
