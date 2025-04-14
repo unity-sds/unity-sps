@@ -97,7 +97,10 @@ app_gen_env_vars = [
     ),
     k8s.V1EnvVar(name="DOCKERHUB_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_token') }}"),
     k8s.V1EnvVar(name="DOCKSTORE_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockstore_token') }}"),
-    k8s.V1EnvVar(name="DOCKSTORE_API_URL", value="http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api"),
+    k8s.V1EnvVar(
+        name="DOCKSTORE_API_URL",
+        value="http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api",
+    ),
     k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
 ]
 
