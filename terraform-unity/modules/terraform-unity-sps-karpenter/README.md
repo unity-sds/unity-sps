@@ -36,7 +36,7 @@
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_deployment_name"></a> [deployment\_name](#input\_deployment\_name) | The name of the deployment. | `string` | `""` | no |
-| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | <pre>{<br>  "karpenter": {<br>    "chart": "karpenter",<br>    "repository": "oci://public.ecr.aws/karpenter",<br>    "version": "1.0.2"<br>  }<br>}</pre> | no |
+| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | <pre>{<br>  "karpenter": {<br>    "chart": "karpenter",<br>    "repository": "oci://public.ecr.aws/karpenter",<br>    "version": "1.3.3"<br>  }<br>}</pre> | no |
 | <a name="input_installprefix"></a> [installprefix](#input\_installprefix) | The install prefix for the service area (unused) | `string` | `""` | no |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | `"unity"` | no |
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | `"25.1"` | no |
