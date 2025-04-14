@@ -52,7 +52,7 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     }
 )
 
-LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
+LOG_LEVEL_TYPE = {"DEBUG": 10, "INFO": 20}
 
 # Default DAG configuration
 dag_default_args = {
@@ -84,9 +84,8 @@ dag = DAG(
         ),
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
-            type="integer",
+            type="string",
             enum=list(LOG_LEVEL_TYPE.keys()),
-            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
             description=("Log level for DAG processing"),
         ),
@@ -143,7 +142,9 @@ def setup(ti=None, **context):
     logging.info("ECR login: %s", ecr_login)
 
     # select log level based on debug
-    logging.info(f"Selecting log level: {context['params']['log_level']}.")
+    log_level = context['params']['log_level']
+    ti.xcom_push(key="log_level", value=LOG_LEVEL_TYPE[log_level])
+    logging.info(f"Selecting log level: {LOG_LEVEL_TYPE[log_level]}.")
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag, weight_rule="upstream")
@@ -165,7 +166,7 @@ cwl_task = KubernetesPodOperator(
         "-j",
         "{{ params.cwl_args }}",
         "-l",
-        "{{ params.log_level }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],

@@ -104,9 +104,8 @@ dag = DAG(
         ),
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
-            type="integer",
+            type="string",
             enum=list(LOG_LEVEL_TYPE.keys()),
-            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
             description=("Log level for modular DAG processing"),
         ),
@@ -179,12 +178,19 @@ def select_stage_out(ti):
     ti.xcom_push(key="stage_out_args", value=stage_out_args)
 
 
+def select_log_level(ti, log_level):
+    """Select log level based on input parameter."""
+    ti.xcom_push(key="log_level", value=LOG_LEVEL_TYPE[log_level])
+    logging.info(f"Selecting log level: {LOG_LEVEL_TYPE[log_level]}.")
+
+
 def setup(ti=None, **context):
     """
     Task that creates the working directory on the shared volume
     and parses the input parameter values.
     """
     context = get_current_context()
+    logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
 
     # create local working directory
     dag_run_id = context["dag_run"].run_id
@@ -200,7 +206,7 @@ def setup(ti=None, **context):
     select_stage_out(ti)
 
     # select log level based on debug
-    logging.info(f"Selecting log level: {context['params']['log_level']}.")
+    select_log_level(ti, context['params']['log_level'])
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag, weight_rule="upstream")
@@ -232,7 +238,7 @@ cwl_task_processing = KubernetesPodOperator(
         "-a",
         "{{ ti.xcom_pull(task_ids='Setup', key='stage_out_args') }}",
         "-l",
-        "{{ params.log_level }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
