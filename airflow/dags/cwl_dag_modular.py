@@ -120,7 +120,6 @@ dag = DAG(
         "request_storage": Param(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
-        "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
     },
 )
 
@@ -156,15 +155,13 @@ def select_node_pool(ti, request_storage, request_instance_type):
     logging.info(f"Selecting node pool={node_pool}")
 
 
-def select_ecr(ti, use_ecr):
+def select_ecr(ti):
     """
-    Determine if ECR login is required.
+    Determine ECR login.
     """
-    logging.info("Use ECR: %s", use_ecr)
-    if use_ecr:
-        ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
-        ti.xcom_push(key="ecr_login", value=ecr_login)
-        logging.info("ECR login: %s", ecr_login)
+    ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
+    ti.xcom_push(key="ecr_login", value=ecr_login)
+    logging.info("ECR login: %s", ecr_login)
 
 
 def select_stage_out(ti):
@@ -196,8 +193,8 @@ def setup(ti=None, **context):
     # select the node pool based on what resources were requested
     select_node_pool(ti, context["params"]["request_storage"], context["params"]["request_instance_type"])
 
-    # select "use_ecr" argument and determine if ECR login is required
-    select_ecr(ti, context["params"]["use_ecr"])
+    # determine ECR login
+    select_ecr(ti)
 
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
