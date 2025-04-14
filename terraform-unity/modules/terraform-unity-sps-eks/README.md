@@ -20,7 +20,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_unity-eks"></a> [unity-eks](#module\_unity-eks) | git::https://github.com/unity-sds/unity-cs-infra.git//terraform-unity-eks_module | unity-sps-2.4.1-hotfix1 |
+| <a name="module_unity-eks"></a> [unity-eks](#module\_unity-eks) | git::https://github.com/unity-sds/unity-cs-infra.git//terraform-unity-eks_module | unity-sps-2.5.0 |
 
 ## Resources
 
