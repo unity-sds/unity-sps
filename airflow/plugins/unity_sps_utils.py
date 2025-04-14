@@ -21,7 +21,7 @@ NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
 DEFAULT_LOG_LEVEL = "INFO"
-LOG_LEVEL_TYPE = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40,"CRITICAL": 50}
+LOG_LEVEL_TYPE = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
 
 EC2_TYPES = {
     # "t3.nano": {

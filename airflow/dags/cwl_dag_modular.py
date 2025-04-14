@@ -206,7 +206,7 @@ def setup(ti=None, **context):
     select_stage_out(ti)
 
     # select log level based on debug
-    select_log_level(ti, context['params']['log_level'])
+    select_log_level(ti, context["params"]["log_level"])
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag, weight_rule="upstream")

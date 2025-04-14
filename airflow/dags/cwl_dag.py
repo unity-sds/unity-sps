@@ -142,7 +142,7 @@ def setup(ti=None, **context):
     logging.info("ECR login: %s", ecr_login)
 
     # select log level based on debug
-    log_level = context['params']['log_level']
+    log_level = context["params"]["log_level"]
     ti.xcom_push(key="log_level", value=LOG_LEVEL_TYPE[log_level])
     logging.info(f"Selecting log level: {LOG_LEVEL_TYPE[log_level]}.")
 
