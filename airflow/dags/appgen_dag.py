@@ -42,7 +42,7 @@ DOCKSTORE_TOKEN = "/unity/ads/app_gen/development/dockstore_token"
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
 # Change this to the Docker image that contains the Application Package Generator
-DOCKER_IMAGE = "jplmdps/unity-app-gen:v1.0.0"
+DOCKER_IMAGE = "jplmdps/unity-app-gen:v1.1.1"
 
 # Default DAG configuration
 dag_default_args = {
