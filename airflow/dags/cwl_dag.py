@@ -22,6 +22,7 @@ from kubernetes.client import models as k8s
 from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
     EC2_TYPES,
+    LOG_LEVEL_TYPE,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
@@ -51,8 +52,6 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
         "ephemeral-storage": "{{ params.request_storage }} ",
     }
 )
-
-LOG_LEVEL_TYPE = {"DEBUG": 10, "INFO": 20}
 
 # Default DAG configuration
 dag_default_args = {
