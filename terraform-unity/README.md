@@ -172,7 +172,6 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 | <a name="module_unity-sps-airflow"></a> [unity-sps-airflow](#module\_unity-sps-airflow) | ./modules/terraform-unity-sps-airflow | n/a |
 | <a name="module_unity-sps-database"></a> [unity-sps-database](#module\_unity-sps-database) | ./modules/terraform-unity-sps-database | n/a |
 | <a name="module_unity-sps-efs"></a> [unity-sps-efs](#module\_unity-sps-efs) | ./modules/terraform-unity-sps-efs | n/a |
-| <a name="module_unity-sps-initiators"></a> [unity-sps-initiators](#module\_unity-sps-initiators) | ./modules/terraform-unity-sps-initiators | n/a |
 | <a name="module_unity-sps-karpenter-node-config"></a> [unity-sps-karpenter-node-config](#module\_unity-sps-karpenter-node-config) | ./modules/terraform-unity-sps-karpenter-node-config | n/a |
 | <a name="module_unity-sps-ogc-processes-api"></a> [unity-sps-ogc-processes-api](#module\_unity-sps-ogc-processes-api) | ./modules/terraform-unity-sps-ogc-processes-api | n/a |
 
@@ -188,7 +187,7 @@ terraform apply -no-color 2>&1 | tee apply_output.txt
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_airflow_docker_images"></a> [airflow\_docker\_images](#input\_airflow\_docker\_images) | Docker images for the associated Airflow services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | <pre>{<br>  "airflow": {<br>    "name": "ghcr.io/unity-sds/unity-sps/sps-airflow",<br>    "tag": "2.6.0"<br>  }<br>}</pre> | no |
+| <a name="input_airflow_docker_images"></a> [airflow\_docker\_images](#input\_airflow\_docker\_images) | Docker images for the associated Airflow services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | <pre>{<br>  "airflow": {<br>    "name": "ghcr.io/unity-sds/unity-sps/sps-airflow",<br>    "tag": "2.6.1"<br>  }<br>}</pre> | no |
 | <a name="input_airflow_webserver_password"></a> [airflow\_webserver\_password](#input\_airflow\_webserver\_password) | The password for the Airflow webserver and UI. | `string` | n/a | yes |
 | <a name="input_airflow_webserver_username"></a> [airflow\_webserver\_username](#input\_airflow\_webserver\_username) | The username for the Airflow webserver and UI. | `string` | `"admin"` | no |
 | <a name="input_dag_catalog_repo"></a> [dag\_catalog\_repo](#input\_dag\_catalog\_repo) | Git repository that stores the catalog of Airflow DAGs. | <pre>object({<br>    url                 = string<br>    ref                 = string<br>    dags_directory_path = string<br>  })</pre> | <pre>{<br>  "dags_directory_path": "airflow/dags",<br>  "ref": "main",<br>  "url": "https://github.com/unity-sds/unity-sps.git"<br>}</pre> | no |

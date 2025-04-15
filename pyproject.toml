@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unity-sps"
-version = "2.6.0"
+version = "2.6.1"
 authors = [
     { name = "Luca Cinquini", email = "luca.cinquini@jpl.nasa.gov" },
     { name = "Grace Llewellyn", email = "grace.llewellyn@jpl.nasa.gov" },

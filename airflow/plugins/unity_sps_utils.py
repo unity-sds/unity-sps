@@ -13,15 +13,15 @@ POD_LABEL = "cwl_task"
 
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.10"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.1"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
 DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
-DEFAULT_LOG_LEVEL = 20
-LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
+DEFAULT_LOG_LEVEL = "INFO"
+LOG_LEVEL_TYPE = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
 
 EC2_TYPES = {
     # "t3.nano": {
