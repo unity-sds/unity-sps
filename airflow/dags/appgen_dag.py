@@ -67,7 +67,7 @@ dag = DAG(
             "https://github.com/unity-sds/unity-example-application",
             type="string",
             title="Repository",
-            description="Repository to build from",
+            description="Git URL of application source files",
         ),
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
