@@ -73,19 +73,34 @@ CWL_DAG_DATA = {
 CWL_DAG_MODULAR_DATA = {
     "EMIT": {
         "inputs": {
-            "cwl_workflow_stage_in": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl",
             "stac_json": "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json",
-            "cwl_workflow_process": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
-            "job_args_process": json.dumps({"example_argument_empty": ""}),
-            "cwl_workflow_stage_out": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl",
-            "job_args_stage_out": {
-                "dev": json.dumps(
-                    {"project": "unity", "venue": "dev", "staging_bucket": "unity-dev-unity-storage"}
-                )
-            },
-            "request_storage": "10Gi",
+            "process_workflow": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
+            "process_args": json.dumps({"example_argument_empty": ""}),
+            "log_level": "INFO",
             "request_instance_type": "t3.medium",
-            "use_ecr": False,
+            "request_storage": "10Gi",
+        },
+        "outputs": {"result": {"transmissionMode": "reference"}},
+    },
+    "SBG_PREPROCESS": {
+        "inputs": {
+            "stac_json": "https://raw.githubusercontent.com/brianlee731/SBG-unity-preprocess-mod/refs/heads/main/test/stage-in/featureCollection.json",
+            "process_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fedwinsarkissian%2FSBG-unity-preprocess-mod/versions/4/PLAIN-CWL/descriptor/%2Fprocess.cwl",
+            "process_args": json.dumps({}),
+            "log_level": "INFO",
+            "request_instance_type": "t3.2xlarge",
+            "request_storage": "100Gi",
+        },
+        "outputs": {"result": {"transmissionMode": "reference"}},
+    },
+    "SBG_ISOFIT": {
+        "inputs": {
+            "stac_json": "https://raw.githubusercontent.com/brianlee731/SBG-unity-isofit-mod_test/refs/heads/main/test/catalog.json",
+            "process_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fbrianlee731%2FSBG-unity-isofit-mod_test/versions/14/PLAIN-CWL/descriptor/%2Fprocess.cwl",
+            "process_args": json.dumps({}),
+            "log_level": "INFO",
+            "request_instance_type": "t3.2xlarge",
+            "request_storage": "100Gi",
         },
         "outputs": {"result": {"transmissionMode": "reference"}},
     },
@@ -117,7 +132,6 @@ def trigger_process(cwl_dag_process, cwl_dag_modular_process, venue, test_case, 
         elif test_dag == CWL_DAG_MODULAR_ID:
             ogc_process = cwl_dag_modular_process
             payload = CWL_DAG_MODULAR_DATA[test_case]
-            payload["inputs"]["job_args_stage_out"] = payload["inputs"]["job_args_stage_out"][venue]
 
         print(ogc_process)
         assert ogc_process is not None
