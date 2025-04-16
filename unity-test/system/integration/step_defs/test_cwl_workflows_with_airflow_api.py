@@ -57,10 +57,10 @@ DAG_PARAMETERS = {
                 # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
                 # "/test/emit-ghg-test.json",
             },
+            "log_level": "INFO",
             "request_storage": "100Gi",
             # r7i.2xlarge: 8 CPUs, 64 GB memory
             "request_instance_type": "r7i.2xlarge",
-            "use_ecr": False,
         },
         "SBG_E2E_SCALE": {
             "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
@@ -69,10 +69,10 @@ DAG_PARAMETERS = {
                 "dev": "https://raw.githubusercontent.com/unity-sds/"
                 "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
             },
+            "log_level": "INFO",
             "request_storage": "100Gi",
             # c6i.8xlarge: 32 CPUs, 64 GB memory
             "request_instance_type": "c6i.8xlarge",
-            "use_ecr": False,
         },
         "SBG_PREPROCESS": {
             "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
@@ -83,11 +83,11 @@ DAG_PARAMETERS = {
                 "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
                 "/sbg-preprocess-workflow.test.yml",
             },
+            "log_level": "INFO",
             "request_storage": "10Gi",
             # c6i.xlarge: 4vCPUs, 8 GB memory
             # r7i.xlarge: 4 CPUs 32 GB memory
             "request_instance_type": "r7i.xlarge",
-            "use_ecr": False,
         },
     },
 }
@@ -115,7 +115,7 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
         # configuration common to all DAGs
         job_config = {
             "conf": {
-                # "log_level": f'{DAG_PARAMETERS[test_dag][test_case]["log_level"]}',
+                "log_level": f'{DAG_PARAMETERS[test_dag][test_case]["log_level"]}',
                 "request_storage": f'{DAG_PARAMETERS[test_dag][test_case]["request_storage"]}',
                 "request_instance_type": f'{DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]}',
             }
@@ -131,7 +131,6 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
             job_config["conf"]["stac_json"] = f'{DAG_PARAMETERS[test_dag][test_case]["stac_json"]}'
             job_config["conf"]["process_workflow"] = f'{DAG_PARAMETERS[test_dag][test_case]["process_workflow"]}'
             job_config["conf"]["process_args"] = f'{DAG_PARAMETERS[test_dag][test_case]["process_args"]}'
-            job_config["conf"]["log_level"] = f'{DAG_PARAMETERS[test_dag][test_case]["log_level"]}'
 
         response = requests.post(
             f"{airflow_api_url}/api/v1/dags/{test_dag}/dagRuns",
