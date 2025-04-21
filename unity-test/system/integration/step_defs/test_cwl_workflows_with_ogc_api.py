@@ -82,7 +82,6 @@ CWL_DAG_MODULAR_DATA = {
             },
             "request_storage": "10Gi",
             "request_instance_type": "t3.medium",
-            "use_ecr": False,
         },
         "outputs": {"result": {"transmissionMode": "reference"}},
     },
