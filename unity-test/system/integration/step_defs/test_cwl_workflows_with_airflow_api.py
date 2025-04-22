@@ -42,7 +42,7 @@ DAG_PARAMETERS = {
             "process_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fbrianlee731%2FSBG-unity-isofit-mod_test/versions/14/PLAIN-CWL/descriptor/%2Fprocess.cwl",
             "process_args": json.dumps({}),
             "log_level": "INFO",
-            "request_instance_type": "c6i.8xlarge",
+            "request_instance_type": "r7i.2xlarge",
             "request_storage": "100Gi",
         },
     },
