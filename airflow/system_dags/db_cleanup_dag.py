@@ -8,7 +8,7 @@ from airflow.operators.bash import BashOperator
 
 
 @dag(
-    dag_id="db_cleanup_dag",
+    dag_id="db_cleanup_dag2",
     # Run this DAG daily at midnight
     schedule_interval="@daily",
     catchup=False,
@@ -17,10 +17,11 @@ from airflow.operators.bash import BashOperator
     doc_md=__doc__,
     render_template_as_native_obj=True,
     max_active_tasks=1,
+    start_date=datetime.now(tz=UTC),
     tags=["Airflow", "database", "cleanup"],
     params={
         "clean_before_timestamp": Param(
-            default=datetime.now(tz=UTC) - timedelta(days=30),
+            default=(datetime.now(tz=UTC) - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S%z"),
             type="string",
             format="date-time",
             description="Delete records older than this timestamp. Default is 30 days ago.",
