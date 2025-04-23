@@ -35,6 +35,7 @@ def db_cleanup_dag():
         task_id="db_cleanup_task",
         bash_command="airflow db clean --yes " "--clean-before-timestamp {{ params.clean_before_timestamp }}",
         do_xcom_push=False,
+        owner="system",
     )
 
 
