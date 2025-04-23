@@ -1,4 +1,4 @@
-"""A DAG to periodically clean up the Airflow database."""
+"""Enable this DAG to clean the Airflow database from records older than 30 days (or run on-demand)."""
 
 from datetime import UTC, datetime, timedelta
 
@@ -8,11 +8,12 @@ from airflow.operators.bash import BashOperator
 
 
 @dag(
-    dag_id="db_cleanup_dag2",
+    dag_id="db_cleanup_dag",
+    dag_display_name="Database Cleanup DAG",
     # Run this DAG daily at midnight
     schedule_interval="@daily",
     catchup=False,
-    is_paused_upon_creation=False,
+    is_paused_upon_creation=True,
     description=__doc__,
     doc_md=__doc__,
     render_template_as_native_obj=True,
