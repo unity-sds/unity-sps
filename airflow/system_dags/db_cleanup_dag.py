@@ -1,6 +1,6 @@
 """Enable this DAG to clean the Airflow database from records older than 30 days (or run on-demand)."""
 
-from datetime import UTC, datetime, timedelta
+from datetime import datetime, timedelta
 
 from airflow.decorators import dag
 from airflow.models.param import Param
@@ -18,11 +18,11 @@ from airflow.operators.bash import BashOperator
     doc_md=__doc__,
     render_template_as_native_obj=True,
     max_active_tasks=1,
-    start_date=datetime.now(tz=UTC),
+    start_date=datetime.now(),
     tags=["Airflow", "database", "cleanup"],
     params={
         "clean_before_timestamp": Param(
-            default=(datetime.now(tz=UTC) - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S%z"),
+            default=(datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S%z"),
             type="string",
             format="date-time",
             description="Delete records older than this timestamp. Default is 30 days ago.",
