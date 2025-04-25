@@ -681,3 +681,95 @@ resource "aws_ssm_parameter" "airflow_logs" {
     Stack     = "SSM"
   })
 }
+
+# Install the CSI S3 driver via Helm
+resource "helm_release" "csi_s3" {
+  name      = "csi-driver-s3"
+  namespace = "sps"
+  #   repository = "https://charts.helm.sh/stable"
+  #   chart      = "csi-driver-s3"
+  #   version    = "0.3.0"  # adjust as needed
+
+  repository = "https://awslabs.github.io/mountpoint-s3-csi-driver/"
+  chart      = "aws-mountpoint-s3-csi-driver"
+  version    = "1.14.1" # Check for latest at the repo if needed
+
+  set {
+    name  = "s3.endpoint"
+    value = "https://s3.amazonaws.com"
+  }
+
+  set {
+    name  = "s3.region"
+    value = "us-west-2"
+  }
+}
+
+# Create a StorageClass for S3
+resource "kubernetes_storage_class" "s3" {
+  metadata {
+    name = "s3-sc"
+  }
+
+  storage_provisioner = "s3.csi.k8s.io"
+
+  parameters = {
+    mounter      = "s3fs"
+    bucket       = "unity-luca-1-dev-dind-bucket"
+    region       = "us-west-2"
+    sigVersion   = "4"
+    storageClass = "STANDARD"
+  }
+
+  reclaim_policy      = "Retain"
+  volume_binding_mode = "Immediate"
+}
+
+# Create a PersistentVolume
+resource "kubernetes_persistent_volume" "s3_pv" {
+  metadata {
+    name = "s3-pv"
+  }
+
+  spec {
+    capacity = {
+      storage = "100Gi"
+    }
+
+    access_modes                     = ["ReadWriteMany"]
+    persistent_volume_reclaim_policy = "Retain"
+    storage_class_name               = kubernetes_storage_class.s3.metadata[0].name
+    persistent_volume_source {
+      csi {
+        driver        = "s3.csi.k8s.io"
+        volume_handle = "s3-pv-handle"
+
+        volume_attributes = {
+          bucket = "unity-luca-1-dev-dind-bucket"
+          region = "us-west-2"
+        }
+      }
+    }
+  }
+}
+
+# 4. Create a PersistentVolumeClaim
+resource "kubernetes_persistent_volume_claim" "s3_pvc" {
+  metadata {
+    name      = "s3-pvc"
+    namespace = "sps"
+  }
+
+  spec {
+    access_modes = ["ReadWriteMany"]
+
+    resources {
+      requests = {
+        storage = "100Gi"
+      }
+    }
+
+    storage_class_name = kubernetes_storage_class.s3.metadata[0].name
+    volume_name        = kubernetes_persistent_volume.s3_pv.metadata[0].name
+  }
+}
