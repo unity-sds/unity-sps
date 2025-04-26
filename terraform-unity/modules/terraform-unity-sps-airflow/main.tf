@@ -167,6 +167,7 @@ resource "aws_iam_policy" "airflow_worker_policy" {
             "s3:ListBucket",
             "s3:GetObject",
             "s3:PutObject",
+            "s3:DeleteObject",
             "sqs:SendMessage",
             "sqs:ReceiveMessage",
             "sns:Publish",
@@ -686,9 +687,6 @@ resource "aws_ssm_parameter" "airflow_logs" {
 resource "helm_release" "csi_s3" {
   name      = "csi-driver-s3"
   namespace = "sps"
-  #   repository = "https://charts.helm.sh/stable"
-  #   chart      = "csi-driver-s3"
-  #   version    = "0.3.0"  # adjust as needed
 
   repository = "https://awslabs.github.io/mountpoint-s3-csi-driver/"
   chart      = "aws-mountpoint-s3-csi-driver"
@@ -711,14 +709,14 @@ resource "kubernetes_storage_class" "s3" {
     name = "s3-sc"
   }
 
-  storage_provisioner = "s3.csi.k8s.io"
+  storage_provisioner = "s3.csi.aws.com"
 
   parameters = {
-    mounter      = "s3fs"
-    bucket       = "unity-luca-1-dev-dind-bucket"
-    region       = "us-west-2"
-    sigVersion   = "4"
-    storageClass = "STANDARD"
+    mounter = "s3fs"
+    bucket  = "unity-luca-1-dev-dind-bucket"
+    region  = "us-west-2"
+    #     sigVersion   = "4"
+    #     storageClass = "STANDARD"
   }
 
   reclaim_policy      = "Retain"
@@ -733,7 +731,7 @@ resource "kubernetes_persistent_volume" "s3_pv" {
 
   spec {
     capacity = {
-      storage = "100Gi"
+      storage = "1200Gi"
     }
 
     access_modes                     = ["ReadWriteMany"]
@@ -741,12 +739,15 @@ resource "kubernetes_persistent_volume" "s3_pv" {
     storage_class_name               = kubernetes_storage_class.s3.metadata[0].name
     persistent_volume_source {
       csi {
-        driver        = "s3.csi.k8s.io"
-        volume_handle = "s3-pv-handle"
+        driver        = "s3.csi.aws.com"
+        volume_handle = "s3-pv-unity-luca-1-dev-dind-bucket" # "s3-pv-${var.s3_bucket}" # unique ID for the volume
 
         volume_attributes = {
-          bucket = "unity-luca-1-dev-dind-bucket"
-          region = "us-west-2"
+          bucket     = "unity-luca-1-dev-dind-bucket"
+          s3_bucket  = "unity-luca-1-dev-dind-bucket"
+          bucketName = "unity-luca-1-dev-dind-bucket"
+          # region = "us-west-2"
+          # mounter = "s3fs"
         }
       }
     }
@@ -765,11 +766,11 @@ resource "kubernetes_persistent_volume_claim" "s3_pvc" {
 
     resources {
       requests = {
-        storage = "100Gi"
+        storage = "1200Gi"
       }
     }
 
-    storage_class_name = kubernetes_storage_class.s3.metadata[0].name
+    storage_class_name = "s3-sc"
     volume_name        = kubernetes_persistent_volume.s3_pv.metadata[0].name
   }
 }
