@@ -683,14 +683,66 @@ resource "aws_ssm_parameter" "airflow_logs" {
   })
 }
 
+# Create an S3 bucket to use as Kubernetes Persistent Volume
+resource "aws_s3_bucket" "s3_pv_bucket" {
+  bucket        = format(local.resource_name_prefix, "s3-pv")
+  force_destroy = true
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "s3-pv")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+resource "aws_s3_bucket_policy" "s3_pv_bucket_policy" {
+  bucket = aws_s3_bucket.s3_pv_bucket.id
+  policy = jsonencode(
+    {
+      "Id" : "ExamplePolicy",
+      "Version" : "2012-10-17",
+      "Statement" : [
+        {
+          "Sid" : "AllowSSLRequestsOnly",
+          "Action" : "s3:*",
+          "Effect" : "Deny",
+          "Resource" : [
+            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, "s3-pv")),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, "s3-pv"), "*")
+          ],
+          "Condition" : {
+            "Bool" : {
+              "aws:SecureTransport" : "false"
+            }
+          },
+          "Principal" : "*"
+        }
+      ]
+    }
+  )
+}
+
+# Store the bucket name as SSM parameter
+resource "aws_ssm_parameter" "s3_pv_bucket_ssm_parameter" {
+  name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "s3_pv"])))
+  description = "The name of the S3 bucket for S3 Persistent Volume."
+  type        = "String"
+  value       = aws_s3_bucket.s3_pv_bucket.id
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "S3-PV")
+    Component = "SSM"
+    Stack     = "SSM"
+  })
+}
+
 # Install the CSI S3 driver via Helm
 resource "helm_release" "csi_s3" {
   name      = "csi-driver-s3"
-  namespace = "sps"
+  namespace = var.kubernetes_namespace
 
   repository = "https://awslabs.github.io/mountpoint-s3-csi-driver/"
   chart      = "aws-mountpoint-s3-csi-driver"
-  version    = "1.14.1" # Check for latest at the repo if needed
+  # Check for latest at the repo if needed
+  version = "1.14.1"
 
   set {
     name  = "s3.endpoint"
@@ -715,11 +767,11 @@ resource "kubernetes_storage_class" "s3" {
     mounter = "s3fs"
     bucket  = "unity-luca-1-dev-dind-bucket"
     region  = "us-west-2"
-    #     sigVersion   = "4"
-    #     storageClass = "STANDARD"
+
   }
 
-  reclaim_policy      = "Retain"
+  # "Delete" or "Retain"?
+  reclaim_policy      = "Delete"
   volume_binding_mode = "Immediate"
 }
 
@@ -731,23 +783,25 @@ resource "kubernetes_persistent_volume" "s3_pv" {
 
   spec {
     capacity = {
-      storage = "1200Gi"
+      # Required but irrelevant for S3
+      storage = "100Gi"
     }
 
     access_modes                     = ["ReadWriteMany"]
-    persistent_volume_reclaim_policy = "Retain"
+    persistent_volume_reclaim_policy = "Delete"
     storage_class_name               = kubernetes_storage_class.s3.metadata[0].name
     persistent_volume_source {
       csi {
-        driver        = "s3.csi.aws.com"
-        volume_handle = "s3-pv-unity-luca-1-dev-dind-bucket" # "s3-pv-${var.s3_bucket}" # unique ID for the volume
+        driver = "s3.csi.aws.com"
+        # must be unique
+        # volume_handle = "s3-pv-${data.s3_bucket_name}-handle"
+        volume_handle = "unity-luca-1-dev-dind-bucket-handle"
 
         volume_attributes = {
-          bucket     = "unity-luca-1-dev-dind-bucket"
-          s3_bucket  = "unity-luca-1-dev-dind-bucket"
+          # bucket     = "unity-luca-1-dev-dind-bucket"
+          # s3_bucket  = "unity-luca-1-dev-dind-bucket"
           bucketName = "unity-luca-1-dev-dind-bucket"
-          # region = "us-west-2"
-          # mounter = "s3fs"
+          mounter    = "s3fs"
         }
       }
     }
@@ -758,7 +812,7 @@ resource "kubernetes_persistent_volume" "s3_pv" {
 resource "kubernetes_persistent_volume_claim" "s3_pvc" {
   metadata {
     name      = "s3-pvc"
-    namespace = "sps"
+    namespace = var.kubernetes_namespace
   }
 
   spec {
@@ -766,7 +820,7 @@ resource "kubernetes_persistent_volume_claim" "s3_pvc" {
 
     resources {
       requests = {
-        storage = "1200Gi"
+        storage = "100Gi"
       }
     }
 
