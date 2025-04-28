@@ -31,7 +31,10 @@ with DAG(
         namespace="sps",
         image=DOCKER_IMAGE,
         cmds=["sh", "-c"],
-        arguments=["echo 'Hello from the container!' >> /mnt/s3/$(date -u).txt"],
+        arguments=[
+            "mkdir -p /mnt/s3/{{ dag_run.run_id }}; "
+            "echo 'Hello from the container!' >> /mnt/s3/{{ dag_run.run_id }}/$(date -u).txt"
+        ],
         volumes=[volume],
         volume_mounts=[volume_mount],
         get_logs=True,
@@ -50,7 +53,7 @@ with DAG(
         namespace="sps",
         image=DOCKER_IMAGE,
         cmds=["sh", "-c"],
-        arguments=["ls /mnt/s3"],  # just listing contents for demo
+        arguments=["ls /mnt/s3/{{ dag_run.run_id }}"],  # just listing contents for demo
         volumes=[volume],
         volume_mounts=[volume_mount],
         get_logs=True,
