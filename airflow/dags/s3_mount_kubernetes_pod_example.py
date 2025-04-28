@@ -12,6 +12,7 @@ with DAG(
     schedule_interval=None,
     catchup=False,
     schedule=None,
+    tags=["Example", "s3-mountpoints", "KubernetsPosOperator"],
 ) as dag:
 
     # Define the volume using a pre-created PVC that mounts S3
