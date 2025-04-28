@@ -722,6 +722,7 @@ resource "aws_s3_bucket_policy" "s3_pv_bucket_policy" {
 }
 
 # Store the bucket name as SSM parameter
+# Example: /luca-1/dev/sps/processing/airflow/s3_pv
 resource "aws_ssm_parameter" "s3_pv_bucket_ssm_parameter" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "s3_pv"])))
   description = "The name of the S3 bucket for S3 Persistent Volume."
@@ -765,7 +766,7 @@ resource "kubernetes_storage_class" "s3" {
 
   parameters = {
     mounter = "s3fs"
-    bucket  = "unity-luca-1-dev-dind-bucket"
+    bucket  = aws_s3_bucket.s3_pv_bucket.id
     region  = "us-west-2"
 
   }
@@ -795,12 +796,10 @@ resource "kubernetes_persistent_volume" "s3_pv" {
         driver = "s3.csi.aws.com"
         # must be unique
         # volume_handle = "s3-pv-${data.s3_bucket_name}-handle"
-        volume_handle = "unity-luca-1-dev-dind-bucket-handle"
+        volume_handle = "${aws_s3_bucket.s3_pv_bucket.id}-handle"
 
         volume_attributes = {
-          # bucket     = "unity-luca-1-dev-dind-bucket"
-          # s3_bucket  = "unity-luca-1-dev-dind-bucket"
-          bucketName = "unity-luca-1-dev-dind-bucket"
+          bucketName = aws_s3_bucket.s3_pv_bucket.id
           mounter    = "s3fs"
         }
       }

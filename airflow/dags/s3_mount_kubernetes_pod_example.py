@@ -6,7 +6,6 @@ from airflow import DAG
 with DAG(
     dag_id="s3_mount_kubernetes_pod_example",
     schedule_interval=None,
-    # start_date=days_ago(1),
     catchup=False,
     schedule=None,
 ) as dag:
@@ -23,7 +22,7 @@ with DAG(
     )
 
     task = KubernetesPodOperator(
-        task_id="use_s3_in_pod",
+        task_id="list_s3_from_pod",
         name="s3-access-task",
         namespace="sps",
         image="amazonlinux:2",  # or any image that can read S3 (and has bash or Python)
