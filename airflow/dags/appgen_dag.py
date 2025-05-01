@@ -25,8 +25,6 @@ from unity_sps_utils import (
     build_ec2_type_label,
     get_affinity,
 )
-from kubernetes import client
-import base64
 
 from airflow import DAG
 
@@ -40,6 +38,11 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
 DOCKERHUB_USERNAME = "/unity/ads/app_gen/development/dockerhub_username"
 DOCKERHUB_TOKEN = "/unity/ads/app_gen/development/dockerhub_api_key"
 DOCKSTORE_TOKEN = "/unity/ads/app_gen/development/dockstore_token"
+
+# HOST_SECRET_DIR = "/mnt/token-volume"
+# os.makedirs(HOST_SECRET_DIR, exist_ok=True)
+
+# SECRET_FILE_PATH = os.path.join(HOST_SECRET_DIR, "token.txt")
 
 # <<<
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
@@ -107,11 +110,6 @@ app_gen_env_vars = [
     k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
 ]
 
-kube_secrets = [
-        Secret(deploy_type="env", deploy_target="DOCKERHUB_USERNAME", secret="jplmdps", key="DOCKER_USERNAME")
-    ]
-
-
 def setup(ti=None, **context):
     """
     Task that selects the proper Karpenter Node Pool depending on the user requested resources.
@@ -144,30 +142,9 @@ def setup(ti=None, **context):
     ti.xcom_push(key="dockerhub_token", value=credentials_dict["dockerhub_token"])
     ti.xcom_push(key="dockstore_token", value=credentials_dict["dockstore_token"])
 
-    # Create the Kubernetes secret 
-    v1 = client.CoreV1Api()
-    secret = client.V1Secret(
-        metadata=client.V1ObjectMeta(name="dockerhub_username"),
-        type="Opaque",
-        data={
-            "token": base64.b64encode(credentials_dict["dockerhub_username"].encode("utf-8")).decode("utf-8")
-        }
-    )
-
-    logging.info(f"v1: {v1}")
-
-    # Create the secret in the 'default' namespace
-    # try:
-    #     v1.create_namespaced_secret(namespace="default", body=secret)
-    #     print("Secret created.")
-    # except client.exceptions.ApiException as e:
-    #     print(f"Exception when creating secret: {e}")
-    #     print(f"Status: {e.status}, Reason: {e.reason}")
-    #     print(f"Body: {e.body}")
-    #     if e.status == 409:
-    #         print("Secret already exists.")
-    #     else:
-    #         raise
+    # Write tokens to volume
+    with open("token.txt", "w") as f:
+        f.write(credentials_dict["dockerhub_username"])
 
     context = get_current_context()
     logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
@@ -209,7 +186,7 @@ appgen_task = KubernetesPodOperator(
     task_id="appgen_task",
     namespace=POD_NAMESPACE,
     # env_vars=app_gen_env_vars,
-    secrets=kube_secrets,
+    # secrets=kube_secrets,
     # env_from=[
     #     k8s.V1EnvFromSource(
     #         secret_ref=k8s.V1SecretEnvSource(
@@ -218,6 +195,15 @@ appgen_task = KubernetesPodOperator(
     #         )
     #     )
     # ],
+    volume_mounts=[
+        k8s.V1VolumeMount(name="token-volume", mount_path="/")
+    ],
+    volumes=[
+        k8s.V1Volume(
+            name="token-volume",
+            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="token-volume"),
+        )
+    ],
     name="appgen-task-pod",
     image=DOCKER_IMAGE,
     service_account_name="airflow-worker",
