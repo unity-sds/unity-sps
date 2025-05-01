@@ -1,0 +1,46 @@
+# Deployment that mounts the Kubernetes Persistent Volume "s3-pv"
+# where the DAGs write shared data so that the location can be inspected
+#
+# To use:
+# kubectl create -f s3_pv_access_deployment.yaml -n sps
+# kubectl get pods -n sps | grep s3-pv-access--> identify the pod id
+# kubectl exec -it <s3-pv-access-6485bbfd94-qwldq> -n sps sh
+# ls -l /mnt/s3
+#
+# To delete the pod:
+# kubectl delete deployment s3-pv-access -n sps
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: s3-pv-access
+  namespace: sps
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: busybox
+  template:
+    metadata:
+      labels:
+        app: busybox
+    spec:
+      containers:
+      - name: busybx
+        image: busybox
+        command: ["sleep"]
+        args: ["infinity"]
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1024Mi
+          requests:
+            cpu: 100m
+            memory: 150Mi
+        volumeMounts:
+        - name: efs
+          mountPath: "/mnt/s3"
+      volumes:
+      - name: efs
+        persistentVolumeClaim:
+          claimName: s3-pvc
