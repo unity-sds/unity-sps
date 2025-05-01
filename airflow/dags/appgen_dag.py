@@ -14,6 +14,7 @@ from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
+from airflow.kubernetes.secret import Secret
 from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
     EC2_TYPES,
@@ -24,6 +25,8 @@ from unity_sps_utils import (
     build_ec2_type_label,
     get_affinity,
 )
+from kubernetes import client
+import base64
 
 from airflow import DAG
 
@@ -92,9 +95,9 @@ dag = DAG(
 )
 
 app_gen_env_vars = [
-    k8s.V1EnvVar(
-        name="DOCKERHUB_USERNAME", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"
-    ),
+    # k8s.V1EnvVar(
+    #     name="DOCKERHUB_USERNAME", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"
+    # ),
     k8s.V1EnvVar(name="DOCKERHUB_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_token') }}"),
     k8s.V1EnvVar(name="DOCKSTORE_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockstore_token') }}"),
     k8s.V1EnvVar(
@@ -103,6 +106,10 @@ app_gen_env_vars = [
     ),
     k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
 ]
+
+kube_secrets = [
+        Secret(deploy_type="env", deploy_target="DOCKERHUB_USERNAME", secret="jplmdps", key="DOCKER_USERNAME")
+    ]
 
 
 def setup(ti=None, **context):
@@ -136,6 +143,31 @@ def setup(ti=None, **context):
     ti.xcom_push(key="dockerhub_username", value=credentials_dict["dockerhub_username"])
     ti.xcom_push(key="dockerhub_token", value=credentials_dict["dockerhub_token"])
     ti.xcom_push(key="dockstore_token", value=credentials_dict["dockstore_token"])
+
+    # Create the Kubernetes secret 
+    v1 = client.CoreV1Api()
+    secret = client.V1Secret(
+        metadata=client.V1ObjectMeta(name="dockerhub_username"),
+        type="Opaque",
+        data={
+            "token": base64.b64encode(credentials_dict["dockerhub_username"].encode("utf-8")).decode("utf-8")
+        }
+    )
+
+    logging.info(f"v1: {v1}")
+
+    # Create the secret in the 'default' namespace
+    # try:
+    #     v1.create_namespaced_secret(namespace="default", body=secret)
+    #     print("Secret created.")
+    # except client.exceptions.ApiException as e:
+    #     print(f"Exception when creating secret: {e}")
+    #     print(f"Status: {e.status}, Reason: {e.reason}")
+    #     print(f"Body: {e.body}")
+    #     if e.status == 409:
+    #         print("Secret already exists.")
+    #     else:
+    #         raise
 
     context = get_current_context()
     logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
@@ -176,7 +208,16 @@ appgen_task = KubernetesPodOperator(
     retries=1,
     task_id="appgen_task",
     namespace=POD_NAMESPACE,
-    env_vars=app_gen_env_vars,
+    # env_vars=app_gen_env_vars,
+    secrets=kube_secrets,
+    # env_from=[
+    #     k8s.V1EnvFromSource(
+    #         secret_ref=k8s.V1SecretEnvSource(
+    #             # Dynamically get the secret name created by the previous task
+    #             name="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"
+    #         )
+    #     )
+    # ],
     name="appgen-task-pod",
     image=DOCKER_IMAGE,
     service_account_name="airflow-worker",
