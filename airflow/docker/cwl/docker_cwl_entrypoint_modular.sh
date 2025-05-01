@@ -37,7 +37,7 @@ while getopts i:s:w:j:o:a:e:f:l: flag
 do
   case "${flag}" in
     i) cwl_workflow_stage_in=${OPTARG};;
-    s) stac_json=${OPTARG};;
+    s) job_args_stage_in=${OPTARG};;
     w) cwl_workflow_process=${OPTARG};;
     j) job_args_process=${OPTARG};;
     o) cwl_workflow_stage_out=${OPTARG};;
@@ -92,12 +92,17 @@ aws ecr get-login-password --region $aws_region | docker login --username AWS --
 echo "Logged into: $ecr_login"
 fi
 
+# Add log level and download directory to stage in arguments
+echo "Editing stage in arguments: $job_args_stage_in"
+echo $job_args_stage_in | jq --arg log_level $log_level '. += {"download_dir": "granule", "log_level": $log_level}' > ./job_args_stage_in.json
+echo "Executing the CWL workflow: $cwl_workflow_stage_in with working directory: $WORKING_DIR and json arguments:"
+cat job_args_stage_in.json
+
 # Stage in operations
-echo "Executing the CWL workflow: $cwl_workflow_stage_in with working directory: $WORKING_DIR and STAC JSON: $stac_json"
 if [ "$log_level" -eq 10 ]; then
-  stage_in=$(cwl-runner --debug --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
+  stage_in=$(cwl-runner --debug --outdir stage_in --copy-output $cwl_workflow_stage_in job_args_stage_in.json)
 else
-  stage_in=$(cwl-runner --quiet --outdir stage_in --copy-output $cwl_workflow_stage_in --download_dir granules --log_level $log_level --stac_json $stac_json)
+  stage_in=$(cwl-runner --quiet --outdir stage_in --copy-output $cwl_workflow_stage_in job_args_stage_in.json)
 fi
 echo "Stage In output:"
 echo $stage_in | jq '.'

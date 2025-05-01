@@ -13,11 +13,14 @@ POD_LABEL = "cwl_task"
 
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.1"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.4"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
+CS_SHARED_SERVICES_ACCOUNT_ID = "/unity/shared-services/aws/account"
+CS_SHARED_SERVICES_ACCOUNT_REGION = "/unity/shared-services/aws/account/region"
+DS_COGNITO_CLIENT_ID = "/unity/shared-services/dapa/client-id"
 DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
 DEFAULT_LOG_LEVEL = "INFO"

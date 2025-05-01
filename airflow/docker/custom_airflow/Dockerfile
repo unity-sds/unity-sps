@@ -4,3 +4,4 @@ RUN pip install cwltool==3.1.20240112164112
 RUN pip install boto3==1.34.89
 
 COPY airflow/plugins /opt/airflow/plugins
+COPY airflow/system_dags /opt/airflow/system_dags
