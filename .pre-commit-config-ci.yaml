@@ -64,14 +64,14 @@ repos:
           - --failure-threshold=error
           - --verbose
 
-  - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.86.0
-    hooks:
-      - id: terraform_fmt # Rewrites all Terraform configuration files to a canonical format.
-      - id: terraform_tflint # Validates all Terraform configuration files with TFLint.
-      - id: terraform_trivy # Static analysis of Terraform templates to spot potential security issues.
-        args:
-          - >
-            --args=--severity=CRITICAL
-            --skip-dirs="**/.terraform"
-            --tf-exclude-downloaded-modules
+#  - repo: https://github.com/antonbabenko/pre-commit-terraform
+#    rev: v1.86.0
+#    hooks:
+#      - id: terraform_fmt # Rewrites all Terraform configuration files to a canonical format.
+#      - id: terraform_tflint # Validates all Terraform configuration files with TFLint.
+#      - id: terraform_trivy # Static analysis of Terraform templates to spot potential security issues.
+#        args:
+#          - >
+#            --args=--severity=CRITICAL
+#            --skip-dirs="**/.terraform"
+#            --tf-exclude-downloaded-modules

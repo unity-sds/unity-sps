@@ -167,6 +167,7 @@ resource "aws_iam_policy" "airflow_worker_policy" {
             "s3:ListBucket",
             "s3:GetObject",
             "s3:PutObject",
+            "s3:DeleteObject",
             "sqs:SendMessage",
             "sqs:ReceiveMessage",
             "sns:Publish",
