@@ -25,7 +25,10 @@ from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperato
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
+    CS_SHARED_SERVICES_ACCOUNT_ID,
+    CS_SHARED_SERVICES_ACCOUNT_REGION,
     DEFAULT_LOG_LEVEL,
+    DS_COGNITO_CLIENT_ID,
     DS_S3_BUCKET_PARAM,
     EC2_TYPES,
     LOG_LEVEL_TYPE,
@@ -41,7 +44,8 @@ from unity_sps_utils import (
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_in_log_level.cwl"
+SSM_CLIENT = boto3.client("ssm", region_name="us-west-2")
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/351-stage-in-unity/demos/cwl_dag_modular_stage_in.cwl"
 STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_out_cwl_log_level.cwl"
 LOCAL_DIR = "/shared-task-data"
 
@@ -71,9 +75,9 @@ dag_default_args = {
 }
 
 dag = DAG(
-    dag_id="cwl_dag_modular",
-    description="CWL DAG Modular",
-    dag_display_name="CWL DAG Modular",
+    dag_id="cwl_dag_modular_unity",
+    description="CWL DAG Modular Unity",
+    dag_display_name="CWL DAG Modular Unity",
     tags=["CWL"],
     is_paused_upon_creation=False,
     catchup=False,
@@ -119,6 +123,10 @@ dag = DAG(
         "request_storage": Param(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
+        "unity_stac_auth_type": Param(
+            False, type="boolean", title="STAC JSON authentication for Unity hosted files"
+        ),
+        "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
     },
 )
 
@@ -163,13 +171,33 @@ def select_ecr(ti):
     logging.info("ECR login: %s", ecr_login)
 
 
+def select_stage_in(ti, stac_json, unity_stac_auth_type):
+    """Retrieve stage in arguments based on authentication type parameter."""
+    stage_in_args = {"stac_json": stac_json, "stac_auth_type": "NONE"}
+    if unity_stac_auth_type:
+        shared_services_account = SSM_CLIENT.get_parameter(
+            Name=CS_SHARED_SERVICES_ACCOUNT_ID, WithDecryption=True
+        )["Parameter"]["Value"]
+        shared_services_region = SSM_CLIENT.get_parameter(
+            Name=CS_SHARED_SERVICES_ACCOUNT_REGION, WithDecryption=True
+        )["Parameter"]["Value"]
+        unity_client_id = SSM_CLIENT.get_parameter(
+            Name=f"arn:aws:ssm:{shared_services_region}:{shared_services_account}:parameter{DS_COGNITO_CLIENT_ID}",
+            WithDecryption=True,
+        )["Parameter"]["Value"]
+        stage_in_args["unity_client_id"] = unity_client_id
+        stage_in_args["stac_auth_type"] = "UNITY"
+
+    stage_in_args = json.dumps(stage_in_args)
+    logging.info(f"Selecting stage in args={stage_in_args}")
+    ti.xcom_push(key="stage_in_args", value=stage_in_args)
+
+
 def select_stage_out(ti):
     """Retrieve stage out input parameters from SSM parameter store."""
-    ssm_client = boto3.client("ssm", region_name="us-west-2")
-
     project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
     venue = os.environ["AIRFLOW_VAR_UNITY_VENUE"]
-    staging_bucket = ssm_client.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
+    staging_bucket = SSM_CLIENT.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
         "Value"
     ]
 
@@ -202,6 +230,9 @@ def setup(ti=None, **context):
     # determine ECR login
     select_ecr(ti)
 
+    # retrieve stage in auth type and arguments
+    select_stage_in(ti, context["params"]["stac_json"], context["params"]["unity_stac_auth_type"])
+
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
 
@@ -228,7 +259,7 @@ cwl_task_processing = KubernetesPodOperator(
         "-i",
         STAGE_IN_WORKFLOW,
         "-s",
-        "{{ params.stac_json }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='stage_in_args') }}",
         "-w",
         "{{ params.process_workflow }}",
         "-j",
