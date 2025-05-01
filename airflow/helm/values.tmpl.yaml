@@ -353,7 +353,7 @@ extraEnv: |
   - name: AIRFLOW__SCHEDULER__SCHEDULER_HEARTBEAT_SEC
     value: "1"
   - name: AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE
-    value: "8"
+    value: "16"
   - name: AIRFLOW__WEBSERVER__NAVBAR_COLOR
     value: "${webserver_navbar_color}"
   - name: AIRFLOW__WEBSERVER__INSTANCE_NAME
@@ -363,6 +363,6 @@ extraEnv: |
   - name: AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL
     value: "5"
   - name: AIRFLOW__CORE__DEFAULT_POOL_TASK_SLOT_COUNT
-    value: "1000"
+    value: "1024"
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"

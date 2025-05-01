@@ -22,7 +22,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.4"
+  default     = "25.1"
 }
 
 variable "kubeconfig_filepath" {
@@ -73,7 +73,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.5.8"
+      tag  = "2.6.1"
     }
   }
 }
@@ -336,7 +336,7 @@ variable "dag_catalog_repo" {
   })
   default = {
     url                 = "https://github.com/unity-sds/unity-sps.git"
-    ref                 = "develop"
+    ref                 = "main"
     dags_directory_path = "airflow/dags"
   }
 }

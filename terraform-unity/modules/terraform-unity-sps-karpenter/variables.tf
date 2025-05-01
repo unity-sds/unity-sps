@@ -18,7 +18,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "24.4"
+  default     = "25.1"
 }
 
 # tflint-ignore: terraform_unused_declarations
@@ -53,7 +53,7 @@ variable "helm_charts" {
     karpenter = {
       repository = "oci://public.ecr.aws/karpenter"
       chart      = "karpenter"
-      version    = "1.0.2"
+      version    = "1.3.3"
     }
   }
 }

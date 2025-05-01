@@ -22,6 +22,7 @@ from kubernetes.client import models as k8s
 from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
     EC2_TYPES,
+    LOG_LEVEL_TYPE,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
@@ -51,8 +52,6 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
         "ephemeral-storage": "{{ params.request_storage }} ",
     }
 )
-
-LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
 # Default DAG configuration
 dag_default_args = {
@@ -84,9 +83,8 @@ dag = DAG(
         ),
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
-            type="integer",
+            type="string",
             enum=list(LOG_LEVEL_TYPE.keys()),
-            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
             description=("Log level for DAG processing"),
         ),
@@ -100,7 +98,6 @@ dag = DAG(
         "request_storage": Param(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
         ),
-        "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
     },
 )
 
@@ -138,21 +135,22 @@ def setup(ti=None, **context):
     logging.info(f"Selecting node pool={node_pool}")
     ti.xcom_push(key="node_pool", value=node_pool)
 
-    # select "use_ecr" argument and determine if ECR login is required
-    logging.info("Use ECR: %s", context["params"]["use_ecr"])
-    if context["params"]["use_ecr"]:
-        ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
-        ti.xcom_push(key="ecr_login", value=ecr_login)
-        logging.info("ECR login: %s", ecr_login)
+    # select ECR login URL
+    ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
+    ti.xcom_push(key="ecr_login", value=ecr_login)
+    logging.info("ECR login: %s", ecr_login)
 
     # select log level based on debug
-    logging.info(f"Selecting log level: {context['params']['log_level']}.")
+    log_level = context["params"]["log_level"]
+    ti.xcom_push(key="log_level", value=LOG_LEVEL_TYPE[log_level])
+    logging.info(f"Selecting log level: {LOG_LEVEL_TYPE[log_level]}.")
 
 
-setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
+setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag, weight_rule="upstream")
 
 cwl_task = KubernetesPodOperator(
     retries=1,
+    weight_rule="upstream",
     task_id="cwl_task",
     namespace=POD_NAMESPACE,
     name="cwl-task-pod",
@@ -167,7 +165,7 @@ cwl_task = KubernetesPodOperator(
         "-j",
         "{{ params.cwl_args }}",
         "-l",
-        "{{ params.log_level }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],
@@ -238,7 +236,11 @@ def cleanup(**context):
 
 
 cleanup_task = PythonOperator(
-    task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
+    task_id="Cleanup",
+    python_callable=cleanup,
+    dag=dag,
+    trigger_rule=TriggerRule.ALL_DONE,
+    weight_rule="upstream",
 )
 
 chain(setup_task.as_setup(), cwl_task, cleanup_task.as_teardown(setups=setup_task))

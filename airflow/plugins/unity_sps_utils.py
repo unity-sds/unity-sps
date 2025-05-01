@@ -3,20 +3,17 @@ Module containing common utilities for the Unity Science Processing System.
 """
 
 import os
-from datetime import datetime
 
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
 # Shared constants
 POD_NAMESPACE = "sps"  # The Kubernetes namespace within which the Pod is run (it must already exist)
-POD_LABEL = "cwl_task" + datetime.now().strftime(
-    "%Y%m%d_%H%M%S_%f"
-)  # unique pod label to assure each job runs on its own pod
+POD_LABEL = "cwl_task"
 
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.9"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.4"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
@@ -26,8 +23,8 @@ CS_SHARED_SERVICES_ACCOUNT_REGION = "/unity/shared-services/aws/account/region"
 DS_COGNITO_CLIENT_ID = "/unity/shared-services/dapa/client-id"
 DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
-DEFAULT_LOG_LEVEL = 20
-LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO", 30: "WARNING", 40: "ERROR", 50: "CRITICAL"}
+DEFAULT_LOG_LEVEL = "INFO"
+LOG_LEVEL_TYPE = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
 
 EC2_TYPES = {
     # "t3.nano": {
