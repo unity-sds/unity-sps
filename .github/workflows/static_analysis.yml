@@ -33,6 +33,9 @@ jobs:
         echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list
         sudo apt-get update
         sudo apt-get install trivy
+    - name: Update pre-commit hooks
+      run: |
+        sudo pre-commit autoupdate --repo https://github.com/pre-commit/pre-commit-hooks
     - name: Static Analysis with Pre-commit
       uses: pre-commit/action@v3.0.1
       with:
