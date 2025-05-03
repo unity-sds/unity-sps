@@ -91,7 +91,9 @@ def api_up_and_running():
     parsers.parse("I trigger a dag run for the {test_case} workflow using the {test_dag} DAG"),
     target_fixture="response",
 )
-def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
+def trigger_dag(airflow_api_url, fetch_token, venue, test_case, test_dag):
+
+    headers = {"Authorization": f"Bearer {fetch_token}", "Content-Type": "application/json"}
 
     # check that this test_case is enabled for the specified venue and test_dag
     try:
@@ -129,8 +131,9 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
             ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_stage_out"][venue]}'
 
         response = requests.post(
-            f"{airflow_api_url}/api/v1/dags/{test_dag}/dagRuns",
-            auth=airflow_api_auth,
+            f"{airflow_api_url}/dags/{test_dag}/dagRuns",
+            # auth=airflow_api_auth,
+            headers=headers,
             json=job_config,
             # nosec
             verify=False,
@@ -165,12 +168,16 @@ def check_failed(e):
     jitter=None,
     interval=5,
 )
-def poll_dag_run(response, airflow_api_url, airflow_api_auth):
+def poll_dag_run(response, airflow_api_url, fetch_token):
+
+    headers = {"Authorization": f"Bearer {fetch_token}"}
+
     if response is not None:
         dag_json = response.json()
         dag_run_response = requests.get(
-            f"""{airflow_api_url}/api/v1/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
-            auth=airflow_api_auth,
+            f"""{airflow_api_url}/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
+            # auth=airflow_api_auth,
+            headers=headers,
             # nosec
             verify=False,
         )
