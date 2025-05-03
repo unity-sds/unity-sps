@@ -94,9 +94,9 @@ def venue(request):
 
 @pytest.fixture(scope="session")
 def fetch_token():
-    username = os.getenv("MCP_VENUE_DEV_UNITY_USERNAME")
-    password = os.getenv("MCP_VENUE_DEV_UNITY_PASSWORD")
-    client_id = os.getenv("MCP_VENUE_DEV_UNITY_CLIENTID")
+    username = os.getenv("UNITY_USERNAME")
+    password = os.getenv("UNITY_PASSWORD")
+    client_id = os.getenv("UNITY_CLIENTID")
     region = "us-west-2"
     url = f"https://cognito-idp.{region}.amazonaws.com"
     payload = {
