@@ -10,13 +10,13 @@ on:
       MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT:
         description: "Base URL for the Airflow API endpoint in MCP Venue Dev (i.e. https://abcdef12345.execute-api.us-west-2.amazonaws.com/dev/sps/api/v1)"
         type: string
-      MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT:
+      MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT:
         description: "Base URL for the OGC API endpoint in MCP Venue Dev (i.e. https://abcdef12345.execute-api.us-west-2.amazonaws.com/dev/ogc/api)"
         type: string
       MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT:
          description: "Base URL for the Airflow API endpoint in MCP Venue Test (i.e. https://abcdef12345.execute-api.us-west-2.amazonaws.com/test/sps/api/v1)"
          type: string
-      MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT:
+      MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT:
         description: "Base URL for the OGC endpoint in MCP Venue Test (i.e. https://abcdef12345.execute-api.us-west-2.amazonaws.com/test/ogc/api)"
         type: string
       # TODO: add MCP_VENUE_OPS inputs
@@ -45,7 +45,7 @@ jobs:
         unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py  \
         --venue="dev" \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
+        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT }}
 
     - name: Check Tests Results
       if: always()
@@ -80,7 +80,7 @@ jobs:
 #        unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py  \
 #        --venue="dev" \
 #        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_ENDPOINT }}
+#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT }}
 #
 #    - name: Check Tests Results
 #      if: always()
@@ -115,7 +115,7 @@ jobs:
 #        unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py \
 #        --venue="test" \
 #        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
+#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT }}
 #
 #    - name: Check Tests Results
 #      if: always()
@@ -150,7 +150,7 @@ jobs:
 #        unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py \
 #        --venue="test" \
 #        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_ENDPOINT }}
+#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT }}
 #
 #    - name: Check Tests Results
 #      if: always()
