@@ -32,6 +32,14 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [aws_api_gateway_deployment.airflow-api-gateway-deployment](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_deployment) | resource |
+| [aws_api_gateway_integration.rest_api_integration_for_airflow_api](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_integration) | resource |
+| [aws_api_gateway_method.rest_api_method_for_airflow_proxy_method](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_method) | resource |
+| [aws_api_gateway_method_response.response_200](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_method_response) | resource |
+| [aws_api_gateway_resource.rest_api_resource_airflow_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
+| [aws_api_gateway_resource.rest_api_resource_airflow_proxy_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
+| [aws_api_gateway_resource.rest_api_resource_sps_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
+| [aws_api_gateway_vpc_link.rest_api_sps_vpc_link](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_vpc_link) | resource |
 | [aws_efs_access_point.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_mount_target.airflow](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_mount_target) | resource |
@@ -50,10 +58,10 @@ No modules.
 | [aws_ssm_parameter.airflow_ui_health_check_endpoint](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.airflow_ui_url](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.unity_proxy_airflow_ui](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/ssm_parameter) | resource |
+| [aws_vpc_security_group_ingress_rule.airflow_api_ingress_sg_proxy_rule](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [aws_vpc_security_group_ingress_rule.airflow_ingress_sg_proxy_rule](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/vpc_security_group_ingress_rule) | resource |
 | [helm_release.airflow](https://registry.terraform.io/providers/hashicorp/helm/2.15.0/docs/resources/release) | resource |
 | [helm_release.keda](https://registry.terraform.io/providers/hashicorp/helm/2.15.0/docs/resources/release) | resource |
-| [kubernetes_ingress_v1.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/ingress_v1) | resource |
 | [kubernetes_namespace.keda](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/namespace) | resource |
 | [kubernetes_persistent_volume.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/persistent_volume) | resource |
 | [kubernetes_persistent_volume.airflow_kpo](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/persistent_volume) | resource |
@@ -63,15 +71,22 @@ No modules.
 | [kubernetes_role_binding.airflow_pod_creator_binding](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/role_binding) | resource |
 | [kubernetes_secret.airflow_metadata](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/secret) | resource |
 | [kubernetes_secret.airflow_webserver](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/secret) | resource |
+| [kubernetes_service.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/service) | resource |
 | [kubernetes_storage_class.efs](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/storage_class) | resource |
 | [null_resource.remove_keda_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.3/docs/resources/resource) | resource |
 | [random_id.airflow_webserver_secret](https://registry.terraform.io/providers/hashicorp/random/3.6.1/docs/resources/id) | resource |
+| [time_sleep.wait_for_airflow_lb](https://registry.terraform.io/providers/hashicorp/time/0.12.1/docs/resources/sleep) | resource |
 | [time_sleep.wait_for_efs_mount_target_dns_propagation](https://registry.terraform.io/providers/hashicorp/time/0.12.1/docs/resources/sleep) | resource |
+| [time_sleep.wait_for_gateway_integration](https://registry.terraform.io/providers/hashicorp/time/0.12.1/docs/resources/sleep) | resource |
+| [aws_api_gateway_authorizer.unity_cs_common_authorizer](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_authorizer) | data source |
+| [aws_api_gateway_authorizers.unity_cs_common_authorizers_list](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_authorizers) | data source |
+| [aws_api_gateway_rest_api.rest_api](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/api_gateway_rest_api) | data source |
 | [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/caller_identity) | data source |
 | [aws_db_instance.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/db_instance) | data source |
 | [aws_efs_file_system.efs](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/efs_file_system) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
 | [aws_lambda_functions.lambda_check_all](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lambda_functions) | data source |
+| [aws_lb.airflow_k8s_lb](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/lb) | data source |
 | [aws_secretsmanager_secret_version.db](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_groups.venue_proxy_sg](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/security_groups) | data source |
 | [aws_ssm_parameter.shared_services_account](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
@@ -80,8 +95,8 @@ No modules.
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.venue_proxy_baseurl](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/vpc) | data source |
-| [kubernetes_ingress_v1.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/ingress_v1) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
+| [kubernetes_service.airflow_ingress_internal](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/service) | data source |
 
 ## Inputs
 
