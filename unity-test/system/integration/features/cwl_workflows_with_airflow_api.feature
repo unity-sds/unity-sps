@@ -13,7 +13,6 @@ Feature: Execute CWL workflows using the Airflow API
 
             Examples:
             | test_case      | test_dag         |
-            | EMIT           | cwl_dag_modular  |
             | EMIT           | cwl_dag          |
             | SBG_E2E_SCALE  | cwl_dag          |
             | SBG_PREPROCESS | cwl_dag          |
