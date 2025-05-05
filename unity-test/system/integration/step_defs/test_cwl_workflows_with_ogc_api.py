@@ -24,9 +24,11 @@ CWL_DAG_MODULAR_ID = "cwl_dag_modular"
 CWL_DAG_DATA = {
     "EMIT": {
         "inputs": {
-            "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
+            # "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/workflow.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json"
+                # "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json"
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/emit-ghg-dev.json",
             },
             "log_level": "INFO",
             "request_storage": "100Gi",
@@ -37,29 +39,27 @@ CWL_DAG_DATA = {
     },
     "SBG_PREPROCESS": {
         "inputs": {
-            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-            "/preprocess/sbg-preprocess-workflow.cwl",
+            # "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-                "/sbg-preprocess-workflow.dev.yml",
-                "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-                "/sbg-preprocess-workflow.test.yml",
+                # "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml",
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.dev.yml",
+                # "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.test.yml",
+                "test": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.test.yml",
             },
             "log_level": "INFO",
             "request_storage": "10Gi",
-            # c6i.xlarge: 4vCPUs, 8 GB memory
-            # r7i.xlarge: 4 CPUs 32 GB memory
             "request_instance_type": "r7i.xlarge",
         },
         "outputs": {"result": {"transmissionMode": "reference"}},
     },
     "SBG_E2E_SCALE": {
         "inputs": {
-            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
-            "sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
+            # "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/l1-to-l2-e2e/L1-to-L2-e2e.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/unity-sds/"
-                "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
+                # "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/l1-to-l2-e2e/L1-to-L2-e2e.dev.yml",
             },
             "log_level": "INFO",
             "request_storage": "100Gi",

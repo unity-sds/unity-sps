@@ -30,6 +30,14 @@ module "unity-sps-efs" {
   release      = var.release
 }
 
+module "unity-sps-s3" {
+  source       = "./modules/terraform-unity-sps-s3"
+  project      = var.project
+  venue        = var.venue
+  service_area = var.service_area
+  release      = var.release
+}
+
 module "unity-sps-karpenter-node-config" {
   source                 = "./modules/terraform-unity-sps-karpenter-node-config"
   project                = var.project

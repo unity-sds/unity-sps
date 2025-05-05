@@ -9,9 +9,9 @@ terraform {
       source  = "hashicorp/kubernetes"
       version = "2.32.0"
     }
-    time = {
-      source  = "hashicorp/time"
-      version = "0.12.1"
+    helm = {
+      source  = "hashicorp/helm"
+      version = "2.15.0"
     }
   }
 }

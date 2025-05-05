@@ -167,6 +167,7 @@ resource "aws_iam_policy" "airflow_worker_policy" {
             "s3:ListBucket",
             "s3:GetObject",
             "s3:PutObject",
+            "s3:DeleteObject",
             "sqs:SendMessage",
             "sqs:ReceiveMessage",
             "sns:Publish",
@@ -442,17 +443,6 @@ resource "aws_security_group" "airflow_ingress_sg" {
   })
 }*/
 
-resource "aws_security_group" "airflow_ingress_sg_internal" {
-  name        = "${var.project}-${var.venue}-airflow-internal-ingress-sg"
-  description = "SecurityGroup for Airflow LoadBalancer internal ingress"
-  vpc_id      = data.aws_vpc.cluster_vpc.id
-  tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "AirflowLBSg")
-    Component = "airflow"
-    Stack     = "airflow"
-  })
-}
-
 /* Note: re-enable this to allow access via the JPL network
 #tfsec:ignore:AVD-AWS-0107
 resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
@@ -464,27 +454,6 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_jpl_rule" {
   to_port           = local.load_balancer_port
   cidr_ipv4         = each.key
 }*/
-
-data "aws_security_groups" "venue_proxy_sg" {
-  filter {
-    name   = "group-name"
-    values = ["${var.project}-${var.venue}-ecs_service_sg"]
-  }
-  tags = {
-    Service = "U-CS"
-  }
-}
-
-#tfsec:ignore:AVD-AWS-0107
-resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
-  count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
-  security_group_id            = aws_security_group.airflow_ingress_sg_internal.id
-  description                  = "SecurityGroup ingress rule for venue-services proxy"
-  ip_protocol                  = "tcp"
-  from_port                    = local.load_balancer_port
-  to_port                      = local.load_balancer_port
-  referenced_security_group_id = data.aws_security_groups.venue_proxy_sg.ids[0]
-}
 
 /* Note: re-enable this to allow access via the JPL network
 resource "kubernetes_ingress_v1" "airflow_ingress" {
@@ -526,41 +495,164 @@ resource "kubernetes_ingress_v1" "airflow_ingress" {
   depends_on             = [helm_release.airflow]
 }*/
 
-resource "kubernetes_ingress_v1" "airflow_ingress_internal" {
+resource "aws_security_group" "airflow_ingress_sg_internal" {
+  name        = "${var.project}-${var.venue}-airflow-internal-ingress-sg"
+  description = "SecurityGroup for Airflow LoadBalancer internal ingress"
+  vpc_id      = data.aws_vpc.cluster_vpc.id
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "AirflowLBSg")
+    Component = "airflow"
+    Stack     = "airflow"
+  })
+}
+
+#tfsec:ignore:AVD-AWS-0107
+resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
+  count                        = length(data.aws_security_groups.venue_proxy_sg.ids) > 0 ? 1 : 0
+  security_group_id            = aws_security_group.airflow_ingress_sg_internal.id
+  description                  = "SecurityGroup ingress rule for venue-services proxy"
+  ip_protocol                  = "tcp"
+  from_port                    = local.load_balancer_port
+  to_port                      = local.load_balancer_port
+  referenced_security_group_id = data.aws_security_groups.venue_proxy_sg.ids[0]
+}
+
+#tfsec:ignore:AVD-AWS-0107
+resource "aws_vpc_security_group_ingress_rule" "airflow_api_ingress_sg_proxy_rule" {
+  security_group_id = aws_security_group.airflow_ingress_sg_internal.id
+  description       = "SecurityGroup ingress rule for api-gateway (temporary)"
+  ip_protocol       = "tcp"
+  from_port         = local.load_balancer_port
+  to_port           = local.load_balancer_port
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "kubernetes_service" "airflow_ingress_internal" {
   metadata {
     name      = "airflow-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
-      "alb.ingress.kubernetes.io/scheme"                              = "internal"
-      "alb.ingress.kubernetes.io/target-type"                         = "ip"
-      "alb.ingress.kubernetes.io/subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
-      "alb.ingress.kubernetes.io/listen-ports"                        = "[{\"HTTP\": ${local.load_balancer_port}}]"
-      "alb.ingress.kubernetes.io/security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
-      "alb.ingress.kubernetes.io/manage-backend-security-group-rules" = "true"
-      "alb.ingress.kubernetes.io/healthcheck-path"                    = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"                              = "internal"
+      "service.beta.kubernetes.io/aws-load-balancer-type"                                = "external"
+      "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                     = "ip"
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
+      "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path"                    = "/health"
+      "service.beta.kubernetes.io/aws-load-balancer-attributes"                          = "load_balancing.cross_zone.enabled=true"
+      "service.beta.kubernetes.io/aws-load-balancer-security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
+      "service.beta.kubernetes.io/aws-load-balancer-manage-backend-security-group-rules" = "true"
+      # the following annotation doesn't actually do anything yet because our aws-load-balancer-controller version is out of date
+      "service.beta.kubernetes.io/aws-load-balancer-inbound-sg-rules-on-private-link-traffic" = "off"
+      "service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags" = join(",", [for key, value in merge(local.common_tags, {
+        Name      = format(local.resource_name_prefix, "AirflowLB")
+        Component = "airflow"
+        Stack     = "airflow"
+      }) : "${key}=${value}"])
     }
   }
   spec {
-    ingress_class_name = "alb"
-    rule {
-      http {
-        path {
-          path      = "/"
-          path_type = "Prefix"
-          backend {
-            service {
-              name = "airflow-webserver"
-              port {
-                number = 8080
-              }
-            }
-          }
-        }
-      }
+    selector = {
+      app       = "airflow"
+      component = "webserver"
+    }
+
+    type = "LoadBalancer"
+    port {
+      port        = local.load_balancer_port
+      target_port = 8080
     }
   }
   wait_for_load_balancer = true
-  depends_on             = [helm_release.airflow]
+  lifecycle { # this is necessary or terraform will try to recreate this every run
+    ignore_changes = all
+  }
+  depends_on = [helm_release.airflow]
+}
+
+# wait_for_load_balancer = true is apparently a lie
+# gotta put a discrete wait in here before triggering the vpc link
+resource "time_sleep" "wait_for_airflow_lb" {
+  depends_on      = [kubernetes_service.airflow_ingress_internal]
+  create_duration = "180s"
+}
+
+resource "aws_api_gateway_vpc_link" "rest_api_sps_vpc_link" {
+  name        = "ogc-nlb-vpc-link-${var.project}-${var.venue}"
+  description = "ogc-nlb-vpc-link-${var.project}-${var.venue}"
+  target_arns = [data.aws_lb.airflow_k8s_lb.arn]
+  depends_on  = [time_sleep.wait_for_airflow_lb]
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_sps_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
+  path_part   = "sps"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_airflow_api_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_sps_path.id
+  path_part   = "api"
+}
+
+resource "aws_api_gateway_resource" "rest_api_resource_airflow_proxy_path" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  parent_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
+  path_part   = "{proxy+}"
+}
+
+resource "aws_api_gateway_method" "rest_api_method_for_airflow_proxy_method" {
+  rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id        = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+  http_method        = "ANY"
+  authorization      = "CUSTOM"
+  authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+  request_parameters = { "method.request.path.proxy" = true }
+}
+
+resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
+  rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id             = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+  http_method             = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
+  type                    = "HTTP_PROXY"
+  uri                     = format("%s://%s:%s%s", "http", data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, local.load_balancer_port, "/api/{proxy}")
+  integration_http_method = "ANY"
+  passthrough_behavior    = "WHEN_NO_MATCH"
+  connection_type         = "VPC_LINK"
+  connection_id           = aws_api_gateway_vpc_link.rest_api_sps_vpc_link.id
+
+  # this integration includes a sneaky injected airflow auth header
+  # when cognito groups are integrated with airflow this will need to be amended
+  request_parameters = {
+    "integration.request.path.proxy"           = "method.request.path.proxy"
+    "integration.request.header.Authorization" = "'Basic ${base64encode("${var.airflow_webserver_username}:${var.airflow_webserver_password}")}'"
+  }
+  tls_config { # the k8s ingress backends aren't set up with TLS
+    insecure_skip_verification = true
+  }
+
+  depends_on = [aws_api_gateway_vpc_link.rest_api_sps_vpc_link, aws_api_gateway_method.rest_api_method_for_airflow_proxy_method]
+}
+
+resource "aws_api_gateway_method_response" "response_200" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  resource_id = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+  http_method = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
+  status_code = "200"
+
+  depends_on = [aws_api_gateway_method.rest_api_method_for_airflow_proxy_method]
+}
+
+resource "time_sleep" "wait_for_gateway_integration" {
+  # need to make sure both the proxy method and integration have time to settle before deploying
+  depends_on      = [aws_api_gateway_integration.rest_api_integration_for_airflow_api]
+  create_duration = "60s"
+}
+
+# API Gateway deployment
+resource "aws_api_gateway_deployment" "airflow-api-gateway-deployment" {
+  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+  stage_name  = var.venue
+  depends_on  = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
 }
 
 resource "aws_ssm_parameter" "airflow_ui_url" {
@@ -600,7 +692,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1"
+  value       = "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
     Component = "SSM"
@@ -615,8 +707,8 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   type        = "String"
   value = jsonencode({
     "componentName" : "Airflow API"
-    "healthCheckUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1/health"
-    "landingPageUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/api/v1"
+    "healthCheckUrl" : "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1/health"
+    "landingPageUrl" : "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_api")
@@ -642,7 +734,7 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
       Redirect "/${var.project}/${var.venue}/sps/home"
     </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_ingress_v1.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
+      ProxyPassMatch "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
       ProxyPreserveHost On
       FallbackResource /management/index.html
       AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
@@ -656,8 +748,6 @@ EOT
     Stack     = "SSM"
   })
 }
-
-data "aws_lambda_functions" "lambda_check_all" {}
 
 resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
   count         = contains(data.aws_lambda_functions.lambda_check_all.function_names, "${var.project}-${var.venue}-httpdproxymanagement") ? 1 : 0

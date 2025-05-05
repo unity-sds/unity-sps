@@ -2,8 +2,8 @@ import os
 
 import boto3
 import pytest
+import requests
 from dotenv import load_dotenv
-from requests.auth import HTTPBasicAuth
 from unity_sds_client.unity import Unity, UnityEnvironments
 from unity_sds_client.unity_services import UnityServices
 
@@ -87,9 +87,33 @@ def venue(request):
     return venue
 
 
+# @pytest.fixture(scope="session")
+# def airflow_api_auth():
+#     return HTTPBasicAuth("admin", os.getenv("AIRFLOW_WEBSERVER_PASSWORD"))
+
+
 @pytest.fixture(scope="session")
-def airflow_api_auth():
-    return HTTPBasicAuth("admin", os.getenv("AIRFLOW_WEBSERVER_PASSWORD"))
+def fetch_token():
+    username = os.getenv("UNITY_USERNAME")
+    password = os.getenv("UNITY_PASSWORD")
+    client_id = os.getenv("UNITY_CLIENTID")
+    region = "us-west-2"
+    url = f"https://cognito-idp.{region}.amazonaws.com"
+    payload = {
+        "AuthParameters": {"USERNAME": f"{username}", "PASSWORD": f"{password}"},
+        "AuthFlow": "USER_PASSWORD_AUTH",
+        "ClientId": f"{client_id}",
+    }
+    # Set headers
+    headers = {
+        "X-Amz-Target": "AWSCognitoIdentityProviderService.InitiateAuth",
+        "Content-Type": "application/x-amz-json-1.1",
+    }
+    # POST request
+    res = requests.post(url, json=payload, headers=headers).json()
+    if "AuthenticationResult" in res:
+        access_token = res["AuthenticationResult"]["AccessToken"]
+        return access_token
 
 
 @pytest.fixture(scope="session")
