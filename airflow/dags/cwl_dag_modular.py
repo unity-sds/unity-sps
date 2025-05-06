@@ -75,9 +75,9 @@ dag_default_args = {
 }
 
 dag = DAG(
-    dag_id="cwl_dag_modular_unity",
-    description="CWL DAG Modular Unity",
-    dag_display_name="CWL DAG Modular Unity",
+    dag_id="cwl_dag_modular",
+    description="CWL DAG Modular",
+    dag_display_name="CWL DAG Modular",
     tags=["CWL"],
     is_paused_upon_creation=False,
     catchup=False,
