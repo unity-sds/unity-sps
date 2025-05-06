@@ -39,7 +39,7 @@ jobs:
       id: mcp_venue_dev_integration_tests_with_airflow_api
       continue-on-error: true
       env:
-        UNITY_USERNAME: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
+        UNITY_USER: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
         UNITY_PASSWORD: ${{ secrets.MCP_VENUE_DEV_UNITY_PASSWORD }}
         UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
       run: |
@@ -74,7 +74,7 @@ jobs:
       id: mcp_venue_dev_integration_tests_with_ogc_api
       continue-on-error: true
       env:
-        UNITY_USERNAME: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
+        UNITY_USER: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
         UNITY_PASSWORD: ${{ secrets.MCP_VENUE_DEV_UNITY_PASSWORD }}
         UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
       run: |
@@ -109,7 +109,7 @@ jobs:
       id: mcp_venue_test_integration_tests_with_airflow_api
       continue-on-error: true
       env:
-        UNITY_USERNAME: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
+        UNITY_USER: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
         UNITY_PASSWORD: ${{ secrets.MCP_VENUE_TEST_UNITY_PASSWORD }}
         UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_TEST_UNITY_CLIENTID }}
       run: |
@@ -144,7 +144,7 @@ jobs:
       id: mcp_venue_test_integration_tests_with_ogc_api
       continue-on-error: true
       env:
-        UNITY_USERNAME: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
+        UNITY_USER: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
         UNITY_PASSWORD: ${{ secrets.MCP_VENUE_TEST_UNITY_PASSWORD }}
         UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_TEST_UNITY_CLIENTID }}
       run: |
