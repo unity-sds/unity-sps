@@ -22,8 +22,10 @@ def api_up_and_running():
 
 
 @when("I send a GET request to the health endpoint", target_fixture="response")
-def send_get_request(airflow_api_url):
-    response = requests.get(f"{airflow_api_url}/health", verify=False)  # nosec B501
+def send_get_request(airflow_api_url, fetch_token):
+
+    headers = {"Authorization": f"Bearer {fetch_token}"}
+    response = requests.get(f"{airflow_api_url}/health", headers=headers, verify=False)  # nosec B501
     return response
 
 

@@ -1,6 +1,6 @@
 {
   "executionUnit": {
-    "image": "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.4.0",
+    "image": "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.0",
     "type": "docker"
   },
   "processDescription": {
@@ -26,6 +26,15 @@
           "type": "string"
         },
         "title": "CWL Workflow URL"
+      },
+      "log_level": {
+        "description": "Parameter to set the log verbosity (default: INFO)",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Log Level"
       },
       "request_instance_type": {
         "description": "The specific EC2 instance type requested for the job",
