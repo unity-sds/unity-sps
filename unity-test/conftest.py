@@ -94,7 +94,7 @@ def venue(request):
 
 @pytest.fixture(scope="session")
 def fetch_token():
-    username = os.getenv("UNITY_USERNAME")
+    username = os.getenv("UNITY_USER")
     password = os.getenv("UNITY_PASSWORD")
     client_id = os.getenv("UNITY_CLIENT_ID")
     region = "us-west-2"
