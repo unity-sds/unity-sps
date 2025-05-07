@@ -15,12 +15,12 @@
           "type": "string"
         },
         "title": "Clean Before Timestamp (format: '%Y-%m-%d %H:%M:%S%z')"
-      },
-      "jobControlOptions": [
-        "async-execute"
-      ],
-      "outputs": {}
+      }
     },
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputs": {},
     "title": "Database Cleanup DAG",
     "version": "1.0.0"
   }
