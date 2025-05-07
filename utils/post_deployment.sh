@@ -17,8 +17,7 @@
 export TOKEN="$(python cognito-token-fetch.py -u $UNITY_USERNAME  -c $UNITY_CLIENTID -p $UNITY_PASSWORD)"
 
 # list of processes to be registered
-# declare -a procs=("cwl_dag.json" "karpenter_test.json" "appgen_dag.json" "cwl_dag_modular.json")
-declare -a procs=("db_cleanup_dag.json")
+declare -a procs=("cwl_dag.json" "karpenter_test.json" "appgen_dag.json" "cwl_dag_modular.json" "db_cleanup_dag.json")
 
 for proc in "${procs[@]}"
 do
