@@ -25,8 +25,8 @@ do
    proc_name=$(echo "$proc" | sed "s/.json//")
 
    # unregister process (in case it was already registered)
-   # echo "\nUnregistering process: $proc_name"
-   # curl -kv -X DELETE -H "${TOKEN}" -H "Content-Type: application/json; charset=utf-8" "${OGC_PROCESSES_API}/processes/${proc_name}"
+   echo "\nUnregistering process: $proc_name"
+   curl -kv -X DELETE -H "${TOKEN}" -H "Content-Type: application/json; charset=utf-8" "${OGC_PROCESSES_API}/processes/${proc_name}"
 
    # register process
    echo "\nRegistering process: $proc_name"
