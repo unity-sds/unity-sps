@@ -17,8 +17,8 @@
 export TOKEN="$(python cognito-token-fetch.py -u $UNITY_USERNAME  -c $UNITY_CLIENTID -p $UNITY_PASSWORD)"
 
 # list of processes to be registered
-# declare -a procs=("cwl_dag.json" "karpenter_test.json" "appgen_dag.json" "cwl_dag_modular.json")
-declare -a procs=("cwl_dag_modular.json")
+declare -a procs=("cwl_dag.json" "karpenter_test.json" "appgen_dag.json" "cwl_dag_modular.json")
+# declare -a procs=("db_cleanup_dag.json")
 
 for proc in "${procs[@]}"
 do
@@ -30,7 +30,7 @@ do
    curl -kv -X DELETE -H "${TOKEN}" -H "Content-Type: application/json; charset=utf-8" "${OGC_PROCESSES_API}/processes/${proc_name}"
 
    # register process
-   echo "Registering process: $proc_name"
-   curl -k -v -X POST -H "${TOKEN}" -H "Expect:" -H "Content-Type: application/json; charset=utf-8" --data-binary @"../ogc-application-packages/$proc" "${OGC_PROCESSES_API}/processes"
+   # echo "Registering process: $proc_name"
+   #curl -k -v -X POST -H "${TOKEN}" -H "Expect:" -H "Content-Type: application/json; charset=utf-8" --data-binary @"../ogc-application-packages/$proc" "${OGC_PROCESSES_API}/processes"
 
 done
