@@ -1,12 +1,21 @@
 {
   "executionUnit": {
-    "image": "docker pull ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.5.1",
+    "image": "docker pull ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.4",
     "type": "docker"
   },
   "processDescription": {
     "description": "This process executes any modularized CWL workflow (stage in, processing, stage out).",
     "id": "cwl_dag_modular",
     "inputs": {
+      "log_level": {
+        "description": "Parameter to set the log verbosity (default: INFO)",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Log Level"
+      },
       "process_args": {
         "description": "The URL of the CWL processing workflow's YAML parameters file",
         "maxOccurs": 1,
@@ -54,6 +63,24 @@
           "type": "string"
         },
         "title": "STAC JSON"
+      },
+      "unity_stac_auth_type": {
+        "description": "STAC JSON authentication for Unity hosted files (default: False)",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "boolean"
+        },
+        "title": "Use Unity STAC Authentication?"
+      },
+      "use_ecr": {
+        "description": "Flag to enable download via ECR (default: False)",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "boolean"
+        },
+        "title": "Log into AWS Elastic Container Registry (ECR)?"
       }
     },
     "jobControlOptions": [

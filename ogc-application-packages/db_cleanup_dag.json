@@ -1,0 +1,27 @@
+{
+  "executionUnit": {
+    "image": "jplmdps/unity-app-gen:v1.1.1",
+    "type": "docker"
+  },
+  "processDescription": {
+    "description": "Utility DAG to delete old database records",
+    "id": "db_cleanup_dag",
+    "inputs": {
+      "clean_before_timestamp": {
+        "description": "Will delete all DAG Runs metadata records before the given timestamp",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Clean Before Timestamp (format: '%Y-%m-%d %H:%M:%S%z')"
+      }
+    },
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputs": {},
+    "title": "Database Cleanup DAG",
+    "version": "1.0.0"
+  }
+}
