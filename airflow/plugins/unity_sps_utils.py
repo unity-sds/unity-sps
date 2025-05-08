@@ -13,7 +13,7 @@ POD_LABEL = "cwl_task"
 
 # Note: each Pod is assigned the same label to assure that (via the anti-affinity requirements)
 # two Pods with the same label cannot run on the same Node
-SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.4"
+SPS_DOCKER_CWL_IMAGE = "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:3.0.0"
 
 NODE_POOL_DEFAULT = "airflow-kubernetes-pod-operator"
 NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
