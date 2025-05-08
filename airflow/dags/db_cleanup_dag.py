@@ -19,7 +19,7 @@ from airflow.operators.bash import BashOperator
     render_template_as_native_obj=True,
     max_active_tasks=1,
     start_date=datetime.now(),
-    tags=["Airflow", "database", "cleanup"],
+    tags=["Airflow", "db", "cleanup"],
     params={
         "clean_before_timestamp": Param(
             default=(datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d %H:%M:%S%z"),
