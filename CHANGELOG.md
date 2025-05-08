@@ -24,7 +24,7 @@ It also contains several efficiency and performance improvements to support scal
 - Prioritization of downstream tasks within the same DAG Run, as opposed to starting new Tasks in other DAG Runs
 - Support for sharing large amounts of data across Tasks of the same DAG using S3 mount-points
 - Usability improvements for the CWL classic DAG and CWL modular DAG
-- Support for periodic clean-up of the Airflow datanase
+- Support for periodic clean-up of the Airflow database
 - Upgrading SPS to use EKS version 1.31
 
 Finally, this SPS release includes a DAG to create an OGC Application Package from a GitHub repository:
@@ -37,8 +37,26 @@ the resulting Docker container can be included in a CWL workflow to process a mi
 
 ## Epics
 
+- EPIC: Airflow/Cognito Integration
+  - [[New Feature]: Use Cognito authentication for Airflow and OGC APIs](https://github.com/unity-sds/unity-sps/issues/263)
+  - [[New Feature]: Remove the Airflow login](https://github.com/unity-sds/unity-sps/issues/404)
+  - [[New Feature]: Update the DAG registration script to use Cognito tokens](https://github.com/unity-sds/unity-sps/issues/405)
+
 - EPIC: SPS Infrastructure
-  - [[Enhancement]: Update the Management Console to use the latest SDS version](https://github.com/unity-sds/unity-sps/issues/280)
+  - [[Enhancement]: Upgrade SPS to latest EKS version 1.30](https://github.com/unity-sds/unity-sps/issues/243)
+  - [[New Feature]: Usability improvements to CWL DAGs](https://github.com/unity-sds/unity-sps/issues/335)
+  - [[Bug]: Investigate why Airflow tasks get stuck](https://github.com/unity-sds/unity-sps/issues/365)
+  - [[Enhancement]: Improve scheduling and execution of tasks](https://github.com/unity-sds/unity-sps/issues/388)
+  - [[New Feature]: Investigate new features of Airflow 3.0](https://github.com/unity-sds/unity-sps/issues/389)
+  - [[Task] Update tests for CWL (classic) DAG to use the latest version of the Data Services container (9.11.1)](https://github.com/unity-sds/unity-sps/issues/396)
+  - [[New Feature]: Create DAG to periodically clean up the Airflow database](https://github.com/unity-sds/unity-sps/issues/400)
+  - [[New feature]: Use S3 mount-points to share data across tasks in the same DAG](https://github.com/unity-sds/unity-sps/issues/386)
+
+- EPIC: Application Package Generation Enhancements
+  - [[New Feature]: Create DAG to execute the Application Package generator](https://github.com/unity-sds/unity-sps/issues/275)
+
+- EPIC: TROPESS Support
+  - [[New Feature]: Support stage-in from Unity DS](https://github.com/unity-sds/unity-sps/issues/351)
 
 ## Repositories
 
