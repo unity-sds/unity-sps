@@ -141,6 +141,4 @@ with DAG(
     )
     
     # Define dependencies
-    # This shows how task outputs (which are automatically pushed to XCom)
-    # are connected to downstream tasks
     l1_params >> trigger_l1_cwl >> l2_params >> trigger_l2_cwl
