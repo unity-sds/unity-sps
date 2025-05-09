@@ -72,6 +72,15 @@
           "type": "boolean"
         },
         "title": "Use Unity STAC Authentication?"
+      },
+      "use_ecr": {
+        "description": "Flag to enable download via ECR (default: False)",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "boolean"
+        },
+        "title": "Log into AWS Elastic Container Registry (ECR)?"
       }
     },
     "jobControlOptions": [
