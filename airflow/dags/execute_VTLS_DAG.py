@@ -48,6 +48,12 @@ with DAG(
             title="L2 Processing workflow",
             description="The L2 processing workflow URL",
         ),
+        "l2_stac_json_path": Param(
+            default="/tmp/l2_stac_json.json",
+            type="string",
+            title="L2 STAC JSON Path",
+            description="File path to save the L2 STAC JSON output from L1 processing",
+        ),
         "process_args": Param(
             default=json.dumps({"level": "L1"}),
             type="string",
