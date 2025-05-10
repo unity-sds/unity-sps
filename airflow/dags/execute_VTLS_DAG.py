@@ -185,7 +185,7 @@ with DAG(
     l2_stac_json_file = save_l2_stac_json()
     
     # Get L2 parameters using TaskFlow API
-    l2_params = prepare_l2_params(l2_stac_json_path)
+    l2_params = prepare_l2_params(l2_stac_json_file)
 
     # Trigger the L2 processing
     # The parameter values come from the return value of prepare_l2_params operator
