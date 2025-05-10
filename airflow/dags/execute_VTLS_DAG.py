@@ -99,7 +99,38 @@ with DAG(
         
         print(f"L1 Configuration: {l1_config}")
         return l1_config
-    
+
+    @task(task_id="save_l2_stac_json")
+    def save_l2_stac_json(**context):
+        # Extract parameters from the context
+        context = get_current_context()
+        pprint(context)
+        params = context["params"]
+
+        # Get L2 STAC JSON from xcom
+        l2_stac_json = context['ti'].xcom_pull(
+            task_ids='cwl_task_processing', 
+            dag_id='cwl_dag_modular', 
+            include_prior_dates=True
+        )
+        
+        print(f"L2 STAC JSON from XCom: {l2_stac_json}")
+        
+        # Save the L2 STAC JSON to a file
+        l2_stac_json_path = params["l2_stac_json_path"]
+        os.makedirs(os.path.dirname(l2_stac_json_path), exist_ok=True)
+        
+        with open(l2_stac_json_path, 'w') as f:
+            if isinstance(l2_stac_json, dict) or isinstance(l2_stac_json, list):
+                json.dump(l2_stac_json, f, indent=2)
+            else:
+                f.write(str(l2_stac_json))
+        
+        print(f"L2 STAC JSON saved to: {l2_stac_json_path}")
+        
+        # Store the path in XCom for use in next task
+        return l2_stac_json_path
+        
     @task(task_id="prepare_l2_params")
     def prepare_l2_params(**context):
         
@@ -108,11 +139,11 @@ with DAG(
         pprint(context)
         params = context["params"]
 
-        print(f"xcom_pull value1: {context['ti'].xcom_pull(task_ids='cwl_task_processing', dag_id='cwl_dag_modular', include_prior_dates=True)}")
-        l2_stac_json = context['ti'].xcom_pull(task_ids='cwl_task_processing', dag_id='cwl_dag_modular', include_prior_dates=True)
+        #print(f"xcom_pull value1: {context['ti'].xcom_pull(task_ids='cwl_task_processing', dag_id='cwl_dag_modular', include_prior_dates=True)}")
+        #l2_stac_json = context['ti'].xcom_pull(task_ids='cwl_task_processing', dag_id='cwl_dag_modular', include_prior_dates=True)
 
         l2_config = {
-            "stac_json": l2_stac_json['stac_json'],
+            "stac_json": f"file://{l2_stac_json_path}",
             "process_workflow": params["l2_process_workflow"],
             "process_args": params["process_args"],
             "log_level": params["log_level"],
@@ -125,7 +156,6 @@ with DAG(
 
     # Get L1 parameters using TaskFlow API
     l1_params = prepare_l1_params()
-
 
     # Trigger the L1 processing
     # The parameter values come from the return value of prepare_l1_params task
@@ -144,6 +174,9 @@ with DAG(
             "request_storage": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['request_storage'] }}",
         },
     )
+
+    # Save L2 STAC JSON to file
+    l2_stac_json_file = save_l2_stac_json()
     
     # Get L2 parameters using TaskFlow API
     l2_params = prepare_l2_params()
