@@ -108,7 +108,8 @@ with DAG(
         pprint(context)
         params = context["params"]
 
-        print(f"xcom_pull value: {context['ti'].xcom_pull(key='return_value', task_ids='cwl_task_processing', dag_id='cwl_dag_modular')}")
+        print(f"xcom_pull value: {context['ti'].xcom_pull(key="return_value", task_ids='cwl_task_processing', dag_id='cwl_dag_modular')}")
+        print(f"xcom_pull value: {context['ti'].xcom_pull(dag_id='cwl_dag_modular', task_ids='cwl_task_processing')}")
 
         l2_config = {
             "stac_json": params["stac_json"],
