@@ -2,7 +2,7 @@
 DAG to execute VTLS processing in two stages (L1 and L2).
 This DAG triggers cwl_dag_modular twice in sequence.
 """
-
+import os
 import json
 from airflow import DAG
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
