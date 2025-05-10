@@ -108,6 +108,8 @@ with DAG(
         pprint(context)
         params = context["params"]
 
+        print(f"{context['ti'].xcom_pull(task_ids='trigger_L1_cwl')}")
+
         l2_config = {
             "stac_json": params["stac_json"],
             "process_workflow": params["l2_process_workflow"],
