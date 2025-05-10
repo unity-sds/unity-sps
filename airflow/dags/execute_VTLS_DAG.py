@@ -128,7 +128,6 @@ with DAG(
     trigger_l1_cwl = TriggerDagRunOperator(
         task_id="trigger_L1_cwl",
         trigger_dag_id="cwl_dag_modular",
-        conf="{{ ti.xcom_pull(task_ids='prepare_l1_params') }}",  # Get config from XCom
         conf={
             "stac_json": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['stac_json'] }}",
             "process_workflow": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['process_workflow'] }}",
