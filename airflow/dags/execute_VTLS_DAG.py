@@ -27,6 +27,7 @@ with DAG(
     tags=["L1_L2"],
     default_args=dag_default_args,
     catchup=False,
+    render_template_as_native_obj=True
     params={
         # L1 Processing Parameters
         "stac_json": Param(
@@ -112,7 +113,7 @@ with DAG(
         l2_stac_json = context['ti'].xcom_pull(task_ids='cwl_task_processing', dag_id='cwl_dag_modular', include_prior_dates=True)
 
         l2_config = {
-            "stac_json": l2_stac_json,
+            "stac_json": l2_stac_json['stac_json'],
             "process_workflow": params["l2_process_workflow"],
             "process_args": params["process_args"],
             "log_level": params["log_level"],
