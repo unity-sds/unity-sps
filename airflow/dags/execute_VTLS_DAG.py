@@ -27,7 +27,6 @@ with DAG(
     tags=["L1_L2"],
     default_args=dag_default_args,
     catchup=False,
-    render_template_as_native_obj=True,
     params={
         # L1 Processing Parameters
         "stac_json": Param(
