@@ -146,7 +146,14 @@ with DAG(
     trigger_l2_cwl = TriggerDagRunOperator(
         task_id="trigger_L2_cwl",
         trigger_dag_id="cwl_dag_modular",
-        conf="{{ ti.xcom_pull(task_ids='prepare_l2_params') }}",  # Get config from XCom
+        conf={
+            "stac_json": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['stac_json'] }}",
+            "process_workflow": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['process_workflow'] }}",
+            "process_args": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['process_args'] }}",
+            "log_level": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['log_level'] }}",
+            "request_instance_type": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['request_instance_type'] }}",
+            "request_storage": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['request_storage'] }}",
+        },
     )
     
     # Define dependencies
