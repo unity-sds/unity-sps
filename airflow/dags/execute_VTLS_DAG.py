@@ -128,6 +128,7 @@ with DAG(
     trigger_l1_cwl = TriggerDagRunOperator(
         task_id="trigger_L1_cwl",
         trigger_dag_id="cwl_dag_modular",
+        trigger_rule=TriggerRule.ALL_SUCCESS,
         conf={
             "stac_json": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['stac_json'] }}",
             "process_workflow": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['process_workflow'] }}",
@@ -146,6 +147,7 @@ with DAG(
     trigger_l2_cwl = TriggerDagRunOperator(
         task_id="trigger_L2_cwl",
         trigger_dag_id="cwl_dag_modular",
+        trigger_rule=TriggerRule.ALL_SUCCESS,
         conf={
             "stac_json": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['stac_json'] }}",
             "process_workflow": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['process_workflow'] }}",
