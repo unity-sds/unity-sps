@@ -6,9 +6,11 @@ This DAG triggers cwl_dag_modular twice in sequence.
 import json
 from airflow import DAG
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.operators.python import get_current_context
 from airflow.decorators import task
 from datetime import datetime
 from airflow.models.param import Param
+from pprint import pprint
 
 
 # Default DAG configuration
@@ -80,6 +82,8 @@ with DAG(
         TaskFlow API approach: Using **context to access params.
         """
         # Extract parameters from the context
+        context = get_current_context()
+        pprint(context)
         params = context["params"]
         
         # Build configuration dictionary
@@ -99,6 +103,8 @@ with DAG(
     def prepare_l2_params(**context):
         
         # Extract parameters from the context
+        context = get_current_context()
+        pprint(context)
         params = context["params"]
 
         l2_config = {
@@ -123,8 +129,14 @@ with DAG(
         task_id="trigger_L1_cwl",
         trigger_dag_id="cwl_dag_modular",
         conf="{{ ti.xcom_pull(task_ids='prepare_l1_params') }}",  # Get config from XCom
-        wait_for_completion=True,
-        reset_dag_run=True,
+        conf={
+            "stac_json": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['stac_json'] }}",
+            "process_workflow": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['process_workflow'] }}",
+            "process_args": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['process_args'] }}",
+            "log_level": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['log_level'] }}",
+            "request_instance_type": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['request_instance_type'] }}",
+            "request_storage": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['request_storage'] }}",
+        },
     )
     
     # Get L2 parameters using TaskFlow API
@@ -136,9 +148,9 @@ with DAG(
         task_id="trigger_L2_cwl",
         trigger_dag_id="cwl_dag_modular",
         conf="{{ ti.xcom_pull(task_ids='prepare_l2_params') }}",  # Get config from XCom
-        wait_for_completion=True,
-        reset_dag_run=True,
     )
     
     # Define dependencies
+    # This shows how task outputs (which are automatically pushed to XCom)
+    # are connected to downstream tasks
     l1_params >> trigger_l1_cwl >> l2_params >> trigger_l2_cwl
