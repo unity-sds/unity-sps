@@ -11,6 +11,7 @@ from airflow.decorators import task
 from datetime import datetime
 from airflow.models.param import Param
 from pprint import pprint
+from airflow.utils.trigger_rule import TriggerRule
 
 
 # Default DAG configuration
