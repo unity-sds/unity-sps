@@ -8,8 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [Unity Release 25.2] - 2025-05-13
 
 - SPS Version 3.0.0 (new)
-- OGC API Version 3.0.0 (new - TBC)
-- OGC Python Client Version 3.0.1 (new - TBC)
+- OGC API Version 2.0.0 (unchanged)
+- OGC Python Client Version 2.0.1 (unchanged)
 
 ## Overview
 
@@ -34,6 +34,10 @@ the resulting Docker container can be included in a CWL workflow to process a mi
 - Users must obtain a Unity Cognito account to authenticate with the SPS Airflow UI, or to interact with the Airflow and OGC APIs.
 - There are no changes in the Terraform variables required for an SPS deployment,
   but the .tfvars files should be regenerated to pick up the new default values (like the version of the Airflow Docker image).
+
+## Caveat
+- This release does not include updating the Python unity-sds OGC client library: https://github.com/unity-sds/unity-monorepo/tree/main/libs/unity-py/unity_sds_client
+  which will not work with any new SPS deployment. This upgrade is expected to be included in the next SPS release.
 
 ## Epics
 
@@ -61,14 +65,14 @@ the resulting Docker container can be included in a CWL workflow to process a mi
 ## Repositories
 
 - unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/3.0.0>
-- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/3.0.0>
-- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/3.0.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.0.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.1>
 
 ## Docker Containers
 
 - ghcr.io/unity-sds/unity-sps/sps-airflow:3.0.0
 - ghcr.io/unity-sds/unity-sps/sps-docker-cwl:3.0.0
-- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:3.0.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.0.0
 
 ## Documentation
 
