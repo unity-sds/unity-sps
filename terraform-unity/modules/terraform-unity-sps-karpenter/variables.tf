@@ -18,7 +18,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "25.1"
+  default     = "25.2"
 }
 
 # tflint-ignore: terraform_unused_declarations

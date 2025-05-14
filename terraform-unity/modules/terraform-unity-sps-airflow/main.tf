@@ -414,7 +414,7 @@ resource "helm_release" "airflow" {
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
       # Issue 404: DISABLE AIRRLOW AUTHENTICATION (https://github.com/unity-sds/unity-sps/issues/404)
-      webserver_config         = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
+      webserver_config = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
     })
   ]
   set_sensitive {
@@ -654,7 +654,8 @@ resource "time_sleep" "wait_for_gateway_integration" {
 resource "aws_api_gateway_deployment" "airflow-api-gateway-deployment" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
   stage_name  = var.venue
-  depends_on  = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
+  # stage_name  = "default"
+  depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
 }
 
 resource "aws_ssm_parameter" "airflow_ui_url" {

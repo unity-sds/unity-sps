@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unity-sps"
-version = "2.6.1"
+version = "3.0.0"
 authors = [
     { name = "Luca Cinquini", email = "luca.cinquini@jpl.nasa.gov" },
     { name = "Grace Llewellyn", email = "grace.llewellyn@jpl.nasa.gov" },
     { name = "Brad Lunsford", email = "bradley.t.lunsford@jpl.nasa.gov" },
-    { name = "Nikki Tebaldi", email = "nicole.tebaldi@jpl.nasa.gov" }
+    { name = "Gerald Manipon", email = "nicole.tebaldi@jpl.nasa.gov" },
+    { name = "Nikki Tebaldi", email = "geraldjohn.m.manipon@jpl.nasa.gov" }
 ]
 description = "The science processing service area of Unity."
 classifiers = [
