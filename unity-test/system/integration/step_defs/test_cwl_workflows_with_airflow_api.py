@@ -34,51 +34,44 @@ DAG_PARAMETERS = {
             },
             "request_storage": "10Gi",
             "request_instance_type": "t3.medium",
-            "use_ecr": False,
         }
     },
     CWL_DAG_ID: {
         "EMIT": {
-            "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/"
-            "api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/"
-            "versions/9/plain-CWL/descriptor/workflow.cwl",
+            # "cwl_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2FGodwinShen%2Femit-ghg/versions/9/plain-CWL/descriptor/workflow.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/workflow.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
-                "/test/emit-ghg-dev.json",
-                # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main"
-                # "/test/emit-ghg-test.json",
+                # "dev": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-dev.json",
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/emit-ghg-dev.json",
+                # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-test.json",
             },
             "request_storage": "100Gi",
-            # r7i.2xlarge: 8 CPUs, 64 GB memory
             "request_instance_type": "r7i.2xlarge",
-            "use_ecr": False,
         },
         "SBG_E2E_SCALE": {
-            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/"
-            "sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
+            # "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/refs/heads/main/L1-to-L2-e2e.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/l1-to-l2-e2e/L1-to-L2-e2e.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/unity-sds/"
-                "sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
+                # "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/l1-to-l2-e2e/L1-to-L2-e2e.dev.yml",
             },
             "request_storage": "100Gi",
             # c6i.8xlarge: 32 CPUs, 64 GB memory
             "request_instance_type": "c6i.8xlarge",
-            "use_ecr": False,
         },
         "SBG_PREPROCESS": {
-            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main"
-            "/preprocess/sbg-preprocess-workflow.cwl",
+            # "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
+            "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.cwl",
             "cwl_args": {
-                "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-                "/sbg-preprocess-workflow.dev.yml",
-                "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess"
-                "/sbg-preprocess-workflow.test.yml",
+                # "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.dev.yml",
+                # "test": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.test.yml",
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.dev.yml",
+                "test": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.test.yml",
             },
             "request_storage": "10Gi",
             # c6i.xlarge: 4vCPUs, 8 GB memory
             # r7i.xlarge: 4 CPUs 32 GB memory
             "request_instance_type": "r7i.xlarge",
-            "use_ecr": False,
         },
     },
 }
@@ -98,7 +91,9 @@ def api_up_and_running():
     parsers.parse("I trigger a dag run for the {test_case} workflow using the {test_dag} DAG"),
     target_fixture="response",
 )
-def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
+def trigger_dag(airflow_api_url, fetch_token, venue, test_case, test_dag):
+
+    headers = {"Authorization": f"Bearer {fetch_token}", "Content-Type": "application/json"}
 
     # check that this test_case is enabled for the specified venue and test_dag
     try:
@@ -108,7 +103,6 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
             "conf": {
                 "request_storage": f'{DAG_PARAMETERS[test_dag][test_case]["request_storage"]}',
                 "request_instance_type": f'{DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]}',
-                "use_ecr": DAG_PARAMETERS[test_dag][test_case]["use_ecr"],
             }
         }
 
@@ -137,8 +131,9 @@ def trigger_dag(airflow_api_url, airflow_api_auth, venue, test_case, test_dag):
             ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_stage_out"][venue]}'
 
         response = requests.post(
-            f"{airflow_api_url}/api/v1/dags/{test_dag}/dagRuns",
-            auth=airflow_api_auth,
+            f"{airflow_api_url}/dags/{test_dag}/dagRuns",
+            # auth=airflow_api_auth,
+            headers=headers,
             json=job_config,
             # nosec
             verify=False,
@@ -173,12 +168,16 @@ def check_failed(e):
     jitter=None,
     interval=5,
 )
-def poll_dag_run(response, airflow_api_url, airflow_api_auth):
+def poll_dag_run(response, airflow_api_url, fetch_token):
+
+    headers = {"Authorization": f"Bearer {fetch_token}"}
+
     if response is not None:
         dag_json = response.json()
         dag_run_response = requests.get(
-            f"""{airflow_api_url}/api/v1/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
-            auth=airflow_api_auth,
+            f"""{airflow_api_url}/dags/{dag_json["dag_id"]}/dagRuns/{dag_json["dag_run_id"]}""",
+            # auth=airflow_api_auth,
+            headers=headers,
             # nosec
             verify=False,
         )

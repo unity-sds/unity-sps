@@ -25,7 +25,10 @@ from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperato
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
+    CS_SHARED_SERVICES_ACCOUNT_ID,
+    CS_SHARED_SERVICES_ACCOUNT_REGION,
     DEFAULT_LOG_LEVEL,
+    DS_COGNITO_CLIENT_ID,
     DS_S3_BUCKET_PARAM,
     EC2_TYPES,
     LOG_LEVEL_TYPE,
@@ -41,7 +44,8 @@ from unity_sps_utils import (
 from airflow import DAG
 
 # Task constants
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_in_log_level.cwl"
+SSM_CLIENT = boto3.client("ssm", region_name="us-west-2")
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/351-stage-in-unity/demos/cwl_dag_modular_stage_in.cwl"
 STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_out_cwl_log_level.cwl"
 LOCAL_DIR = "/shared-task-data"
 
@@ -104,9 +108,8 @@ dag = DAG(
         ),
         "log_level": Param(
             DEFAULT_LOG_LEVEL,
-            type="integer",
+            type="string",
             enum=list(LOG_LEVEL_TYPE.keys()),
-            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
             title="Processing log levels",
             description=("Log level for modular DAG processing"),
         ),
@@ -119,6 +122,9 @@ dag = DAG(
         ),
         "request_storage": Param(
             "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
+        ),
+        "unity_stac_auth_type": Param(
+            False, type="boolean", title="STAC JSON authentication for Unity hosted files"
         ),
         "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
     },
@@ -156,24 +162,42 @@ def select_node_pool(ti, request_storage, request_instance_type):
     logging.info(f"Selecting node pool={node_pool}")
 
 
-def select_ecr(ti, use_ecr):
+def select_ecr(ti):
     """
-    Determine if ECR login is required.
+    Determine ECR login.
     """
-    logging.info("Use ECR: %s", use_ecr)
-    if use_ecr:
-        ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
-        ti.xcom_push(key="ecr_login", value=ecr_login)
-        logging.info("ECR login: %s", ecr_login)
+    ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
+    ti.xcom_push(key="ecr_login", value=ecr_login)
+    logging.info("ECR login: %s", ecr_login)
+
+
+def select_stage_in(ti, stac_json, unity_stac_auth_type):
+    """Retrieve stage in arguments based on authentication type parameter."""
+    stage_in_args = {"stac_json": stac_json, "stac_auth_type": "NONE"}
+    if unity_stac_auth_type:
+        shared_services_account = SSM_CLIENT.get_parameter(
+            Name=CS_SHARED_SERVICES_ACCOUNT_ID, WithDecryption=True
+        )["Parameter"]["Value"]
+        shared_services_region = SSM_CLIENT.get_parameter(
+            Name=CS_SHARED_SERVICES_ACCOUNT_REGION, WithDecryption=True
+        )["Parameter"]["Value"]
+        unity_client_id = SSM_CLIENT.get_parameter(
+            Name=f"arn:aws:ssm:{shared_services_region}:{shared_services_account}:parameter{DS_COGNITO_CLIENT_ID}",
+            WithDecryption=True,
+        )["Parameter"]["Value"]
+        stage_in_args["unity_client_id"] = unity_client_id
+        stage_in_args["stac_auth_type"] = "UNITY"
+
+    stage_in_args = json.dumps(stage_in_args)
+    logging.info(f"Selecting stage in args={stage_in_args}")
+    ti.xcom_push(key="stage_in_args", value=stage_in_args)
 
 
 def select_stage_out(ti):
     """Retrieve stage out input parameters from SSM parameter store."""
-    ssm_client = boto3.client("ssm", region_name="us-west-2")
-
     project = os.environ["AIRFLOW_VAR_UNITY_PROJECT"]
     venue = os.environ["AIRFLOW_VAR_UNITY_VENUE"]
-    staging_bucket = ssm_client.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
+    staging_bucket = SSM_CLIENT.get_parameter(Name=DS_S3_BUCKET_PARAM, WithDecryption=True)["Parameter"][
         "Value"
     ]
 
@@ -182,12 +206,19 @@ def select_stage_out(ti):
     ti.xcom_push(key="stage_out_args", value=stage_out_args)
 
 
+def select_log_level(ti, log_level):
+    """Select log level based on input parameter."""
+    ti.xcom_push(key="log_level", value=LOG_LEVEL_TYPE[log_level])
+    logging.info(f"Selecting log level: {LOG_LEVEL_TYPE[log_level]}.")
+
+
 def setup(ti=None, **context):
     """
     Task that creates the working directory on the shared volume
     and parses the input parameter values.
     """
     context = get_current_context()
+    logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
 
     # create local working directory
     dag_run_id = context["dag_run"].run_id
@@ -196,14 +227,17 @@ def setup(ti=None, **context):
     # select the node pool based on what resources were requested
     select_node_pool(ti, context["params"]["request_storage"], context["params"]["request_instance_type"])
 
-    # select "use_ecr" argument and determine if ECR login is required
-    select_ecr(ti, context["params"]["use_ecr"])
+    # determine ECR login
+    select_ecr(ti)
+
+    # retrieve stage in auth type and arguments
+    select_stage_in(ti, context["params"]["stac_json"], context["params"]["unity_stac_auth_type"])
 
     # retrieve stage out aws api key and account id
     select_stage_out(ti)
 
     # select log level based on debug
-    logging.info(f"Selecting log level: {context['params']['log_level']}.")
+    select_log_level(ti, context["params"]["log_level"])
 
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag, weight_rule="upstream")
@@ -225,7 +259,7 @@ cwl_task_processing = KubernetesPodOperator(
         "-i",
         STAGE_IN_WORKFLOW,
         "-s",
-        "{{ params.stac_json }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='stage_in_args') }}",
         "-w",
         "{{ params.process_workflow }}",
         "-j",
@@ -235,7 +269,7 @@ cwl_task_processing = KubernetesPodOperator(
         "-a",
         "{{ ti.xcom_pull(task_ids='Setup', key='stage_out_args') }}",
         "-l",
-        "{{ params.log_level }}",
+        "{{ ti.xcom_pull(task_ids='Setup', key='log_level') }}",
         "-e",
         "{{ ti.xcom_pull(task_ids='Setup', key='ecr_login') }}",
     ],

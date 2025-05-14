@@ -30,6 +30,14 @@ module "unity-sps-efs" {
   release      = var.release
 }
 
+module "unity-sps-s3" {
+  source       = "./modules/terraform-unity-sps-s3"
+  project      = var.project
+  venue        = var.venue
+  service_area = var.service_area
+  release      = var.release
+}
+
 module "unity-sps-karpenter-node-config" {
   source                 = "./modules/terraform-unity-sps-karpenter-node-config"
   project                = var.project
@@ -77,14 +85,14 @@ module "unity-sps-ogc-processes-api" {
   karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
 }
 
-module "unity-sps-initiators" {
-  source                          = "./modules/terraform-unity-sps-initiators"
-  project                         = var.project
-  venue                           = var.venue
-  service_area                    = var.service_area
-  release                         = var.release
-  airflow_api_url_ssm_param       = module.unity-sps-airflow.airflow_urls["rest_api"].ssm_param_id
-  airflow_webserver_username      = var.airflow_webserver_username
-  airflow_webserver_password      = var.airflow_webserver_password
-  ogc_processes_api_url_ssm_param = module.unity-sps-ogc-processes-api.ogc_processes_urls["rest_api"].ssm_param_id
-}
+# module "unity-sps-initiators" {
+#   source                          = "./modules/terraform-unity-sps-initiators"
+#   project                         = var.project
+#   venue                           = var.venue
+#   service_area                    = var.service_area
+#   release                         = var.release
+#   airflow_api_url_ssm_param       = module.unity-sps-airflow.airflow_urls["rest_api"].ssm_param_id
+#   airflow_webserver_username      = var.airflow_webserver_username
+#   airflow_webserver_password      = var.airflow_webserver_password
+#   ogc_processes_api_url_ssm_param = module.unity-sps-ogc-processes-api.ogc_processes_urls["rest_api"].ssm_param_id
+# }
