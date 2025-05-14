@@ -32,7 +32,7 @@ with DAG(
     },
 ) as dag:
 
-    @task
+    @task(weight_rule="absolute", priority_weight=115)
     def prep(params: dict):
         context = get_current_context()
         dag_run_id = context["dag_run"].run_id
@@ -77,10 +77,13 @@ with DAG(
     prep_task = prep()
 
     vic2png_task = KubernetesPodOperator(
+        weight_rule="absolute",
+        priority_weight=116,
         task_id="vic2png",
         name="vic2png",
         namespace="sps",
-        image="pymonger/srl-idps-vic2png:develop",
+        image="429178552491.dkr.ecr.us-west-2.amazonaws.com/srl-idps/vic2png:develop",
+        # image="pymonger/srl-idps-vic2png:develop",
         # cmds=[
         #   "sh",
         #   "-c",
@@ -95,7 +98,7 @@ with DAG(
         container_logs=True,
         service_account_name="airflow-worker",
         container_security_context={"privileged": True},
-        retries=0,
+        retries=3,
         volume_mounts=[
             k8s.V1VolumeMount(
                 name="workers-volume", mount_path="/stage-in", sub_path="{{ dag_run.run_id }}/stage-in"
@@ -112,16 +115,16 @@ with DAG(
         ],
         node_selector={
             "karpenter.sh/nodepool": unity_sps_utils.NODE_POOL_HIGH_WORKLOAD,
-            "node.kubernetes.io/instance-type": "t3.medium",
+            "node.kubernetes.io/instance-type": "c6i.large",
         },
         labels={"pod": unity_sps_utils.POD_LABEL},
         annotations={"karpenter.sh/do-not-disrupt": "true"},
         affinity=unity_sps_utils.get_affinity(
-            capacity_type=["on-demand"], anti_affinity_label=unity_sps_utils.POD_LABEL
+            capacity_type=["spot"], anti_affinity_label=unity_sps_utils.POD_LABEL
         ),
     )
 
-    @task
+    @task(weight_rule="absolute", priority_weight=117)
     def post(params: dict):
         context = get_current_context()
         dag_run_id = context["dag_run"].run_id

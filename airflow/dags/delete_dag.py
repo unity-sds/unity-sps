@@ -1,19 +1,10 @@
 """A DB Cleanup DAG maintained by Astronomer."""
 
-import logging
 from datetime import UTC, datetime, timedelta
-from typing import Optional, List
 
-from sqlalchemy import func
-from sqlalchemy.orm import Session
-
-from airflow.cli.commands.db_command import all_tables
-from airflow.decorators import dag, task
+from airflow.decorators import dag
 from airflow.models.param import Param
 from airflow.operators.bash import BashOperator
-from airflow.utils.db import reflect_tables
-from airflow.utils.db_cleanup import _effective_table_names
-from airflow.utils.session import provide_session, NEW_SESSION
 
 
 @dag(
@@ -51,4 +42,6 @@ def delete_dag():
     )
 
     delete_dag_task >> db_clean_task
+
+
 delete_dag()

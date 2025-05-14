@@ -2,10 +2,7 @@
 
 import logging
 from datetime import UTC, datetime, timedelta
-from typing import Optional, List
-
-from sqlalchemy import func
-from sqlalchemy.orm import Session
+from typing import List, Optional
 
 from airflow.cli.commands.db_command import all_tables
 from airflow.decorators import dag, task
@@ -13,7 +10,9 @@ from airflow.models.param import Param
 from airflow.operators.bash import BashOperator
 from airflow.utils.db import reflect_tables
 from airflow.utils.db_cleanup import _effective_table_names
-from airflow.utils.session import provide_session, NEW_SESSION
+from airflow.utils.session import NEW_SESSION, provide_session
+from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 
 @dag(
@@ -67,9 +66,7 @@ def astronomer_db_cleanup_dag():
                 orm_model = table_config.orm_model
                 recency_column = table_config.recency_column
                 oldest_execution_date = (
-                    session.query(func.min(recency_column))
-                    .select_from(orm_model)
-                    .scalar()
+                    session.query(func.min(recency_column)).select_from(orm_model).scalar()
                 )
                 if oldest_execution_date:
                     oldest_timestamp_list.append(oldest_execution_date.isoformat())
