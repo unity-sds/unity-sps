@@ -34,7 +34,7 @@ with DAG(
     },
 ) as dag:
 
-    @task
+    @task(weight_rule="absolute", priority_weight=200)
     def enumerate_evaluators(params: dict):
         payload = params["payload"]
         evaluators = []
@@ -49,7 +49,11 @@ with DAG(
     enumerate_evals_task = enumerate_evaluators()
 
     trigger_eval_task = TriggerDagRunOperator.partial(
-        task_id="route_payload_to_evaluator", wait_for_completion=False, trigger_rule=TriggerRule.ALL_SUCCESS
+        weight_rule="absolute",
+        priority_weight=201,
+        task_id="route_payload_to_evaluator",
+        wait_for_completion=False,
+        trigger_rule=TriggerRule.ALL_SUCCESS,
     ).expand_kwargs(enumerate_evals_task)
 
     enumerate_evals_task >> trigger_eval_task

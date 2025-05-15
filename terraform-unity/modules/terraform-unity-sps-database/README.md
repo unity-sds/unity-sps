@@ -1,4 +1,4 @@
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -56,4 +56,4 @@ No modules.
 | <a name="output_db_instance_identifier"></a> [db\_instance\_identifier](#output\_db\_instance\_identifier) | n/a |
 | <a name="output_db_latest_snapshot"></a> [db\_latest\_snapshot](#output\_db\_latest\_snapshot) | n/a |
 | <a name="output_db_secret_arn"></a> [db\_secret\_arn](#output\_db\_secret\_arn) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->

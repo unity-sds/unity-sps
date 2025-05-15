@@ -80,7 +80,7 @@ labels:
   app: airflow
 
 scheduler:
-  replicas: 3
+  replicas: 8
   nodeSelector:
     "karpenter.sh/nodepool": "airflow-core-components"
   affinity:
@@ -97,7 +97,7 @@ scheduler:
             values: ["r5"] # Choosing memory-optimized instance
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["8"]
+            values: ["16", "32", "64"]
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -134,7 +134,7 @@ triggerer:
                 values: [ "r5" ] # Choosing memory-optimized instance
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
-                values: [ "8" ] # Scheduler might benefit from higher CPU
+                values: [ "16", "32", "64" ] # Scheduler might benefit from higher CPU
 
 postgresql:
   enabled: false
@@ -158,7 +158,7 @@ pgbouncer:
                 values: [ "r5" ] # Choosing memory-optimized instance
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
-                values: [ "8" ] # Scheduler might benefit from higher CPU
+                values: [ "16", "32", "64" ] # Scheduler might benefit from higher CPU
 
 webserverSecretKeySecretName: ${webserver_secret_name}
 
@@ -190,7 +190,7 @@ webserver:
             values: ["r5"] # Choosing memory-optimized instance
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["8"] # Balancing between CPU and memory
+            values: ["16", "32", "64"] # Balancing between CPU and memory
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -228,7 +228,7 @@ workers:
             values: ["r5"] # Choosing memory-optimized instance
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["8"]
+            values: ["16", "32", "64"]
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -284,13 +284,13 @@ data:
 
 config:
   logging:
-    remote_logging: true
+    remote_logging: 'True'
     logging_level: "INFO"
     remote_base_log_folder: ${airflow_logs_s3_location}
     remote_log_conn_id: "aws_default"
-    encrypt_s3_logs: false
+    encrypt_s3_logs: 'False'
   celery:
-    worker_concurrency: 16
+    worker_concurrency: 64
   webserver:
     enable_proxy_fix: 'True'
 
@@ -320,7 +320,7 @@ dagProcessor:
                 values: [ "r5" ] # Choosing memory-optimized instance
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
-                values: [ "8" ] # Scheduler might benefit from higher CPU
+                values: [ "16", "32", "64" ] # Scheduler might benefit from higher CPU
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
@@ -349,15 +349,21 @@ extraEnv: |
   - name: AIRFLOW__CORE__PARALLELISM
     value: "32768"
   - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
-    value: "1024"
+    value: "10000"
   - name: AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG
-    value: "4096"
+    value: "10000"
   - name: AIRFLOW__SCHEDULER__MAX_DAGRUNS_TO_CREATE_PER_LOOP
-    value: "256"
+    value: "1000"
+  - name: AIRFLOW__SCHEDULER__MAX_DAGRUNS_PER_LOOP_TO_SCHEDULE
+    value: "1000"
+  - name: AIRFLOW__SCHEDULER__MAX_TIS_PER_QUERY
+    value: "0"
   - name: AIRFLOW__SCHEDULER__SCHEDULER_HEARTBEAT_SEC
     value: "1"
+  - name: AIRFLOW__SCHEDULER__TASK_QUEUED_TIMEOUT
+    value: "7200"
   - name: AIRFLOW__KUBERNETES__WORKER_PODS_CREATION_BATCH_SIZE
-    value: "16"
+    value: "1000"
   - name: AIRFLOW__WEBSERVER__NAVBAR_COLOR
     value: "${webserver_navbar_color}"
   - name: AIRFLOW__WEBSERVER__INSTANCE_NAME
@@ -365,8 +371,12 @@ extraEnv: |
   - name: AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL
     value: "10"
   - name: AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL
-    value: "5"
-  - name: AIRFLOW__CORE__DEFAULT_POOL_TASK_SLOT_COUNT
-    value: "1024"
+    value: "0"
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"
+  - name: AIRFLOW__CORE__DEFAULT_POOL_TASK_SLOT_COUNT
+    value: "32768"
+  #- name: AIRFLOW__CELERY__WORKER_AUTOSCALE
+  #  value: "64,56"
+  #- name: AIRFLOW__CELERY__WORKER_CONCURRENCY
+  #  value: "64"
