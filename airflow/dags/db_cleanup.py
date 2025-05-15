@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 
 @dag(
     dag_id="astronomer_db_cleanup_dag",
+    owner="unity-sps",
     schedule_interval=None,
     start_date=datetime(2024, 1, 1),
     catchup=False,

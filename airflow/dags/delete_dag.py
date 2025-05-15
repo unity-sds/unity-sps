@@ -9,6 +9,7 @@ from airflow.operators.bash import BashOperator
 
 @dag(
     dag_id="delete_dag",
+    owner="unity-sps",
     schedule_interval=None,
     catchup=False,
     is_paused_upon_creation=False,
