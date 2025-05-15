@@ -92,8 +92,9 @@ def venue(request):
 #     return HTTPBasicAuth("admin", os.getenv("AIRFLOW_WEBSERVER_PASSWORD"))
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def fetch_token():
+    print("Fetching a new token")
     username = os.getenv("UNITY_USERNAME")
     password = os.getenv("UNITY_PASSWORD")
     client_id = os.getenv("UNITY_CLIENTID")
