@@ -14,10 +14,12 @@ from airflow.utils.session import NEW_SESSION, provide_session
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+default_args = {"owner": "unity-sps", "start_date": datetime.utcfromtimestamp(0)}
+
 
 @dag(
     dag_id="astronomer_db_cleanup_dag",
-    owner="unity-sps",
+    default_args=default_args,
     schedule_interval=None,
     start_date=datetime(2024, 1, 1),
     catchup=False,

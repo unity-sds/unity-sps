@@ -6,10 +6,12 @@ from airflow.decorators import dag
 from airflow.models.param import Param
 from airflow.operators.bash import BashOperator
 
+default_args = {"owner": "unity-sps", "start_date": datetime.utcfromtimestamp(0)}
+
 
 @dag(
     dag_id="delete_dag",
-    owner="unity-sps",
+    default_args=default_args,
     schedule_interval=None,
     catchup=False,
     is_paused_upon_creation=False,
