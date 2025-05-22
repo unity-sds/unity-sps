@@ -2,8 +2,8 @@
 DAG to execute VTLS processing in two stages (L1 and L2).
 This DAG triggers cwl_dag_modular twice in sequence.
 """
-import os
 import json
+import requests
 from airflow import DAG
 from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.operators.python import get_current_context
@@ -12,7 +12,6 @@ from datetime import datetime
 from airflow.models.param import Param
 from pprint import pprint
 from airflow.utils.trigger_rule import TriggerRule
-
 
 # Default DAG configuration
 dag_default_args = {
@@ -105,51 +104,23 @@ with DAG(
         
         print(f"L1 Configuration: {l1_config}")
         return l1_config
-
-    @task(task_id="save_l2_stac_json")
-    def save_l2_stac_json(**context):
-        # Extract parameters from the context
-        context = get_current_context()
-        pprint(context)
-        params = context["params"]
-
-        # Get L2 STAC JSON from xcom
-        l2_stac_json = context['ti'].xcom_pull(
-            task_ids='cwl_task_processing', 
-            dag_id='cwl_dag_modular', 
-            include_prior_dates=True
-        )
-        
-        print(f"L2 STAC JSON from XCom: {l2_stac_json}")
-        
-        # Save the L2 STAC JSON to a file
-        l2_stac_json_path = params["l2_stac_json_path"]
-        os.makedirs(os.path.dirname(l2_stac_json_path), exist_ok=True)
-        
-        with open(l2_stac_json_path, 'w') as f:
-            if isinstance(l2_stac_json, dict) or isinstance(l2_stac_json, list):
-                json.dump(l2_stac_json, f, indent=2)
-            else:
-                f.write(str(l2_stac_json))
-        
-        print(f"L2 STAC JSON saved to: {l2_stac_json_path}")
-        
-        # Store the path in XCom for use in next task
-        return l2_stac_json_path
-        
+            
     @task(task_id="prepare_l2_params")
-    def prepare_l2_params(l2_stac_json_path, **context):
-        
+    def prepare_l2_params(**context):
         # Extract parameters from the context
         context = get_current_context()
         pprint(context)
         params = context["params"]
 
-        #print(f"xcom_pull value1: {context['ti'].xcom_pull(task_ids='cwl_task_processing', dag_id='cwl_dag_modular', include_prior_dates=True)}")
-        #l2_stac_json = context['ti'].xcom_pull(task_ids='cwl_task_processing', dag_id='cwl_dag_modular', include_prior_dates=True)
+        collection = ""
+        try:
+            data = requests.get(params["stac_json"])
+            collection = data.get('features')[0]['collection']
+        except json.JSONDecodeError as e:
+            print(f"Error: Invalid JSON string: {e}")
 
         l2_config = {
-            "stac_json": f"file://{l2_stac_json_path}",
+            "stac_json": f"https://api.dev.mdps.mcp.nasa.gov/am-uds-dapa/collections/urn:nasa:unity:unity:dev:{collection}/items/",
             "process_workflow": params["l2_process_workflow"],
             "process_args": params["process_args"],
             "log_level": params["log_level"],
@@ -159,9 +130,6 @@ with DAG(
         
         print(f"L2 Configuration: {l2_config}")
         return l2_config
-
-    # Get L1 parameters using TaskFlow API
-    l1_params = prepare_l1_params()
 
     # Trigger the L1 processing
     # The parameter values come from the return value of prepare_l1_params task
@@ -180,12 +148,6 @@ with DAG(
             "request_storage": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['request_storage'] }}",
         },
     )
-
-    # Save L2 STAC JSON to file
-    l2_stac_json_file = save_l2_stac_json()
-    
-    # Get L2 parameters using TaskFlow API
-    l2_params = prepare_l2_params(l2_stac_json_file)
 
     # Trigger the L2 processing
     # The parameter values come from the return value of prepare_l2_params operator
@@ -208,4 +170,4 @@ with DAG(
     # Define dependencies
     # This shows how task outputs (which are automatically pushed to XCom)
     # are connected to downstream tasks
-    l1_params >> trigger_l1_cwl >> l2_stac_json_file >> l2_params >> trigger_l2_cwl
+    prepare_l1_params >> trigger_l1_cwl >> prepare_l2_params >> trigger_l2_cwl
