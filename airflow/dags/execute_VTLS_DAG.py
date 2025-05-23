@@ -36,7 +36,7 @@ with DAG(
             description="STAC JSON data to download granules encoded as a JSON string or the URL of a JSON or YAML file",
         ),
         "l2_stac_json": Param(
-            default="https://api.dev.mdps.mcp.nasa.gov/am-uds-dapa/collections/urn:nasa:unity:unity:dev:/items",
+            default="https://api.dev.mdps.mcp.nasa.gov/am-uds-dapa/collections/urn:nasa:unity:unity:dev:{collection_id}/items",
             type="string",
             title="L2 STAC JSON",
             description="STAC JSON data to download granules encoded as a JSON string or the URL of a JSON or YAML file",
@@ -109,42 +109,23 @@ with DAG(
     @task(task_id="prepare_l2_params")
     def prepare_l2_params(**context):
         # Extract parameters from the context
-        result = {
-            'valid': False,
-            'status_code': None,
-            'collection': None,
-            'data': None,
-            'error': None,
-            'features_count': 0
-        }
-
         context = get_current_context()
         pprint(context)
         params = context["params"]
 
-        url = params["l2_stac_json"]
-
         time.sleep(300)
-        response = requests.get(url, timeout=3600)  
-        result['status_code'] = response.status_code
         
-        # Check HTTP status
-        if response.status_code != 200:
-            result['error'] = f"HTTP {response.status_code}: {response.reason}"
-            return result
-        
-        else:
-            l2_config = {
-                "stac_json": url,
-                "process_workflow": params["l2_process_workflow"],
-                "process_args": params["process_args"],
-                "log_level": params["log_level"],
-                "request_instance_type": params["request_instance_type"],
-                "request_storage": params["request_storage"],
-            }
-        
-            print(f"L2 Configuration: {l2_config}")
-            return l2_config
+        l2_config = {
+            "stac_json": params["l2_stac_json"],
+            "process_workflow": params["l2_process_workflow"],
+            "process_args": params["process_args"],
+            "log_level": params["log_level"],
+            "request_instance_type": params["request_instance_type"],
+            "request_storage": params["request_storage"],
+        }
+    
+        print(f"L2 Configuration: {l2_config}")
+        return l2_config
 
     # Trigger the L1 processing
     # The parameter values come from the return value of prepare_l1_params task
