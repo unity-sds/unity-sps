@@ -69,7 +69,7 @@ DAG_PARAMETERS = {
             "log_level": "INFO",
             "request_storage": "100Gi",
             # c6i.8xlarge: 32 CPUs, 64 GB memory
-            "request_instance_type": "c6i.8xlarge",
+            "request_instance_type": "c6i.12xlarge",
         },
         "SBG_PREPROCESS": {
             # "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",

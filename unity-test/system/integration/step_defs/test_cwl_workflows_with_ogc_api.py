@@ -64,7 +64,7 @@ CWL_DAG_DATA = {
             "log_level": "INFO",
             "request_storage": "100Gi",
             # c6i.8xlarge: 32 CPUs, 64 GB memory
-            "request_instance_type": "c6i.8xlarge",
+            "request_instance_type": "c6i.12xlarge",
         },
         "outputs": {"result": {"transmissionMode": "reference"}},
     },
