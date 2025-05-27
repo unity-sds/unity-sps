@@ -130,7 +130,7 @@ def eks_cluster_name(resource_name_template):
 
 
 @pytest.fixture(scope="session")
-def ogc_processes(ogc_processes_api_url):
+def ogc_processes(ogc_processes_api_url, venue):
     """
     Retrieves the OGC processes available from the given endpoint.
     """
@@ -138,7 +138,7 @@ def ogc_processes(ogc_processes_api_url):
     # setup Unity venue
     unity = Unity(UnityEnvironments.DEV)
     unity.set_project("unity")
-    unity.set_venue("dev")
+    unity.set_venue(venue)
     process_service = unity.client(UnityServices.PROCESS_SERVICE)
 
     # retrieve all OGC processes
