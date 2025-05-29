@@ -26,6 +26,7 @@ with DAG(
     schedule=None,
     tags=["L1_L2"],
     default_args=dag_default_args,
+    #render_template_as_native_obj=True,
     catchup=False,
     params={
         # L1 Processing Parameters
@@ -54,10 +55,16 @@ with DAG(
             title="L2 Processing workflow",
             description="The L2 processing workflow URL",
         ),
-        "process_args": Param(
+        "l1_process_args": Param(
             default=json.dumps({"level": "L1"}),
             type="string",
-            title="Processing workflow parameters",
+            title="L1 Processing workflow parameters",
+            description=("The processing job parameters encoded as a JSON string or the URL of a JSON or YAML file"),
+        ),
+        "l2_process_args": Param(
+            default=json.dumps({"level": "L1"}),
+            type="string",
+            title="L2 Processing workflow parameters",
             description=("The processing job parameters encoded as a JSON string or the URL of a JSON or YAML file"),
         ),
         "log_level": Param(
@@ -80,9 +87,9 @@ with DAG(
             title="Storage request",
             description="Amount of storage to request for processing",
         ),
-        "unity_stac_auth_type": Param(
-            False, type="boolean", title="STAC JSON authentication for Unity hosted files"
-        ),
+        #"unity_stac_auth_type": Param(
+        #    False, type="boolean", title="STAC JSON authentication for Unity hosted files"
+        #),
     },
 ) as dag:
     
@@ -100,11 +107,10 @@ with DAG(
         l1_config = {
             "stac_json": params["stac_json"],
             "process_workflow": params["process_workflow"],
-            "process_args": params["process_args"],
+            "process_args": params["l1_process_args"],
             "log_level": params["log_level"],
             "request_instance_type": params["request_instance_type"],
             "request_storage": params["request_storage"],
-            "unity_stac_auth_type": params["unity_stac_auth_type"],
         }
         
         print(f"L1 Configuration: {l1_config}")
@@ -118,15 +124,15 @@ with DAG(
         params = context["params"]
 
         time.sleep(300)
-        
+
         l2_config = {
             "stac_json": params["l2_stac_json"],
             "process_workflow": params["l2_process_workflow"],
-            "process_args": params["process_args"],
+            "process_args": params["l2_process_args"],
             "log_level": params["log_level"],
             "request_instance_type": params["request_instance_type"],
             "request_storage": params["request_storage"],
-            "unity_stac_auth_type": params["unity_stac_auth_type"],
+            #"unity_stac_auth_type": params["unity_stac_auth_type"],
         }
     
         print(f"L2 Configuration: {l2_config}")
@@ -147,7 +153,6 @@ with DAG(
             "log_level": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['log_level'] }}",
             "request_instance_type": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['request_instance_type'] }}",
             "request_storage": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['request_storage'] }}",
-            "unity_stac_auth_type": "{{ ti.xcom_pull(task_ids='prepare_l1_params')['unity_stac_auth_type'] }}",
         },
     )
 
@@ -166,7 +171,8 @@ with DAG(
             "log_level": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['log_level'] }}",
             "request_instance_type": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['request_instance_type'] }}",
             "request_storage": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['request_storage'] }}",
-            "unity_stac_auth_type": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['unity_stac_auth_type'] }}",
+            #"unity_stac_auth_type": "{{ true if ti.xcom_pull(task_ids='prepare_l2_params')['unity_stac_auth_type'] | string | lower in ['true', '1', 'yes'] else false }}",
+            "unity_stac_auth_type": True,
         },
     )
     
