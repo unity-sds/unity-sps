@@ -26,7 +26,6 @@ with DAG(
     schedule=None,
     tags=["L1_L2"],
     default_args=dag_default_args,
-    #render_template_as_native_obj=True,
     catchup=False,
     params={
         # L1 Processing Parameters
@@ -87,9 +86,6 @@ with DAG(
             title="Storage request",
             description="Amount of storage to request for processing",
         ),
-        #"unity_stac_auth_type": Param(
-        #    False, type="boolean", title="STAC JSON authentication for Unity hosted files"
-        #),
     },
 ) as dag:
     
@@ -132,7 +128,6 @@ with DAG(
             "log_level": params["log_level"],
             "request_instance_type": params["request_instance_type"],
             "request_storage": params["request_storage"],
-            #"unity_stac_auth_type": params["unity_stac_auth_type"],
         }
     
         print(f"L2 Configuration: {l2_config}")
@@ -171,7 +166,6 @@ with DAG(
             "log_level": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['log_level'] }}",
             "request_instance_type": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['request_instance_type'] }}",
             "request_storage": "{{ ti.xcom_pull(task_ids='prepare_l2_params')['request_storage'] }}",
-            #"unity_stac_auth_type": "{{ true if ti.xcom_pull(task_ids='prepare_l2_params')['unity_stac_auth_type'] | string | lower in ['true', '1', 'yes'] else false }}",
             "unity_stac_auth_type": True,
         },
     )
