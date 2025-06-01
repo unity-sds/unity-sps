@@ -12,7 +12,11 @@ import backoff
 from pytest_bdd import given, parsers, scenario, then, when
 from unity_sds_client.resources.job_status import JobStatus
 from unity_sds_client.unity_exception import UnityException
-from unity_sps_ogc_processes_api_python_client.exceptions import ApiException, ServiceException
+from unity_sps_ogc_processes_api_python_client.exceptions import (
+    ApiException,
+    ServiceException,
+    UnauthorizedException,
+)
 
 FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
@@ -186,7 +190,12 @@ def check_process_execution_and_termination(job):
         status = job.get_status().status
         while status in [JobStatus.ACCEPTED, JobStatus.RUNNING]:
             print(f"Job: {job.id} status: {job.get_status().status}")
-            status = job.get_status().status
+            try:
+                status = job.get_status().status
+            except UnauthorizedException:
+                # do something to re-authenticate?
+                newtoken = job._session._auth.get_token()
+                print(f"Recieved Unauthorized Exception, fetching new token: {newtoken}")
 
         print(f"Job: {job.id} status: {job.get_status().status}")
         assert job.get_status().status == JobStatus.SUCCESSFUL
