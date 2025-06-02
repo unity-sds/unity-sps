@@ -25,6 +25,10 @@ from unity_sps_utils import (
     build_ec2_type_label,
     get_affinity,
 )
+from kubernetes import client as k8s_client_lib
+from kubernetes import config as k8s_config_lib
+import base64
+from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 
 from airflow import DAG
 
@@ -38,6 +42,8 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
 DOCKERHUB_USERNAME = "/unity/ads/app_gen/development/dockerhub_username"
 DOCKERHUB_TOKEN = "/unity/ads/app_gen/development/dockerhub_api_key"
 DOCKSTORE_TOKEN = "/unity/ads/app_gen/development/dockstore_token"
+
+K8S_SECRET_NAME = "sps-app-credentials" # Must match metadata.name in kubernetes_secret
 
 # HOST_SECRET_DIR = "/mnt/token-volume"
 # os.makedirs(HOST_SECRET_DIR, exist_ok=True)
@@ -108,6 +114,27 @@ app_gen_env_vars = [
         value="http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api",
     ),
     k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
+]
+
+secret_env_vars = [
+    AirflowK8sSecret(
+        deploy_type='env',                              # Expose as environment variable
+        deploy_target='DOCKERHUB_USERNAME_IN_POD',      # Name of the ENV VAR inside your pod
+        secret=K8S_SECRET_NAME,                         # Name of the K8s Secret
+        key='DOCKERHUB_USERNAME'                        # Key in the K8s Secret's data field
+    ),
+    AirflowK8sSecret(
+        deploy_type='env',
+        deploy_target='DOCKERHUB_TOKEN_IN_POD',
+        secret=K8S_SECRET_NAME,
+        key='DOCKERHUB_TOKEN'
+    ),
+    AirflowK8sSecret(
+        deploy_type='env',
+        deploy_target='DOCKSTORE_TOKEN_IN_POD',
+        secret=K8S_SECRET_NAME,
+        key='DOCKSTORE_TOKEN'
+    )
 ]
 
 def setup(ti=None, **context):
@@ -195,6 +222,7 @@ appgen_task = KubernetesPodOperator(
     #         )
     #     )
     # ],
+    secrets=[secret_env_vars],
     volume_mounts=[
         k8s.V1VolumeMount(name="token-volume", mount_path="/")
     ],
