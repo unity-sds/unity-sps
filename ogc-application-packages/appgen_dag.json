@@ -1,32 +1,12 @@
 {
   "executionUnit": {
-    "image": "ghcr.io/unity-sds/unity-sps/sps-docker-cwl:2.6.0",
+    "image": "jplmdps/unity-app-gen:v1.1.1",
     "type": "docker"
   },
   "processDescription": {
-    "description": "This process executes any CWL workflow.",
-    "id": "cwl_dag",
+    "description": "Application Package Generator.",
+    "id": "appgen_dag",
     "inputs": {
-      "cwl_args": {
-        "description": "The URL of the CWL workflow's YAML parameters file",
-        "maxOccurs": 1,
-        "minOccurs": 1,
-        "schema": {
-          "format": "uri",
-          "type": "string"
-        },
-        "title": "CWL Workflow Parameters URL"
-      },
-      "cwl_workflow": {
-        "description": "The URL of the CWL workflow",
-        "maxOccurs": 1,
-        "minOccurs": 1,
-        "schema": {
-          "format": "uri",
-          "type": "string"
-        },
-        "title": "CWL Workflow URL"
-      },
       "log_level": {
         "description": "Parameter to set the log verbosity (default: INFO)",
         "maxOccurs": 1,
@@ -35,6 +15,16 @@
           "type": "string"
         },
         "title": "Log Level"
+      },
+      "repository": {
+        "description": "Git URL of application source files",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "format": "uri",
+          "type": "string"
+        },
+        "title": "Repository"
       },
       "request_instance_type": {
         "description": "The specific EC2 instance type requested for the job",
@@ -53,6 +43,15 @@
           "type": "string"
         },
         "title": "Requested Storage"
+      },
+      "use_ecr": {
+        "description": "Flag to enable download via ECR (default: False)",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "boolean"
+        },
+        "title": "Log into AWS Elastic Container Registry (ECR)?"
       }
     },
     "jobControlOptions": [
@@ -60,14 +59,14 @@
     ],
     "outputs": {
       "result": {
-        "description": "The result of the CWL Workflow execution",
+        "description": "The result of the Application Package Generator execution",
         "schema": {
           "$ref": "some-ref"
         },
         "title": "Process Result"
       }
     },
-    "title": "Generic CWL Process",
+    "title": "Application Package Generator",
     "version": "1.0.0"
   }
 }
