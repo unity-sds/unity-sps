@@ -421,7 +421,8 @@ resource "time_sleep" "wait_for_gateway_integration" {
 resource "aws_api_gateway_deployment" "ogc-api-gateway-deployment" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
   stage_name  = var.venue
-  depends_on  = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
+  # stage_name  = "default"
+  depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
 }
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {
@@ -455,7 +456,10 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
   description = "The URL of the OGC Processes REST API."
   type        = "String"
   value = jsonencode({
+    "componentCategory": "processing"
     "componentName" : "OGC API"
+    "componentType" : "api"
+    "description" : "A standards-compliant programming interface for Application deployment, job execution and job tracking. May be used to execute jobs in batches."
     "healthCheckUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/health"
     "landingPageUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/ogc/"
   })
