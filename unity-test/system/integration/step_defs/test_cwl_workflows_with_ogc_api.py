@@ -190,12 +190,15 @@ def check_process_execution_and_termination(job):
         status = job.get_status().status
         while status in [JobStatus.ACCEPTED, JobStatus.RUNNING]:
             print(f"Job: {job.id} status: {job.get_status().status}")
-            try:
+            # just fetch a new token every poll
+            _newtoken = job._session._auth.get_token()
+            status = job.get_status().status
+            if status is None:
+                # if we can't get a status, try re-authenticating
+                # calling _get_unity_token because get_token calls _is_expired,
+                #   which is half-implemented
+                _newtoken = job._session._auth._get_unity_token()
                 status = job.get_status().status
-            except UnauthorizedException:
-                # do something to re-authenticate?
-                newtoken = job._session._auth.get_token()
-                print(f"Recieved Unauthorized Exception, fetching new token: {newtoken}")
 
         print(f"Job: {job.id} status: {job.get_status().status}")
         assert job.get_status().status == JobStatus.SUCCESSFUL
