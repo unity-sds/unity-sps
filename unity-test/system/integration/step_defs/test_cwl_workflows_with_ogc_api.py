@@ -12,11 +12,7 @@ import backoff
 from pytest_bdd import given, parsers, scenario, then, when
 from unity_sds_client.resources.job_status import JobStatus
 from unity_sds_client.unity_exception import UnityException
-from unity_sps_ogc_processes_api_python_client.exceptions import (
-    ApiException,
-    ServiceException,
-    UnauthorizedException,
-)
+from unity_sps_ogc_processes_api_python_client.exceptions import ApiException, ServiceException
 
 FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
@@ -197,7 +193,8 @@ def check_process_execution_and_termination(job):
                 # if we can't get a status, try re-authenticating
                 # calling _get_unity_token because get_token calls _is_expired,
                 #   which is half-implemented
-                _newtoken = job._session._auth._get_unity_token()
+                # _newtoken = job._session._auth._get_unity_token()
+                job._session._auth._token_expiration = None
                 status = job.get_status().status
 
         print(f"Job: {job.id} status: {job.get_status().status}")
