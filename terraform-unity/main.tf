@@ -14,37 +14,6 @@ resource "kubernetes_namespace" "service_area" {
   }
 }
 
-data "aws_ssm_parameter" "dockerhub_username" {
-  name = "/unity/ads/app_gen/development/dockerhub_username"
-  with_decryption = true
-}
-
-data "aws_ssm_parameter" "dockerhub_api_key" {
-  name = "/unity/ads/app_gen/development/dockerhub_api_key"
-  with_decryption = true
-}
-
-data "aws_ssm_parameter" "dockstore_token" {
-  name = "/unity/ads/app_gen/development/dockstore_token"
-  with_decryption = true
-}
-
-resource "kubernetes_secret" "sps_app_credentials" {
-  metadata {
-    name      = sps_app_credentials
-    namespace = kubernetes_namespace.service_area.metadata[0].name
-  }
-  # Use 'string_data' for raw string values. Terraform will automatically base64 encode them.
-  # The keys here (e.g., "DOCKERHUB_USERNAME") are what you will reference in your Airflow DAG.
-  string_data = {
-    "DOCKERHUB_USERNAME" = data.aws_ssm_parameter.dockerhub_username.value
-    "DOCKERHUB_TOKEN"    = data.aws_ssm_parameter.dockerhub_api_key.value
-    "DOCKSTORE_TOKEN"    = data.aws_ssm_parameter.dockstore_token.value
-  }
-
-  type = "Opaque" # Default type, suitable for credentials
-}
-
 module "unity-sps-database" {
   source       = "./modules/terraform-unity-sps-database"
   project      = var.project
