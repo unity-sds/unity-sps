@@ -26,9 +26,7 @@ DAG_PARAMETERS = {
                 "dev": "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json"
             },
             "process_workflow": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
-            "process_args": {
-                "dev": json.dumps({"example_argument_empty": ""})
-            },
+            "process_args": {"dev": json.dumps({"example_argument_empty": ""})},
             "log_level": "INFO",
             "request_instance_type": "t3.medium",
             "request_storage": "10Gi",
@@ -38,9 +36,7 @@ DAG_PARAMETERS = {
                 "dev": "https://raw.githubusercontent.com/brianlee731/SBG-unity-preprocess-mod/refs/heads/main/test/stage-in/featureCollection.json"
             },
             "process_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fedwinsarkissian%2FSBG-unity-preprocess-mod/versions/4/PLAIN-CWL/descriptor/%2Fprocess.cwl",
-            "process_args": {
-                "dev": json.dumps({})
-            },
+            "process_args": {"dev": json.dumps({})},
             "log_level": "INFO",
             "request_instance_type": "t3.2xlarge",
             "request_storage": "100Gi",
@@ -50,9 +46,7 @@ DAG_PARAMETERS = {
                 "dev": "https://raw.githubusercontent.com/brianlee731/SBG-unity-isofit-mod_test/refs/heads/main/test/catalog.json"
             },
             "process_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fbrianlee731%2FSBG-unity-isofit-mod_test/versions/14/PLAIN-CWL/descriptor/%2Fprocess.cwl",
-            "process_args": {
-                "dev": json.dumps({})
-            },
+            "process_args": {"dev": json.dumps({})},
             "log_level": "INFO",
             "request_instance_type": "r7i.2xlarge",
             "request_storage": "100Gi",
@@ -143,7 +137,9 @@ def trigger_dag(airflow_api_url, fetch_token, venue, test_case, test_dag):
             job_config["conf"][
                 "process_workflow"
             ] = f'{DAG_PARAMETERS[test_dag][test_case]["process_workflow"]}'
-            job_config["conf"]["process_args"] = f'{DAG_PARAMETERS[test_dag][test_case]["process_args"][venue]}'
+            job_config["conf"][
+                "process_args"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["process_args"][venue]}'
 
         response = requests.post(
             f"{airflow_api_url}/dags/{test_dag}/dagRuns",
