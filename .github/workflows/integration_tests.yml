@@ -2,9 +2,11 @@ name: Integration Tests
 
 on:
   schedule:
-    # Runs around midnight Pacific Time (UTC-7)
+    # Runs at midnight Pacific Time (UTC-7)
     # Doesn't account for daylight saving transitions
-    - cron: "0 7 * * *"
+    # - cron: "0 7 * * *"
+    # Runs at midnight Pacific Time (UTC-7) every Wednesday (day=3)
+    - cron: "0 7 * * 3"
   workflow_dispatch:
     inputs:
       MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT:
