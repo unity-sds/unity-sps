@@ -62,6 +62,12 @@ variable "helm_charts" {
   }
 }
 
+variable "helm_values_template" {
+  description = "The helm values template file to use."
+  type        = string
+  default     = "values.tmpl.yaml"
+}
+
 variable "airflow_docker_images" {
   description = "Docker images for the associated Airflow services."
   type = object({
