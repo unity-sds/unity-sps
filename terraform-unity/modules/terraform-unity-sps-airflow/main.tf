@@ -394,7 +394,7 @@ resource "helm_release" "airflow" {
   version    = var.helm_charts.airflow.version
   namespace  = data.kubernetes_namespace.service_area.metadata[0].name
   values = [
-    templatefile("${path.module}/../../../airflow/helm/values.tmpl.yaml", {
+    templatefile("${path.module}/../../../airflow/helm/${var.helm_values_template}", {
       airflow_image_repo       = var.docker_images.airflow.name
       airflow_image_tag        = var.docker_images.airflow.tag
       kubernetes_namespace     = data.kubernetes_namespace.service_area.metadata[0].name
@@ -676,7 +676,7 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   description = "The URL of the Airflow UI."
   type        = "String"
   value = jsonencode({
-    "componentCategory": "processing"
+    "componentCategory" : "processing"
     "componentName" : "Airflow UI"
     "componentType" : "ui"
     "description" : "The primary GUI for the Science Processing System (SPS) to run and monitor jobs at scale."
@@ -712,7 +712,7 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   description = "The URL of the Airflow REST API."
   type        = "String"
   value = jsonencode({
-    "componentCategory": "processing"
+    "componentCategory" : "processing"
     "componentName" : "Airflow API"
     "componentType" : "api"
     "description" : "The direct API for the job management system underlying the SPS (Airflow). Typically the OGC Processes API should be used instead, because it will abstract out a particular job engine."

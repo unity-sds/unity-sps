@@ -22,29 +22,29 @@ repos:
       - id: check-toml # Checks toml files for parsable syntax.
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: "v0.39.0"
+    rev: "v0.44.0"
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlintrc", "--ignore", "CHANGELOG.md"]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 6.0.1
     hooks:
       - id: isort
         args: ["--profile=black"]
 
   - repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 24.4.2
+    rev: 25.1.0
     hooks:
       - id: black
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.4.2
+    rev: v0.11.9
     hooks:
       - id: ruff
 
   - repo: https://github.com/PyCQA/bandit
-    rev: "1.7.8" # you must change this to newest version
+    rev: "1.8.3" # you must change this to newest version
     hooks:
       - id: bandit
         args:
@@ -56,7 +56,7 @@ repos:
         additional_dependencies: [".[toml]"]
 
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.13.0-beta
+    rev: v2.13.1-beta
     hooks:
       - id: hadolint # requires hadolint is installed (brew install hadolint)
         args:
@@ -65,7 +65,7 @@ repos:
           - --verbose
 
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.89.1
+    rev: v1.99.0
     hooks:
       - id: terraform_validate # Validates all Terraform configuration files.
         args:
