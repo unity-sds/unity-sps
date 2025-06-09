@@ -22,19 +22,35 @@ CWL_DAG_MODULAR_ID = "cwl_dag_modular"
 DAG_PARAMETERS = {
     CWL_DAG_MODULAR_ID: {
         "EMIT": {
-            "cwl_workflow_stage_in": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-in-daac/stage-in.cwl",
-            "stac_json": "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json",
-            "cwl_workflow_process": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
-            "job_args_process": json.dumps({"example_argument_empty": ""}),
-            "cwl_workflow_stage_out": "https://raw.githubusercontent.com/unity-sds/unity-data-services/refs/heads/cwl-examples/cwl/stage-out-stac-catalog/stage-out.cwl",
-            "job_args_stage_out": {
-                "dev": json.dumps(
-                    {"project": "unity", "venue": "dev", "staging_bucket": "unity-dev-unity-storage"}
-                )
+            "stac_json": {
+                "dev": "https://raw.githubusercontent.com/unity-sds/unity-tutorial-application/refs/heads/main/test/stage_in/stage_in_results.json"
             },
-            "request_storage": "10Gi",
+            "process_workflow": "https://raw.githubusercontent.com/mike-gangl/unity-OGC-example-application/refs/heads/main/process.cwl",
+            "process_args": {"dev": json.dumps({"example_argument_empty": ""})},
+            "log_level": "INFO",
             "request_instance_type": "t3.medium",
-        }
+            "request_storage": "10Gi",
+        },
+        "SBG_PREPROCESS": {
+            "stac_json": {
+                "dev": "https://raw.githubusercontent.com/brianlee731/SBG-unity-preprocess-mod/refs/heads/main/test/stage-in/featureCollection.json"
+            },
+            "process_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fedwinsarkissian%2FSBG-unity-preprocess-mod/versions/4/PLAIN-CWL/descriptor/%2Fprocess.cwl",
+            "process_args": {"dev": json.dumps({})},
+            "log_level": "INFO",
+            "request_instance_type": "t3.2xlarge",
+            "request_storage": "100Gi",
+        },
+        "SBG_ISOFIT": {
+            "stac_json": {
+                "dev": "https://raw.githubusercontent.com/brianlee731/SBG-unity-isofit-mod_test/refs/heads/main/test/catalog.json"
+            },
+            "process_workflow": "http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api/ga4gh/trs/v2/tools/%23workflow%2Fdockstore.org%2Fbrianlee731%2FSBG-unity-isofit-mod_test/versions/14/PLAIN-CWL/descriptor/%2Fprocess.cwl",
+            "process_args": {"dev": json.dumps({})},
+            "log_level": "INFO",
+            "request_instance_type": "r7i.2xlarge",
+            "request_storage": "100Gi",
+        },
     },
     CWL_DAG_ID: {
         "EMIT": {
@@ -45,6 +61,7 @@ DAG_PARAMETERS = {
                 "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/emit/GodwinShen/emit-ghg-dev.json",
                 # "test": "https://raw.githubusercontent.com/GodwinShen/emit-ghg/refs/heads/main/test/emit-ghg-test.json",
             },
+            "log_level": "INFO",
             "request_storage": "100Gi",
             "request_instance_type": "r7i.2xlarge",
         },
@@ -55,9 +72,10 @@ DAG_PARAMETERS = {
                 # "dev": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/refs/heads/main/L1-to-L2-e2e.dev.yml",
                 "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/l1-to-l2-e2e/L1-to-L2-e2e.dev.yml",
             },
+            "log_level": "INFO",
             "request_storage": "100Gi",
             # c6i.8xlarge: 32 CPUs, 64 GB memory
-            "request_instance_type": "c6i.8xlarge",
+            "request_instance_type": "c6i.12xlarge",
         },
         "SBG_PREPROCESS": {
             # "cwl_workflow": "https://raw.githubusercontent.com/unity-sds/sbg-workflows/main/preprocess/sbg-preprocess-workflow.cwl",
@@ -68,6 +86,7 @@ DAG_PARAMETERS = {
                 "dev": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.dev.yml",
                 "test": "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/main/sbg/preprocess/sbg-preprocess-workflow.test.yml",
             },
+            "log_level": "INFO",
             "request_storage": "10Gi",
             # c6i.xlarge: 4vCPUs, 8 GB memory
             # r7i.xlarge: 4 CPUs 32 GB memory
@@ -101,6 +120,7 @@ def trigger_dag(airflow_api_url, fetch_token, venue, test_case, test_dag):
         # configuration common to all DAGs
         job_config = {
             "conf": {
+                "log_level": f'{DAG_PARAMETERS[test_dag][test_case]["log_level"]}',
                 "request_storage": f'{DAG_PARAMETERS[test_dag][test_case]["request_storage"]}',
                 "request_instance_type": f'{DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]}',
             }
@@ -113,22 +133,13 @@ def trigger_dag(airflow_api_url, fetch_token, venue, test_case, test_dag):
 
         # configuration specific to CWL_DAG to CWL_DAG_MODULAR_ID
         elif test_dag == CWL_DAG_MODULAR_ID:
+            job_config["conf"]["stac_json"] = f'{DAG_PARAMETERS[test_dag][test_case]["stac_json"][venue]}'
             job_config["conf"][
-                "cwl_workflow_stage_in"
-            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_in"]}'
-            job_config["conf"]["stac_json"] = f'{DAG_PARAMETERS[test_dag][test_case]["stac_json"]}'
+                "process_workflow"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["process_workflow"]}'
             job_config["conf"][
-                "cwl_workflow_process"
-            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_process"]}'
-            job_config["conf"][
-                "job_args_process"
-            ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_process"]}'
-            job_config["conf"][
-                "cwl_workflow_stage_out"
-            ] = f'{DAG_PARAMETERS[test_dag][test_case]["cwl_workflow_stage_out"]}'
-            job_config["conf"][
-                "job_args_stage_out"
-            ] = f'{DAG_PARAMETERS[test_dag][test_case]["job_args_stage_out"][venue]}'
+                "process_args"
+            ] = f'{DAG_PARAMETERS[test_dag][test_case]["process_args"][venue]}'
 
         response = requests.post(
             f"{airflow_api_url}/dags/{test_dag}/dagRuns",
