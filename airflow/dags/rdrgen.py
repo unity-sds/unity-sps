@@ -32,7 +32,7 @@ with DAG(
     },
 ) as dag:
 
-    @task
+    @task(weight_rule="absolute", priority_weight=109)
     def prep(params: dict):
         context = get_current_context()
         dag_run_id = context["dag_run"].run_id
@@ -81,7 +81,11 @@ with DAG(
 
         # cli_args = ["-c", f"select d && exec $MARSLIB/marsinverter {rdrgen['vic_url']} {output_vic_file}"]
         # KLUDGE: ignore non-zero exit code when no-op occurs
-        cli_args = ["-c", f"select d && $MARSLIB/marsinverter {rdrgen['vic_url']} {output_vic_file} || :"]
+        # cli_args = ["-c", f"select d && $MARSLIB/marsinverter {rdrgen['vic_url']} {output_vic_file} || :"]
+        cli_args = [
+            "-c",
+            f"export LD_LIBRARY_PATH=/usr/local/vicar/external/xerces-c++/v3.0.0_rhel8/x86-64-linx/lib:/usr/local/vicar/dev/olb/x86-64-linx:/usr/local/vicar/external/embree/v3.7.0/x86-64-linx; /usr/local/vicar/dev/mars/lib/x86-64-linx/marsinverter {rdrgen['vic_url']} {output_vic_file} || :",
+        ]
         res = subprocess.run(["find", dag_run_dir], capture_output=True, text=True)
         print(res.stdout)
         print(res.stderr)
@@ -91,11 +95,15 @@ with DAG(
     prep_task = prep()
 
     rdrgen = KubernetesPodOperator(
+        weight_rule="absolute",
+        priority_weight=110,
         task_id="rdrgen",
         name="rdrgen",
         namespace="sps",
-        image="pymonger/srl-idps-rdrgen:multiarch-test",
-        cmds=["/bin/tcsh"],
+        image="429178552491.dkr.ecr.us-west-2.amazonaws.com/srl-idps/rdrgen:develop-multiarch",
+        # image="pymonger/srl-idps-rdrgen:multiarch-test",
+        # cmds=["/bin/tcsh"],
+        cmds=["/bin/bash"],
         arguments=prep_task,
         do_xcom_push=True,
         on_finish_action="delete_pod",
@@ -105,7 +113,7 @@ with DAG(
         container_logs=True,
         service_account_name="airflow-worker",
         container_security_context={"privileged": True},
-        retries=0,
+        retries=3,
         volume_mounts=[
             k8s.V1VolumeMount(
                 name="workers-volume", mount_path="/stage-in", sub_path="{{ dag_run.run_id }}/stage-in"
@@ -122,16 +130,16 @@ with DAG(
         ],
         node_selector={
             "karpenter.sh/nodepool": unity_sps_utils.NODE_POOL_HIGH_WORKLOAD,
-            "node.kubernetes.io/instance-type": "r7i.2xlarge",
+            "node.kubernetes.io/instance-type": "c6i.large",
         },
         labels={"pod": unity_sps_utils.POD_LABEL},
         annotations={"karpenter.sh/do-not-disrupt": "true"},
         affinity=unity_sps_utils.get_affinity(
-            capacity_type=["on-demand"], anti_affinity_label=unity_sps_utils.POD_LABEL
+            capacity_type=["spot"], anti_affinity_label=unity_sps_utils.POD_LABEL
         ),
     )
 
-    @task
+    @task(weight_rule="absolute", priority_weight=111)
     def post(params: dict):
         context = get_current_context()
         dag_run_id = context["dag_run"].run_id
