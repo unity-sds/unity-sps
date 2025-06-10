@@ -456,7 +456,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_health_check_endpoint" {
   description = "The URL of the OGC Processes REST API."
   type        = "String"
   value = jsonencode({
-    "componentCategory": "processing"
+    "componentCategory" : "processing"
     "componentName" : "OGC API"
     "componentType" : "api"
     "description" : "A standards-compliant programming interface for Application deployment, job execution and job tracking. May be used to execute jobs in batches."
@@ -508,4 +508,19 @@ resource "aws_lambda_invocation" "unity_proxy_lambda_invocation" {
       aws_ssm_parameter.unity_proxy_ogc_api
     ]))
   }
+}
+
+resource "null_resource" "register_ogc_processes" {
+  provisioner "local-exec" {
+    command     = "./post_deployment_terraform.sh"
+    working_dir = "${path.module}/../../../utils"
+    environment = {
+      OGC_PROCESSES_API = nonsensitive(aws_ssm_parameter.ogc_processes_api_url.value)
+      TOKEN_URL         = "https://cognito-idp.${local.region}.amazonaws.com"
+      UNITY_CLIENTID    = var.unity_client_id
+      UNITY_PASSWORD    = var.unity_password
+      UNITY_USERNAME    = var.unity_username
+    }
+  }
+  depends_on = [aws_api_gateway_deployment.ogc-api-gateway-deployment, aws_ssm_parameter.ogc_processes_api_url]
 }

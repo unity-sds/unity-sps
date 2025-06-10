@@ -100,3 +100,5 @@ data "aws_security_groups" "venue_proxy_sg" {
     Service = "U-CS"
   }
 }
+
+data "aws_region" "current" {}
