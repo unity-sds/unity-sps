@@ -11,9 +11,7 @@ from pathlib import Path
 import backoff
 from pytest_bdd import given, parsers, scenario, then, when
 from unity_sds_client.resources.job_status import JobStatus
-from unity_sds_client.unity import Unity, UnityEnvironments
 from unity_sds_client.unity_exception import UnityException
-from unity_sds_client.unity_services import UnityServices
 from unity_sps_ogc_processes_api_python_client.exceptions import ApiException, ServiceException
 
 FILE_PATH = Path(__file__)
@@ -182,27 +180,13 @@ def check_failed(e):
     jitter=None,
     interval=5,
 )
-def check_process_execution_and_termination(job, venue, ogc_processes_api_url):
+def check_process_execution_and_termination(job):
 
     if job is not None:
         status = job.get_status().status
         while status in [JobStatus.ACCEPTED, JobStatus.RUNNING]:
             print(f"Job: {job.id} status: {job.get_status().status}")
             status = job.get_status().status
-            if status is None:
-                # if we can't get a status, try re-authenticating
-                # calling _get_unity_token because get_token calls _is_expired,
-                #   which is half-implemented
-                proc_id = job._process_id
-                job_id = job.id
-                _unity = Unity(UnityEnvironments.DEV)
-                _unity.set_project("unity")
-                _unity.set_venue(venue)
-                _process_service = _unity.client(UnityServices.PROCESS_SERVICE)
-                _process_service.endpoint = ogc_processes_api_url
-                _jobs = _process_service.get_jobs(_process_service.get_process(proc_id))
-                job = next(j for j in _jobs if j.id == job_id)
-                status = job.get_status().status
 
         print(f"Job: {job.id} status: {job.get_status().status}")
         assert job.get_status().status == JobStatus.SUCCESSFUL
