@@ -84,9 +84,6 @@ module "unity-sps-ogc-processes-api" {
   docker_images              = var.ogc_processes_docker_images
   dag_catalog_repo           = var.dag_catalog_repo
   karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
-  unity_client_id            = var.unity_client_id
-  unity_password             = var.unity_password
-  unity_username             = var.unity_username
 }
 
 module "unity-sps-initiators" {

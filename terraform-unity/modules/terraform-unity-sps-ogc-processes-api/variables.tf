@@ -79,21 +79,3 @@ variable "karpenter_node_pools" {
   description = "Names of the Karpenter node pools"
   type        = list(string)
 }
-
-variable "unity_client_id" {
-  description = "Client ID for AWS Cognito deployment"
-  type        = string
-  default     = ""
-}
-
-variable "unity_password" {
-  description = "Cognito password for AWS Cognito deployment"
-  type        = string
-  default     = ""
-}
-
-variable "unity_username" {
-  description = "Cognito username for AWS Cognito deployment"
-  type        = string
-  default     = ""
-}

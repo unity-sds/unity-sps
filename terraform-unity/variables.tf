@@ -367,21 +367,3 @@ variable "installprefix" {
   type        = string
   default     = ""
 }
-
-variable "unity_client_id" {
-  description = "Client ID for AWS Cognito deployment"
-  type        = string
-  default     = ""
-}
-
-variable "unity_password" {
-  description = "Cognito password for AWS Cognito deployment"
-  type        = string
-  default     = ""
-}
-
-variable "unity_username" {
-  description = "Cognito username for AWS Cognito deployment"
-  type        = string
-  default     = ""
-}
