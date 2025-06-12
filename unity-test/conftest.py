@@ -136,7 +136,12 @@ def ogc_processes(ogc_processes_api_url, venue):
     """
 
     # setup Unity venue
-    unity = Unity(UnityEnvironments.DEV)
+    unity_envs = {
+        "dev": UnityEnvironments.DEV,
+        "test": UnityEnvironments.TEST,
+        "prod": UnityEnvironments.PROD,
+    }
+    unity = Unity(unity_envs[venue] if venue in unity_envs else "")
     unity.set_project("unity")
     unity.set_venue(venue)
     process_service = unity.client(UnityServices.PROCESS_SERVICE)
