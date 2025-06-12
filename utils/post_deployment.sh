@@ -12,9 +12,11 @@
 # export UNITY_PASSWORD="....."
 # export UNITY_CLIENTID="...."
 # export OGC_PROCESSES_API=https://.........execute-api.us-west-2.amazonaws.com/dev/ogc/api (NO trailing slash!)
+# source ./post_deployment.sh
 
 # Retrieve limited-lifetime token
 export TOKEN="$(python cognito-token-fetch.py -u $UNITY_USERNAME  -c $UNITY_CLIENTID -p $UNITY_PASSWORD)"
+echo $TOKEN
 
 # list of processes to be registered
 declare -a procs=("cwl_dag.json" "karpenter_test.json" "appgen_dag.json" "cwl_dag_modular.json" "db_cleanup_dag.json")
