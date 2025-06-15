@@ -129,7 +129,7 @@ def eks_cluster_name(resource_name_template):
     return name
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def ogc_processes(ogc_processes_api_url, venue):
     """
     Retrieves the OGC processes available from the given endpoint.
