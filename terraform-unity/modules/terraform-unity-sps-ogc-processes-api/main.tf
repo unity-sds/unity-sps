@@ -115,7 +115,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
           env {
             name  = "EMS_API_URL"
-            value = "http://airflow-webserver.${data.kubernetes_namespace.service_area.metadata[0].name}.svc.cluster.local:8080/api/v1"
+            value = "http://airflow-webserver.${data.kubernetes_namespace.service_area.metadata[0].name}.svc.cluster.local:8080/${var.project}/${var.venue}/api/v1"
           }
           env {
             name  = "EMS_API_AUTH_USERNAME"

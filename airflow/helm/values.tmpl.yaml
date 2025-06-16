@@ -293,6 +293,7 @@ config:
     worker_concurrency: 16
   webserver:
     enable_proxy_fix: 'True'
+    base_url: ${airflow_base_url}
 
 dags:
   persistence:

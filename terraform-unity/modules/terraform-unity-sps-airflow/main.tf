@@ -414,6 +414,7 @@ resource "helm_release" "airflow" {
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
       # Issue 404: DISABLE AIRRLOW AUTHENTICATION (https://github.com/unity-sds/unity-sps/issues/404)
+      airflow_base_url         = "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
       webserver_config = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
     })
   ]
@@ -739,15 +740,10 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
     <Location "/${var.project}/${var.venue}/sps/">
       ProxyPassReverse "/"
     </Location>
-    <Location "/${var.project}/${var.venue}/sps/${var.project}/${var.venue}/sps/home">
-      Redirect "/${var.project}/${var.venue}/sps/home"
-    </Location>
     <LocationMatch "^/${var.project}/${var.venue}/sps/(.*)$">
-      ProxyPassMatch "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/$1" retry=5 disablereuse=On
+      ProxyPassMatch "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:5000/${var.project}/${var.venue}/sps/$1" retry=5 disablereuse=On
       ProxyPreserveHost On
       FallbackResource /management/index.html
-      AddOutputFilterByType INFLATE;SUBSTITUTE;DEFLATE text/html
-      Substitute "s|\"/([^\"]*)|\"/${var.project}/${var.venue}/sps/$1|q"
     </LocationMatch>
 
 EOT
