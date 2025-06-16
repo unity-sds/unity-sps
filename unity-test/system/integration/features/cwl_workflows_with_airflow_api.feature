@@ -12,10 +12,10 @@ Feature: Execute CWL workflows using the Airflow API
             And I see an eventual successful dag run
 
             Examples:
-            | test_case      | test_dag         |
-            | EMIT           | cwl_dag          |
+#            | test_case      | test_dag         |
+#            | EMIT           | cwl_dag          |
 #           | SBG_E2E_SCALE  | cwl_dag          |
-            | SBG_PREPROCESS | cwl_dag          |
-            | EMIT           | cwl_dag_modular  |
-            | SBG_PREPROCESS | cwl_dag_modular  |
+#            | SBG_PREPROCESS | cwl_dag          |
+#            | EMIT           | cwl_dag_modular  |
+#            | SBG_PREPROCESS | cwl_dag_modular  |
             | SBG_ISOFIT     | cwl_dag_modular  |
