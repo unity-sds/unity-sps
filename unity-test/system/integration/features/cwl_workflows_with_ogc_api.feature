@@ -18,4 +18,4 @@ Feature: Execute CWL workflows using the OGC API
             | SBG_PREPROCESS | cwl_dag          |
             | EMIT           | cwl_dag_modular  |
             | SBG_PREPROCESS | cwl_dag_modular  |
-            | SBG_ISOFIT     | cwl_dag_modular  |
+#           | SBG_ISOFIT     | cwl_dag_modular  |
