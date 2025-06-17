@@ -517,9 +517,9 @@ resource "null_resource" "register_ogc_processes" {
     environment = {
       OGC_PROCESSES_API = nonsensitive(aws_ssm_parameter.ogc_processes_api_url.value)
       TOKEN_URL         = "https://cognito-idp.${local.region}.amazonaws.com"
-      UNITY_CLIENTID    = data.aws_ssm_parameter.unity_client_id
-      UNITY_PASSWORD    = data.aws_ssm_parameter.unity_password
-      UNITY_USERNAME    = data.aws_ssm_parameter.unity_username
+      UNITY_CLIENTID    = data.aws_ssm_parameter.unity_client_id.value
+      UNITY_PASSWORD    = data.aws_ssm_parameter.unity_password.value
+      UNITY_USERNAME    = data.aws_ssm_parameter.unity_username.value
     }
   }
   depends_on = [aws_api_gateway_deployment.ogc-api-gateway-deployment, aws_ssm_parameter.ogc_processes_api_url]
