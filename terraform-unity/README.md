@@ -49,6 +49,7 @@ terraform-docs tfvars hcl . --output-file "terraform.tfvars"
 | <a name="module_unity-sps-airflow"></a> [unity-sps-airflow](#module\_unity-sps-airflow) | ./modules/terraform-unity-sps-airflow | n/a |
 | <a name="module_unity-sps-database"></a> [unity-sps-database](#module\_unity-sps-database) | ./modules/terraform-unity-sps-database | n/a |
 | <a name="module_unity-sps-efs"></a> [unity-sps-efs](#module\_unity-sps-efs) | ./modules/terraform-unity-sps-efs | n/a |
+| <a name="module_unity-sps-initiators"></a> [unity-sps-initiators](#module\_unity-sps-initiators) | ./modules/terraform-unity-sps-initiators | n/a |
 | <a name="module_unity-sps-karpenter-node-config"></a> [unity-sps-karpenter-node-config](#module\_unity-sps-karpenter-node-config) | ./modules/terraform-unity-sps-karpenter-node-config | n/a |
 | <a name="module_unity-sps-ogc-processes-api"></a> [unity-sps-ogc-processes-api](#module\_unity-sps-ogc-processes-api) | ./modules/terraform-unity-sps-ogc-processes-api | n/a |
 | <a name="module_unity-sps-s3"></a> [unity-sps-s3](#module\_unity-sps-s3) | ./modules/terraform-unity-sps-s3 | n/a |
