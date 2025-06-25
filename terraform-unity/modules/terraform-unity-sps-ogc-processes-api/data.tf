@@ -100,3 +100,17 @@ data "aws_security_groups" "venue_proxy_sg" {
     Service = "U-CS"
   }
 }
+
+data "aws_region" "current" {}
+
+data "aws_ssm_parameter" "unity_client_id" {
+  name = "/sps/processing/workflows/unity_client_id"
+}
+
+data "aws_ssm_parameter" "unity_password" {
+  name = "/sps/processing/workflows/unity_password"
+}
+
+data "aws_ssm_parameter" "unity_username" {
+  name = "/sps/processing/workflows/unity_username"
+}
