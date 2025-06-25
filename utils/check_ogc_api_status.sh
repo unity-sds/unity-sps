@@ -2,6 +2,8 @@
 
 # Remove trailing slash from API URL if present
 OGC_PROCESSES_API="${OGC_PROCESSES_API%/}"
+echo $OGC_PROCESSES_API
+echo $TOKEN_URL
 
 # Retrieve limited-lifetime token
 echo "Fetching Cognito token..."
@@ -17,13 +19,11 @@ token=$(echo $token_response | jq -r '.AuthenticationResult.AccessToken')
 echo "Cognito token retrieved."
 
 # Poll onto OGC API is available
-response=$(curl -k -X GET -H "Authorization: Bearer ${token}" "${OGC_PROCESSES_API}/processes")
-echo $response
-while [ "$response" != '{"processes":[],"links":[]}' ]; do
-    sleep 30
-    response=$(curl -k -X GET -H "Authorization: Bearer ${token}" "${OGC_PROCESSES_API}/processes")
-    echo $response
+response_status=0
+while [ $response_status -ne 200 ]; do
+    response_status=$(curl -s -o /dev/null -k -X GET -H "Authorization: Bearer ${token}" -w "%{http_code}" "${OGC_PROCESSES_API}/processes")
+    echo "response_status=$response_status"
+    sleep 10
 done
 
-echo $response
 exit 0
