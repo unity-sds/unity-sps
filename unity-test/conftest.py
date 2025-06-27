@@ -94,10 +94,9 @@ def venue(request):
 
 @pytest.fixture(scope="function")
 def fetch_token():
-    print("Fetching a new token")
-    username = os.getenv("UNITY_USERNAME")
+    username = os.getenv("UNITY_USER")
     password = os.getenv("UNITY_PASSWORD")
-    client_id = os.getenv("UNITY_CLIENTID")
+    client_id = os.getenv("UNITY_CLIENT_ID")
     region = "us-west-2"
     url = f"https://cognito-idp.{region}.amazonaws.com"
     payload = {
@@ -131,14 +130,20 @@ def eks_cluster_name(resource_name_template):
 
 
 @pytest.fixture(scope="session")
-def ogc_processes(ogc_processes_api_url):
+def ogc_processes(ogc_processes_api_url, venue):
     """
     Retrieves the OGC processes available from the given endpoint.
     """
 
     # setup Unity venue
-    unity = Unity(UnityEnvironments.DEV)
-    unity.set_venue_id("")
+    unity_envs = {
+        "dev": UnityEnvironments.DEV,
+        "test": UnityEnvironments.TEST,
+        "prod": UnityEnvironments.PROD,
+    }
+    unity = Unity(unity_envs[venue] if venue in unity_envs else "")
+    unity.set_project("unity")
+    unity.set_venue(venue)
     process_service = unity.client(UnityServices.PROCESS_SERVICE)
 
     # retrieve all OGC processes

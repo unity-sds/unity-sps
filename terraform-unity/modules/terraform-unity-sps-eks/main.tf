@@ -24,7 +24,7 @@ module "unity-eks" {
     Component = "eks"
     Stack     = "eks"
   })
-  cluster_version = "1.31"
+  cluster_version = local.cluster_version
 }
 
 resource "null_resource" "eks_post_deployment_actions" {
