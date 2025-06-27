@@ -98,6 +98,14 @@ dag = DAG(
     },
 )
 
+app_gen_env_vars = [
+    k8s.V1EnvVar(
+        name="DOCKSTORE_API_URL",
+        value="http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api",
+    ),
+    k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
+]
+
 secret_env_vars = [
     AirflowK8sSecret(
         deploy_type='env',                              # Expose as environment variable
@@ -204,6 +212,7 @@ appgen_task = KubernetesPodOperator(
     #         )
     #     )
     # ],
+    env_vars=app_gen_env_vars,
     secrets=secret_env_vars,
     name="appgen-task-pod",
     image=DOCKER_IMAGE,
