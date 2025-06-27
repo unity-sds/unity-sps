@@ -45,11 +45,6 @@ DOCKSTORE_TOKEN = "/unity/ads/app_gen/development/dockstore_token"
 
 K8S_SECRET_NAME = "sps-app-credentials" # Must match metadata.name in kubernetes_secret
 
-# HOST_SECRET_DIR = "/mnt/token-volume"
-# os.makedirs(HOST_SECRET_DIR, exist_ok=True)
-
-# SECRET_FILE_PATH = os.path.join(HOST_SECRET_DIR, "token.txt")
-
 # <<<
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
@@ -103,35 +98,22 @@ dag = DAG(
     },
 )
 
-app_gen_env_vars = [
-    # k8s.V1EnvVar(
-    #     name="DOCKERHUB_USERNAME", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"
-    # ),
-    k8s.V1EnvVar(name="DOCKERHUB_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_token') }}"),
-    k8s.V1EnvVar(name="DOCKSTORE_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockstore_token') }}"),
-    k8s.V1EnvVar(
-        name="DOCKSTORE_API_URL",
-        value="http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api",
-    ),
-    k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
-]
-
 secret_env_vars = [
     AirflowK8sSecret(
         deploy_type='env',                              # Expose as environment variable
-        deploy_target='DOCKERHUB_USERNAME_IN_POD',      # Name of the ENV VAR inside your pod
+        deploy_target='DOCKERHUB_USERNAME',             # Name of the ENV VAR inside your pod
         secret=K8S_SECRET_NAME,                         # Name of the K8s Secret
-        key='DOCKERHUB_USERNAME'                        # Key in the K8s Secret's data field
+        key='DOCKERHUB_USERNAME'                        # Key in the K8s Secret's data field defined in main.tf
     ),
     AirflowK8sSecret(
         deploy_type='env',
-        deploy_target='DOCKERHUB_TOKEN_IN_POD',
+        deploy_target='DOCKERHUB_TOKEN',
         secret=K8S_SECRET_NAME,
         key='DOCKERHUB_TOKEN'
     ),
     AirflowK8sSecret(
         deploy_type='env',
-        deploy_target='DOCKSTORE_TOKEN_IN_POD',
+        deploy_target='DOCKSTORE_TOKEN',
         secret=K8S_SECRET_NAME,
         key='DOCKSTORE_TOKEN'
     )
@@ -222,16 +204,7 @@ appgen_task = KubernetesPodOperator(
     #         )
     #     )
     # ],
-    secrets=[secret_env_vars],
-    volume_mounts=[
-        k8s.V1VolumeMount(name="token-volume", mount_path="/")
-    ],
-    volumes=[
-        k8s.V1Volume(
-            name="token-volume",
-            persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name="token-volume"),
-        )
-    ],
+    secrets=secret_env_vars,
     name="appgen-task-pod",
     image=DOCKER_IMAGE,
     service_account_name="airflow-worker",
