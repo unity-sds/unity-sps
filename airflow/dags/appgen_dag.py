@@ -25,9 +25,6 @@ from unity_sps_utils import (
     build_ec2_type_label,
     get_affinity,
 )
-from kubernetes import client as k8s_client_lib
-from kubernetes import config as k8s_config_lib
-import base64
 from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 
 from airflow import DAG
@@ -37,11 +34,6 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
         "ephemeral-storage": "{{ params.request_storage }} ",
     }
 )
-
-# AWS SSM parameter paths for credentials
-DOCKERHUB_USERNAME = "/unity/ads/app_gen/development/dockerhub_username"
-DOCKERHUB_TOKEN = "/unity/ads/app_gen/development/dockerhub_api_key"
-DOCKSTORE_TOKEN = "/unity/ads/app_gen/development/dockstore_token"
 
 K8S_SECRET_NAME = "sps-app-credentials" # Must match metadata.name in kubernetes_secret
 
@@ -109,7 +101,7 @@ app_gen_env_vars = [
 secret_env_vars = [
     AirflowK8sSecret(
         deploy_type='env',                              # Expose as environment variable
-        deploy_target='DOCKERHUB_USERNAME',             # Name of the ENV VAR inside your pod
+        deploy_target='DOCKERHUB_USERNAME',             # Name of the ENV VAR inside our docker container 
         secret=K8S_SECRET_NAME,                         # Name of the K8s Secret
         key='DOCKERHUB_USERNAME'                        # Key in the K8s Secret's data field defined in main.tf
     ),
@@ -131,37 +123,6 @@ def setup(ti=None, **context):
     """
     Task that selects the proper Karpenter Node Pool depending on the user requested resources.
     """
-
-    ## Retrieve the docker credentials and DockStore token
-    ssm_client = boto3.client("ssm", region_name="us-west-2")
-    ssm_response = ssm_client.get_parameters(
-        Names=[DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, DOCKSTORE_TOKEN], WithDecryption=True
-    )
-    logging.info(ssm_response)
-
-    # Somehow get the correct variables from SSM here
-    credentials_dict = {}
-    for param in ssm_response["Parameters"]:
-        if param["Name"] == DOCKERHUB_USERNAME:
-            credentials_dict["dockerhub_username"] = param["Value"]
-        elif param["Name"] == DOCKERHUB_TOKEN:
-            credentials_dict["dockerhub_token"] = param["Value"]
-        elif param["Name"] == DOCKSTORE_TOKEN:
-            credentials_dict["dockstore_token"] = param["Value"]
-
-    required_credentials = ["dockerhub_username", "dockerhub_token", "dockstore_token"]
-    # make sure all required credentials are provided
-    if not set(required_credentials).issubset(list(credentials_dict.keys())):
-        logging.error(f"Expected all of credentials to run mdps app generator {required_credentials}")
-
-    # use xcom to push to avoid putting credentials to the logs
-    ti.xcom_push(key="dockerhub_username", value=credentials_dict["dockerhub_username"])
-    ti.xcom_push(key="dockerhub_token", value=credentials_dict["dockerhub_token"])
-    ti.xcom_push(key="dockstore_token", value=credentials_dict["dockstore_token"])
-
-    # Write tokens to volume
-    with open("token.txt", "w") as f:
-        f.write(credentials_dict["dockerhub_username"])
 
     context = get_current_context()
     logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
@@ -202,16 +163,6 @@ appgen_task = KubernetesPodOperator(
     retries=1,
     task_id="appgen_task",
     namespace=POD_NAMESPACE,
-    # env_vars=app_gen_env_vars,
-    # secrets=kube_secrets,
-    # env_from=[
-    #     k8s.V1EnvFromSource(
-    #         secret_ref=k8s.V1SecretEnvSource(
-    #             # Dynamically get the secret name created by the previous task
-    #             name="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"
-    #         )
-    #     )
-    # ],
     env_vars=app_gen_env_vars,
     secrets=secret_env_vars,
     name="appgen-task-pod",
