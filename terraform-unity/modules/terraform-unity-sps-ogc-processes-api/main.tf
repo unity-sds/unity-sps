@@ -420,9 +420,13 @@ resource "time_sleep" "wait_for_gateway_integration" {
 # API Gateway deployment
 resource "aws_api_gateway_deployment" "ogc-api-gateway-deployment" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  stage_name  = var.venue
-  # stage_name  = "default"
-  depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
+  depends_on  = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method.rest_api_method_for_ogc_proxy_method, aws_api_gateway_method_response.response_200]
+}
+
+resource "aws_api_gateway_stage" "ogc-api-gateway-stage" {
+  deployment_id = aws_api_gateway_deployment.ogc-api-gateway-deployment.id
+  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
+  stage_name    = "default"
 }
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {

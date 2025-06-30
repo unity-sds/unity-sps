@@ -39,6 +39,7 @@ No modules.
 | [aws_api_gateway_resource.rest_api_resource_airflow_api_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_api_gateway_resource.rest_api_resource_airflow_proxy_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
 | [aws_api_gateway_resource.rest_api_resource_sps_path](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_resource) | resource |
+| [aws_api_gateway_stage.airflow-api-gateway-stage](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_stage) | resource |
 | [aws_api_gateway_vpc_link.rest_api_sps_vpc_link](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/api_gateway_vpc_link) | resource |
 | [aws_efs_access_point.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_access_point) | resource |
 | [aws_efs_access_point.airflow_kpo](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/resources/efs_access_point) | resource |
@@ -106,9 +107,9 @@ No modules.
 | <a name="input_airflow_webserver_username"></a> [airflow\_webserver\_username](#input\_airflow\_webserver\_username) | The username for the Airflow webserver and UI. | `string` | n/a | yes |
 | <a name="input_db_instance_identifier"></a> [db\_instance\_identifier](#input\_db\_instance\_identifier) | The AWS DB instance identifier | `string` | n/a | yes |
 | <a name="input_db_secret_arn"></a> [db\_secret\_arn](#input\_db\_secret\_arn) | The version of the database secret in AWS Secrets Manager | `string` | n/a | yes |
-| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br/>    airflow = object({<br/>      name = string<br/>      tag  = string<br/>    })<br/>  })</pre> | n/a | yes |
+| <a name="input_docker_images"></a> [docker\_images](#input\_docker\_images) | Docker images for the associated services. | <pre>object({<br>    airflow = object({<br>      name = string<br>      tag  = string<br>    })<br>  })</pre> | n/a | yes |
 | <a name="input_efs_file_system_id"></a> [efs\_file\_system\_id](#input\_efs\_file\_system\_id) | The EFS file system ID | `string` | n/a | yes |
-| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br/>    repository = string<br/>    chart      = string<br/>    version    = string<br/>  }))</pre> | n/a | yes |
+| <a name="input_helm_charts"></a> [helm\_charts](#input\_helm\_charts) | Helm charts for the associated services. | <pre>map(object({<br>    repository = string<br>    chart      = string<br>    version    = string<br>  }))</pre> | n/a | yes |
 | <a name="input_helm_values_template"></a> [helm\_values\_template](#input\_helm\_values\_template) | The helm values template file to use. | `string` | n/a | yes |
 | <a name="input_karpenter_node_pools"></a> [karpenter\_node\_pools](#input\_karpenter\_node\_pools) | Names of the Karpenter node pools | `list(string)` | n/a | yes |
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
