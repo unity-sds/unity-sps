@@ -703,7 +703,7 @@ resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1"
+  value       = "${aws_api_gateway_stage.airflow-api-gateway-stage.invoke_url}/sps/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
     Component = "SSM"

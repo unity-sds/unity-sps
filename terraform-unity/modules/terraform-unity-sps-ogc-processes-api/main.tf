@@ -446,7 +446,7 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
-  value       = "${aws_api_gateway_deployment.ogc-api-gateway-deployment.invoke_url}/ogc/api/"
+  value       = "${aws_api_gateway_stage.ogc-api-gateway-stage.invoke_url}/ogc/api/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_api")
     Component = "SSM"
@@ -527,7 +527,7 @@ resource "null_resource" "check_ogc_api_status" {
       UNITY_USERNAME    = nonsensitive(data.aws_ssm_parameter.unity_username.value)
     }
   }
-  depends_on = [aws_api_gateway_deployment.ogc-api-gateway-deployment, aws_ssm_parameter.ogc_processes_api_url]
+  depends_on = [aws_api_gateway_deployment.ogc-api-gateway-deployment, aws_api_gateway_stage.ogc-api-gateway-stage, aws_ssm_parameter.ogc_processes_api_url]
 }
 
 resource "null_resource" "register_ogc_processes" {
