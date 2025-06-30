@@ -56,12 +56,12 @@ jobs:
     - name: MCP Venue Dev - Smoke tests
       id: mcp_venue_dev_smoke_tests
       env:
-        UNITY_USERNAME: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
+        UNITY_USER: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
         UNITY_PASSWORD: ${{ secrets.MCP_VENUE_DEV_UNITY_PASSWORD }}
-        UNITY_CLIENTID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
+        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
       continue-on-error: true
       run: |
-        pytest -vv --gherkin-terminal-reporter \
+        pytest -vv -s --gherkin-terminal-reporter \
         unity-test/system/smoke \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT }}
@@ -69,12 +69,12 @@ jobs:
     - name: MCP Venue Test - Smoke tests
       id: mcp_venue_test_smoke_tests
       env:
-        UNITY_USERNAME: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
+        UNITY_USER: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
         UNITY_PASSWORD: ${{ secrets.MCP_VENUE_TEST_UNITY_PASSWORD }}
-        UNITY_CLIENTID: ${{ secrets.MCP_VENUE_TEST_UNITY_CLIENTID }}
+        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_TEST_UNITY_CLIENTID }}
       continue-on-error: true
       run: |
-        pytest -vv --gherkin-terminal-reporter \
+        pytest -vv -s --gherkin-terminal-reporter \
         unity-test/system/smoke \
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT }}
@@ -82,35 +82,16 @@ jobs:
 #    - name: MCP Venue Ops - Smoke tests
 #      id: mcp_venue_ops_smoke_tests
 #      env:
-#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_OPS_AIRFLOW_WEBSERVER_PASSWORD }}
+#        UNITY_USER: ${{ secrets.MCP_VENUE_OPS_UNITY_USERNAME }}
+#        UNITY_PASSWORD: ${{ secrets.MCP_VENUE_OPS_UNITY_PASSWORD }}
+#        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_OPS_UNITY_CLIENTID }}
 #      continue-on-error: true
 #      run: |
-#        pytest -vv --gherkin-terminal-reporter \
+#        pytest -vv -s --gherkin-terminal-reporter \
 #        unity-test/system/smoke/ \
 #        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT }} \
 #        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT }}
 #
-#    - name: MCP SBG DEV - Smoke tests
-#      id: mcp_sbg_dev_smoke_tests
-#      env:
-#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_SBG_DEV_AIRFLOW_WEBSERVER_PASSWORD }}
-#      continue-on-error: true
-#      run: |
-#        pytest -vv --gherkin-terminal-reporter \
-#        unity-test/system/smoke \
-#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_SBG_DEV_AIRFLOW_API_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_SBG_DEV_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_SBG_DEV_OGC_PROCESSES_API_ENDPOINT }}
-#
-#    - name: MCP EMIT InT - Smoke tests
-#      id: mcp_emit_int_smoke_tests
-#      env:
-#        AIRFLOW_WEBSERVER_PASSWORD: ${{ secrets.MCP_VENUE_EMIT_INT_AIRFLOW_WEBSERVER_PASSWORD }}
-#      continue-on-error: true
-#      run: |
-#        pytest -vv --gherkin-terminal-reporter \
-#        unity-test/system/smoke \
-#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_EMIT_INT_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_EMIT_INT_AIRFLOW_API_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_EMIT_INT_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_EMIT_INT_OGC_PROCESSES_API_ENDPOINT }}
 
     # Final step to check outcomes and potentially fail the job
     - name: Check Smoke Tests Results
