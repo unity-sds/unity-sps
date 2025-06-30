@@ -17,24 +17,12 @@ on:
       MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT:
         description: "Base URL for the OGC Processes API endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
         type: string
-      MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT:
-        description: "Base URL for the Airflow API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
-        type: string
-      MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT:
-        description: "Base URL for the OGC Processes API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
-        type: string
-      MCP_VENUE_SBG_DEV_AIRFLOW_API_ENDPOINT:
-        description: "Base URL for the Airflow API endpoint in MCP Venue SBG Dev (i.e. http://abc.def.ghi:port-number)"
-        type: string
-      MCP_VENUE_SBG_DEV_OGC_PROCESSES_API_ENDPOINT:
-        description: "Base URL for the OGC Processes API endpoint in MCP Venue SBG Dev (i.e. http://abc.def.ghi:port-number)"
-        type: string
-      MCP_VENUE_EMIT_INT_AIRFLOW_API_ENDPOINT:
-        description: "Base URL for the Airflow API endpoint in MCP Venue EMIT InT (i.e. http://abc.def.ghi:port-number)"
-        type: string
-      MCP_VENUE_EMIT_INT_OGC_PROCESSES_API_ENDPOINT:
-        description: "Base URL for the OGC Processes API endpoint in MCP Venue EMIT InT (i.e. http://abc.def.ghi:port-number)"
-        type: string
+#      MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT:
+#        description: "Base URL for the Airflow API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
+#        type: string
+#      MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT:
+#        description: "Base URL for the OGC Processes API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
+#        type: string
 
 jobs:
   smoke-tests:
