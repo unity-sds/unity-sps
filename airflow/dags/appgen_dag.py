@@ -7,11 +7,11 @@ import logging
 import os
 from datetime import datetime
 
-import boto3
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
@@ -33,10 +33,7 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     }
 )
 
-# AWS SSM parameter paths for credentials
-DOCKERHUB_USERNAME = "/unity/ads/app_gen/development/dockerhub_username"
-DOCKERHUB_TOKEN = "/unity/ads/app_gen/development/dockerhub_api_key"
-DOCKSTORE_TOKEN = "/unity/ads/app_gen/development/dockstore_token"
+K8S_SECRET_NAME = "sps-app-credentials"  # Must match metadata.name in kubernetes_secret
 
 # <<<
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
@@ -93,15 +90,25 @@ dag = DAG(
 
 app_gen_env_vars = [
     k8s.V1EnvVar(
-        name="DOCKERHUB_USERNAME", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_username') }}"
-    ),
-    k8s.V1EnvVar(name="DOCKERHUB_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockerhub_token') }}"),
-    k8s.V1EnvVar(name="DOCKSTORE_TOKEN", value="{{ ti.xcom_pull(task_ids='Setup', key='dockstore_token') }}"),
-    k8s.V1EnvVar(
         name="DOCKSTORE_API_URL",
         value="http://awslbdockstorestack-lb-1429770210.us-west-2.elb.amazonaws.com:9998/api",
     ),
     k8s.V1EnvVar(name="GITHUB_REPO", value="{{ params.repository }}"),
+]
+
+secret_env_vars = [
+    AirflowK8sSecret(
+        deploy_type="env",  # Expose as environment variable
+        deploy_target="DOCKERHUB_USERNAME",  # Name of the ENV VAR inside our docker container
+        secret=K8S_SECRET_NAME,  # Name of the K8s Secret
+        key="DOCKERHUB_USERNAME",  # Key in the K8s Secret's data field defined in main.tf
+    ),
+    AirflowK8sSecret(
+        deploy_type="env", deploy_target="DOCKERHUB_TOKEN", secret=K8S_SECRET_NAME, key="DOCKERHUB_TOKEN"
+    ),
+    AirflowK8sSecret(
+        deploy_type="env", deploy_target="DOCKSTORE_TOKEN", secret=K8S_SECRET_NAME, key="DOCKSTORE_TOKEN"
+    ),
 ]
 
 
@@ -109,33 +116,6 @@ def setup(ti=None, **context):
     """
     Task that selects the proper Karpenter Node Pool depending on the user requested resources.
     """
-
-    ## Retrieve the docker credentials and DockStore token
-    ssm_client = boto3.client("ssm", region_name="us-west-2")
-    ssm_response = ssm_client.get_parameters(
-        Names=[DOCKERHUB_USERNAME, DOCKERHUB_TOKEN, DOCKSTORE_TOKEN], WithDecryption=True
-    )
-    logging.info(ssm_response)
-
-    # Somehow get the correct variables from SSM here
-    credentials_dict = {}
-    for param in ssm_response["Parameters"]:
-        if param["Name"] == DOCKERHUB_USERNAME:
-            credentials_dict["dockerhub_username"] = param["Value"]
-        elif param["Name"] == DOCKERHUB_TOKEN:
-            credentials_dict["dockerhub_token"] = param["Value"]
-        elif param["Name"] == DOCKSTORE_TOKEN:
-            credentials_dict["dockstore_token"] = param["Value"]
-
-    required_credentials = ["dockerhub_username", "dockerhub_token", "dockstore_token"]
-    # make sure all required credentials are provided
-    if not set(required_credentials).issubset(list(credentials_dict.keys())):
-        logging.error(f"Expected all of credentials to run mdps app generator {required_credentials}")
-
-    # use xcom to push to avoid putting credentials to the logs
-    ti.xcom_push(key="dockerhub_username", value=credentials_dict["dockerhub_username"])
-    ti.xcom_push(key="dockerhub_token", value=credentials_dict["dockerhub_token"])
-    ti.xcom_push(key="dockstore_token", value=credentials_dict["dockstore_token"])
 
     context = get_current_context()
     logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
@@ -177,6 +157,7 @@ appgen_task = KubernetesPodOperator(
     task_id="appgen_task",
     namespace=POD_NAMESPACE,
     env_vars=app_gen_env_vars,
+    secrets=secret_env_vars,
     name="appgen-task-pod",
     image=DOCKER_IMAGE,
     service_account_name="airflow-worker",
