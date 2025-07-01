@@ -7,11 +7,11 @@ import logging
 import os
 from datetime import datetime
 
-import boto3
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
@@ -24,7 +24,6 @@ from unity_sps_utils import (
     build_ec2_type_label,
     get_affinity,
 )
-from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 
 from airflow import DAG
 
@@ -34,7 +33,7 @@ CONTAINER_RESOURCES = k8s.V1ResourceRequirements(
     }
 )
 
-K8S_SECRET_NAME = "sps-app-credentials" # Must match metadata.name in kubernetes_secret
+K8S_SECRET_NAME = "sps-app-credentials"  # Must match metadata.name in kubernetes_secret
 
 # <<<
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
@@ -99,24 +98,19 @@ app_gen_env_vars = [
 
 secret_env_vars = [
     AirflowK8sSecret(
-        deploy_type='env',                              # Expose as environment variable
-        deploy_target='DOCKERHUB_USERNAME',             # Name of the ENV VAR inside our docker container 
-        secret=K8S_SECRET_NAME,                         # Name of the K8s Secret
-        key='DOCKERHUB_USERNAME'                        # Key in the K8s Secret's data field defined in main.tf
+        deploy_type="env",  # Expose as environment variable
+        deploy_target="DOCKERHUB_USERNAME",  # Name of the ENV VAR inside our docker container
+        secret=K8S_SECRET_NAME,  # Name of the K8s Secret
+        key="DOCKERHUB_USERNAME",  # Key in the K8s Secret's data field defined in main.tf
     ),
     AirflowK8sSecret(
-        deploy_type='env',
-        deploy_target='DOCKERHUB_TOKEN',
-        secret=K8S_SECRET_NAME,
-        key='DOCKERHUB_TOKEN'
+        deploy_type="env", deploy_target="DOCKERHUB_TOKEN", secret=K8S_SECRET_NAME, key="DOCKERHUB_TOKEN"
     ),
     AirflowK8sSecret(
-        deploy_type='env',
-        deploy_target='DOCKSTORE_TOKEN',
-        secret=K8S_SECRET_NAME,
-        key='DOCKSTORE_TOKEN'
-    )
+        deploy_type="env", deploy_target="DOCKSTORE_TOKEN", secret=K8S_SECRET_NAME, key="DOCKSTORE_TOKEN"
+    ),
 ]
+
 
 def setup(ti=None, **context):
     """

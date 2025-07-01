@@ -41,7 +41,7 @@ resource "kubernetes_secret" "sps-app-credentials" {
     "DOCKSTORE_TOKEN"    = data.aws_ssm_parameter.dockstore_token.value
   }
 
-  type = "Opaque" 
+  type = "Opaque"
 }
 
 module "unity-sps-database" {
