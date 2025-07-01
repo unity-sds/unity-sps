@@ -68,7 +68,7 @@ resource "aws_db_instance" "sps_db" {
   storage_type         = "gp3"
   engine               = "postgres"
   engine_version       = "16.8"
-  instance_class       = "db.m5d.2xlarge"
+  instance_class       = var.db_instance_class
   db_name              = "sps_db"
   username             = "db_user"
   password             = aws_secretsmanager_secret_version.db.secret_string

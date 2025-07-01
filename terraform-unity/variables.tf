@@ -367,3 +367,9 @@ variable "installprefix" {
   type        = string
   default     = ""
 }
+
+variable "db_instance_class" {
+  description = "The SPS RDS database instance class"
+  type        = string
+  default     = "db.m5d.xlarge"
+}
