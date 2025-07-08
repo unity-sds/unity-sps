@@ -77,6 +77,7 @@ Additionally, there are a number of small adjustments:
   - [[New Feature]: Enhancements to CWL Modularized DAG](https://github.com/unity-sds/unity-sps/issues/276)
   - [[New Feature]: Modularize the ASIPS workflows](https://github.com/unity-sds/unity-sps/issues/320)
   - [[New Feature]: Increase test coverage for CWL Modular DAG](https://github.com/unity-sds/unity-sps/issues/394)
+  - [[Bug]: Determine if the use of XCOM to hold successful features is causing failures when running DAGs](https://github.com/unity-sds/unity-sps/issues/439)
 - EPIC: Demonstrate Space Use Case
   - [[New Feature]: Demonstrate scalability of Space Use Case](https://github.com/unity-sds/unity-sps/issues/285)
 
