@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "unity-sps"
-version = "3.0.0"
+version = "3.1.0"
 authors = [
     { name = "Luca Cinquini", email = "luca.cinquini@jpl.nasa.gov" },
     { name = "Grace Llewellyn", email = "grace.llewellyn@jpl.nasa.gov" },
@@ -14,7 +14,6 @@ authors = [
 ]
 description = "The science processing service area of Unity."
 classifiers = [
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
