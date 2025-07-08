@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [Unity Release 25.3] - 2025-06-30
+
+- SPS Version 3.0.1(???) (new)
+- OGC API Version 2.1.0 (new)
+- OGC Python Client Version 2.0.1 (unchanged)
+
+## Overview
+
+This release includes several updates to various Science Processing System components:
+- The SPS Initiators tooling is now included in the general release. (???)
+- A specific subset of DAGs are now configured to automatically submit to the OGC API on SPS install.
+- The Cognito authentication interaction has been worked into the SPS integration tests, allowing for the tests to properly access the OGC API.
+- An optional High-Load configuration has been built up to support increased processing loads; this may be enabled at install-time.
+
+Additionally, there are a number of small adjustments:
+- A number of DAGs have included changes involving instance sizing and type.
+- The SPS database instance has been updated to a more recent version, and given increased resource allocation.
+
+
+## Upgrade Guide
+
+- There are no changes in the Terraform variables required for an SPS deployment, but the .tfvars files should be 
+    regenerated to pick up the new default values (like the version of the Airflow Docker image).
+
+## Repositories
+
+- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/3.0.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.1.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.1>
+
+## Docker Containers
+
+- ghcr.io/unity-sds/unity-sps/sps-airflow:3.0.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:3.0.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.1.0
+
+## Documentation
+
+- For Administrators:
+  - [SPS Deployment with Terraform](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-terraform)
+  - [Interacting with an Existing SPS Deployment](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/interacting-with-an-existing-sps-deployment)
+  - [SPS Airflow Custom Docker Image Build Instructions](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
+  - [SPS Post Deployment Operations](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-post-deployment-operations)
+  - [SPS Deployment with Marketplace](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-marketplace)
+- For Developers:
+  - [OGC Processes API Overview](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/ogc-processes-api-overview)
+  - [Tutorial: Using the OGC Processes API with CURL](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-using-the-ogc-processes-api-with-curl)
+  - [Tutorial: Using the OGC processes API with Python](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-using-the-ogc-processes-api-with-python)
+- For Users:
+  - [Tutorial: Register and Execute a CWL Workflow](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
+
 # [Unity Release 25.2] - 2025-05-13
 
 - SPS Version 3.0.0 (new)
