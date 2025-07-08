@@ -5,6 +5,82 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# [Unity Release 25.3] - 2025-06-30
+
+- SPS Version 3.1.0 (new)
+- OGC API Version 2.1.0 (unchanged)
+- OGC Python Client Version 2.0.1 (unchanged)
+
+## Overview
+
+This release includes several updates to various Science Processing System components, focusing on scalability and testability:
+- An optional High-Load configuration has been built up to support increased processing loads; this may be enabled at install-time.
+- Test coverage has been greatly expanded to include the Airflow and OGC APIs, as well as the CWL classic and CWL modular DAGs.
+- Additionally, the Cognito authentication interaction has been worked into the SPS integration tests, allowing for the tests to properly access the OGC API.
+- Some commonly used DAGs are configured to be automatically installed any time the SPS is deployed.
+- The SPS Initiators tooling is now included in the general release.
+
+Additionally, there are a number of small adjustments:
+- A number of DAGs have included changes involving instance sizing and type.
+- The SPS database instance has been updated to a more recent version, and given increased resource allocation.
+
+## Upgrade Guide
+
+- There are no changes in the Terraform variables required for a standard SPS deployment, but the .tfvars files should be
+    regenerated to pick up the new default values (like the version of the Airflow Docker image).
+    Optionally, before deployment, the administrator may decide to install a more scalable SPS by using this terraform settimng:
+  - helm_values_template = "values_high_load.tmpl.yaml"
+
+## Caveat
+- This release does not include updating the Python unity-sds OGC client library: https://github.com/unity-sds/unity-monorepo/tree/main/libs/unity-py/unity_sds_client
+  which will not work with any new SPS deployment. This upgrade is expected to be included in the next SPS release.
+
+## Repositories
+
+- unity-sps: <https://github.com/unity-sds/unity-sps/releases/tag/3.1.0>
+- unity-sps-ogc-processes-api: <https://github.com/unity-sds/unity-sps-ogc-processes-api/releases/tag/2.1.0>
+- unity-sps-ogc-processes-api-client-python: <https://github.com/unity-sds/unity-sps-ogc-processes-api-client-python/releases/tag/2.0.1>
+
+## Docker Containers
+
+- ghcr.io/unity-sds/unity-sps/sps-airflow:3.1.0
+- ghcr.io/unity-sds/unity-sps/sps-docker-cwl:3.1.0
+- ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api:2.1.0
+
+## Documentation
+
+- For Administrators:
+  - [SPS Deployment with Terraform](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-terraform)
+  - [Interacting with an Existing SPS Deployment](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/interacting-with-an-existing-sps-deployment)
+  - [SPS Airflow Custom Docker Image Build Instructions](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-airflow-custom-docker-image-build-instructions)
+  - [Creating an SPS Release](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/creating-an-sps-release)
+  - [SPS Post Deployment Operations](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-post-deployment-operations)
+  - [SPS Deployment with Marketplace](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/admin-guide/sps-deployment-with-marketplace)
+- For Developers:
+  - [Developer's Guide Best Practices](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide)
+  - [OGC Processes API Overview](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/ogc-processes-api-overview)
+  - [Tutorial: Fetching Cognito Authentication Tokens](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-fetching-cognito-authentication-tokens)
+  - [Tutorial: Using the Airflow API with CURL](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-using-the-airflow-api-with-curl)
+  - [Tutorial: Using the OGC Processes API with CURL](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-using-the-ogc-processes-api-with-curl)
+  - [Tutorial: Using the OGC processes API with Python](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/developers-guide/tutorial-using-the-ogc-processes-api-with-python)
+- For Users:
+  - [Tutorial: Register and Execute a CWL Workflow](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/users-guide/tutorial-register-and-execute-a-cwl-workflow)
+  - [Tutorial: Large Scale Testing](https://unity-sds.gitbook.io/docs/developer-docs/science-processing/docs/users-guide/tutorial-large-scale-testing)
+
+## Epics
+
+- EPIC: Airflow/Cognito Integration
+  - [[New Feature]: Convert all SPS integration tests to use the Cognito token](https://github.com/unity-sds/unity-sps/issues/384)
+- EPIC: Deployment Enhancements
+  - [[New Feature]: Register DAGs upon SPS deployment](https://github.com/unity-sds/unity-sps/issues/410)
+- EPIC: Continue Application Package Standardization
+  - [[New Feature]: Enhancements to CWL Modularized DAG](https://github.com/unity-sds/unity-sps/issues/276)
+  - [[New Feature]: Modularize the ASIPS workflows](https://github.com/unity-sds/unity-sps/issues/320)
+  - [[New Feature]: Increase test coverage for CWL Modular DAG](https://github.com/unity-sds/unity-sps/issues/394)
+- EPIC: Demonstrate Space Use Case
+  - [[New Feature]: Demonstrate scalability of Space Use Case](https://github.com/unity-sds/unity-sps/issues/285)
+
+
 # [Unity Release 25.2] - 2025-05-13
 
 - SPS Version 3.0.0 (new)
