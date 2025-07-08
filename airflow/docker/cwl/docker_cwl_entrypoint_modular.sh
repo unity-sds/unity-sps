@@ -166,14 +166,15 @@ failed_features=$(cat $failed_features_file | jq '.')
 echo Failed features:
 echo $failed_features | jq '.'
 
-# Save catalog.json in a location where it will be picked up by Airflow XCOM mechanism
-mkdir -p /airflow/xcom/
-cp $successful_features_file /airflow/xcom/return.json
+# # Save catalog.json in a location where it will be picked up by Airflow XCOM mechanism
+# mkdir -p /airflow/xcom/
+# cp $successful_features_file /airflow/xcom/return.json
 
 # Optionally, save the requested output file to a location
 # where it will be picked up by the Airflow XCOM mechanism
 # Note: the content of the file MUST be valid JSON or XCOM will fail.
 if [ ! -z "${json_output}" -a "${json_output}" != " " ]; then
+  mkdir -p /airflow/xcom/
   cp ${json_output} /airflow/xcom/return.json
 fi
 
