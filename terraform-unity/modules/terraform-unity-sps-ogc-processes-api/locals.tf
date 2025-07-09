@@ -14,4 +14,5 @@ locals {
     Stack       = ""
   }
   load_balancer_port = 5001
+  region             = data.aws_region.current.name
 }

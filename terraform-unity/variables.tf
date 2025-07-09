@@ -22,7 +22,7 @@ variable "service_area" {
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "25.1"
+  default     = "25.3"
 }
 
 variable "kubeconfig_filepath" {
@@ -62,6 +62,12 @@ variable "helm_charts" {
   }
 }
 
+variable "helm_values_template" {
+  description = "The helm values template file to use."
+  type        = string
+  default     = "values.tmpl.yaml"
+}
+
 variable "airflow_docker_images" {
   description = "Docker images for the associated Airflow services."
   type = object({
@@ -73,7 +79,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "2.6.1"
+      tag  = "3.1.0"
     }
   }
 }
@@ -97,7 +103,7 @@ variable "ogc_processes_docker_images" {
   default = {
     ogc_processes_api = {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
-      tag  = "2.0.0"
+      tag  = "2.1.0"
     }
     git_sync = {
       name = "registry.k8s.io/git-sync/git-sync"

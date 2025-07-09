@@ -394,7 +394,7 @@ resource "helm_release" "airflow" {
   version    = var.helm_charts.airflow.version
   namespace  = data.kubernetes_namespace.service_area.metadata[0].name
   values = [
-    templatefile("${path.module}/../../../airflow/helm/values.tmpl.yaml", {
+    templatefile("${path.module}/../../../airflow/helm/${var.helm_values_template}", {
       airflow_image_repo       = var.docker_images.airflow.name
       airflow_image_tag        = var.docker_images.airflow.tag
       kubernetes_namespace     = data.kubernetes_namespace.service_area.metadata[0].name
@@ -414,7 +414,7 @@ resource "helm_release" "airflow" {
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
       # Issue 404: DISABLE AIRRLOW AUTHENTICATION (https://github.com/unity-sds/unity-sps/issues/404)
-      webserver_config         = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
+      webserver_config = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
     })
   ]
   set_sensitive {
@@ -654,7 +654,8 @@ resource "time_sleep" "wait_for_gateway_integration" {
 resource "aws_api_gateway_deployment" "airflow-api-gateway-deployment" {
   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
   stage_name  = var.venue
-  depends_on  = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
+  # stage_name  = "default"
+  depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
 }
 
 resource "aws_ssm_parameter" "airflow_ui_url" {
@@ -675,8 +676,12 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   description = "The URL of the Airflow UI."
   type        = "String"
   value = jsonencode({
+    "componentCategory" : "processing"
     "componentName" : "Airflow UI"
+    "componentType" : "ui"
+    "description" : "The primary GUI for the Science Processing System (SPS) to run and monitor jobs at scale."
     "healthCheckUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/health"
+    "isPortalIntegrated" : false
     "landingPageUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
   })
   tags = merge(local.common_tags, {
@@ -708,8 +713,12 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   description = "The URL of the Airflow REST API."
   type        = "String"
   value = jsonencode({
+    "componentCategory" : "processing"
     "componentName" : "Airflow API"
+    "componentType" : "api"
+    "description" : "The direct API for the job management system underlying the SPS (Airflow). Typically the OGC Processes API should be used instead, because it will abstract out a particular job engine."
     "healthCheckUrl" : "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1/health"
+    "isPortalIntegrated" : false
     "landingPageUrl" : "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1"
   })
   tags = merge(local.common_tags, {

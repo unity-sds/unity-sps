@@ -15,10 +15,16 @@ variable "service_area" {
   default     = "sps"
 }
 
+variable "cluster_version" {
+  description = "The EKS cluster version (must be supported by the cs-infra module)."
+  type        = string
+  default     = "1.31"
+}
+
 variable "release" {
   description = "The software release version."
   type        = string
-  default     = "25.1"
+  default     = "25.3"
 }
 
 # tflint-ignore: terraform_unused_declarations

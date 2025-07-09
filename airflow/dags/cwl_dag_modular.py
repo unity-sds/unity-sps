@@ -45,8 +45,8 @@ from airflow import DAG
 
 # Task constants
 SSM_CLIENT = boto3.client("ssm", region_name="us-west-2")
-STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/351-stage-in-unity/demos/cwl_dag_modular_stage_in.cwl"
-STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/307-log-levels/demos/stage_out_cwl_log_level.cwl"
+STAGE_IN_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/uds-version-update/demos/cwl_dag_modular_stage_in.cwl"
+STAGE_OUT_WORKFLOW = "https://raw.githubusercontent.com/unity-sds/unity-sps-workflows/refs/heads/uds-version-update/demos/cwl_dag_modular_stage_out.cwl"
 LOCAL_DIR = "/shared-task-data"
 
 # The path of the working directory where the CWL workflow is executed

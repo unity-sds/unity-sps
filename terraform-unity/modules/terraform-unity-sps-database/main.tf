@@ -64,11 +64,11 @@ resource "aws_security_group_rule" "eks_egress_to_rds" {
 
 resource "aws_db_instance" "sps_db" {
   identifier           = format(local.resource_name_prefix, "db")
-  allocated_storage    = 100
+  allocated_storage    = 400
   storage_type         = "gp3"
   engine               = "postgres"
-  engine_version       = "16.4"
-  instance_class       = "db.m5d.large"
+  engine_version       = "16.8"
+  instance_class       = "db.m5d.2xlarge"
   db_name              = "sps_db"
   username             = "db_user"
   password             = aws_secretsmanager_secret_version.db.secret_string
