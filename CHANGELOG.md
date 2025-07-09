@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - SPS Version 3.1.0 (new)
 - OGC API Version 2.1.0 (unchanged)
-- OGC Python Client Version 2.0.1 (unchanged)
+- OGC Python Client Version 2.1.0 (unchanged)
 
 ## Overview
 
