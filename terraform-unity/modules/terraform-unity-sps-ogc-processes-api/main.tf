@@ -83,12 +83,12 @@ resource "kubernetes_deployment" "ogc_processes_api" {
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-family"
                   operator = "In"
-                  values   = ["c6i", "c5"]
+                  values   = ["r5"]
                 }
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-cpu"
                   operator = "In"
-                  values   = ["4"]
+                  values   = ["8"]
                 }
               }
             }
