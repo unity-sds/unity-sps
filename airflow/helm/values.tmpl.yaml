@@ -56,10 +56,10 @@ affinity:
           values: ["on-demand"]
         - key: "karpenter.k8s.aws/instance-family"
           operator: "In"
-          values: ["c6i", "c5"]
+          values: ["r5"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: "In"
-          values: ["2", "4"]
+          values: ["8"]
 
 topologySpreadConstraints:
 - maxSkew: 1
