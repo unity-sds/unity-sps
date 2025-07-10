@@ -17,6 +17,34 @@ resource "kubernetes_deployment" "redis" {
         }
       }
       spec {
+        affinity {
+          node_affinity {
+            required_during_scheduling_ignored_during_execution {
+              node_selector_term {
+                match_expressions {
+                  key      = "karpenter.sh/nodepool"
+                  operator = "In"
+                  values   = compact([for pool in var.karpenter_node_pools : pool if pool == "airflow-core-components"])
+                }
+                match_expressions {
+                  key      = "karpenter.sh/capacity-type"
+                  operator = "In"
+                  values   = ["on-demand"]
+                }
+                match_expressions {
+                  key      = "karpenter.k8s.aws/instance-family"
+                  operator = "In"
+                  values   = ["r5"]
+                }
+                match_expressions {
+                  key      = "karpenter.k8s.aws/instance-cpu"
+                  operator = "In"
+                  values   = ["8"]
+                }
+              }
+            }
+          }
+        }
         container {
           name  = "redis"
           image = "${var.docker_images.redis.name}:${var.docker_images.redis.tag}"
@@ -83,12 +111,12 @@ resource "kubernetes_deployment" "ogc_processes_api" {
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-family"
                   operator = "In"
-                  values   = ["c6i", "c5"]
+                  values   = ["r5"]
                 }
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-cpu"
                   operator = "In"
-                  values   = ["4"]
+                  values   = ["8"]
                 }
               }
             }
