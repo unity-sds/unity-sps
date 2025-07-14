@@ -248,7 +248,7 @@ workers:
   keda:
     enabled: true
     pollingInterval: 1
-    minReplicaCount: 1
+    minReplicaCount: 0
     maxReplicaCount: 128
     # Specify HPA related options
     # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md

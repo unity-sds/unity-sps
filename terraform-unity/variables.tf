@@ -283,7 +283,7 @@ variable "karpenter_node_pools" {
         memory = "320Gi"
       }
       disruption = {
-        consolidationPolicy = "WhenEmpty"
+        consolidationPolicy = "WhenEmptyOrUnderutilized"
         consolidateAfter    = "1m"
       }
     },
