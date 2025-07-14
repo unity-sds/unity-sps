@@ -9,7 +9,7 @@ terraform {
 }
 
 module "unity-eks" {
-  source          = "git::https://github.com/unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.5.0"
+  source          = "git::https://github.com/unity-sds/unity-cs-infra.git//terraform-unity-eks_module"
   deployment_name = local.cluster_name
   project         = var.project
   venue           = var.venue
