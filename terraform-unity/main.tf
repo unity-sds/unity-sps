@@ -29,6 +29,11 @@ data "aws_ssm_parameter" "dockstore_token" {
   with_decryption = true
 }
 
+data "aws_ssm_parameter" "maap_pgt" {
+  name            = "/unity/ads/ogc/development/maap_pgt_grace_test_acct"
+  with_decryption = true
+}
+
 resource "kubernetes_secret" "sps-app-credentials" {
   metadata {
     name      = "sps-app-credentials"
@@ -39,6 +44,7 @@ resource "kubernetes_secret" "sps-app-credentials" {
     "DOCKERHUB_USERNAME" = data.aws_ssm_parameter.dockerhub_username.value
     "DOCKERHUB_TOKEN"    = data.aws_ssm_parameter.dockerhub_api_key.value
     "DOCKSTORE_TOKEN"    = data.aws_ssm_parameter.dockstore_token.value
+    "MAAP_PGT"           = data.aws_ssm_parameter.maap_pgt.value
   }
 
   type = "Opaque"

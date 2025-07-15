@@ -14,30 +14,31 @@ from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperato
 from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
+from unity_sps_utils import (
+    DEFAULT_LOG_LEVEL,
+    EC2_TYPES,
+    NODE_POOL_DEFAULT,
+    NODE_POOL_HIGH_WORKLOAD,
+    POD_LABEL,
+    POD_NAMESPACE,
+    build_ec2_type_label,
+    get_affinity,
+)
 
 # --- Configuration Constants ---
 
-# The name of the Kubernetes secret that holds the PGT token.
-K8S_SECRET_NAME = "pgt-token-secret"
-K8S_SECRET_KEY = "pgt-token"
-TOKEN_ENV_VAR = "PGT_TOKEN"
-
-# The base URL for the OGC Process API.
-API_BASE_URL = "https://api.dit.maap-project.org/api/ogc"
-
-# The Kubernetes namespace where the pods will run.
-POD_NAMESPACE = "airflow"  # Change this to your Airflow namespace
+K8S_SECRET_NAME = "sps-app-credentials"
 
 # A lightweight Docker image with curl and jq for making API requests.
-DOCKER_IMAGE = "stedolan/jq@sha256:36519247696232f7a09d3a0e6653131093c7deda36f8a4e34a70b09f19e42e61"
+DOCKER_IMAGE = "jplmdps/ogc-job-runner:latest"
 
 # Define the secret to be mounted as an environment variable.
 secret_env_vars = [
     AirflowK8sSecret(
         deploy_type="env",
-        deploy_target=TOKEN_ENV_VAR,
+        deploy_target="MAAP_PGT",
         secret=K8S_SECRET_NAME,
-        key=K8S_SECRET_KEY,
+        key="MAAP_PGT",
     )
 ]
 
@@ -45,8 +46,17 @@ secret_env_vars = [
 dag_default_args = {
     "owner": "unity-sps",
     "depends_on_past": False,
-    "start_date": datetime(2023, 1, 1),
+    "start_date": datetime.utcfromtimestamp(0),
 }
+
+submit_job_env_vars = [
+    k8s.V1EnvVar(
+        name="SUBMIT_JOB_URL",
+        value="https://api.dit.maap-project.org/api/ogc/processes/{process_id}/execution",
+    ),
+    k8s.V1EnvVar(name="PROCESS_ID", value="{{ params.process_id }}"),
+    k8s.V1EnvVar(name="JOB_INPUTS", value="{{ params.job_inputs }}")
+]
 
 # --- DAG Definition ---
 
@@ -54,7 +64,7 @@ dag = DAG(
     dag_id="ogc_two_task_job_runner",
     description="Submits and monitors an OGC job in two separate tasks.",
     dag_display_name="OGC Two-Task Job Runner",
-    tags=["ogc", "api", "maap", "kubernetes"],
+    tags=["ogc", "job"],
     is_paused_upon_creation=False,
     catchup=False,
     schedule=None,
@@ -90,54 +100,38 @@ def setup(**context):
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
-# This shell command submits the job and writes the jobID to a special file
-# that Airflow uses for XComs.
-submit_command = [
-    "/bin/sh",
-    "-c",
-    f"""
-        set -e
-        echo "Submitting job for process: {{ params.process_id }}"
-        
-        SUBMIT_URL="{API_BASE_URL}/processes/{{ params.process_id }}/execution"
-        
-        # The payload is now passed as a templated argument
-        PAYLOAD='{{ params.job_inputs }}'
-        
-        # Make the request and extract jobID
-        response=$(curl -s -f -X POST "$SUBMIT_URL" \\
-            -H "Authorization: Bearer ${TOKEN_ENV_VAR}" \\
-            -H "Content-Type: application/json" \\
-            -d "$PAYLOAD")
-        
-        echo "API Response: $response"
-        job_id=$(echo "$response" | jq -r .jobID)
-        
-        if [ "$job_id" = "null" ] || [ -z "$job_id" ]; then
-            echo "Failed to get jobID from response."
-            exit 1
-        fi
-        
-        echo "Job submitted successfully. Job ID: $job_id"
-        
-        # Write the job_id to the XCom return file for the next task
-        # The value MUST be JSON-parsable, so we quote it.
-        echo -n "\\"\\"{job_id}\\"\\"" > /airflow/xcom/return.json
-    """,
-]
-
 submit_job_task = KubernetesPodOperator(
     task_id="submit_job_task",
     namespace=POD_NAMESPACE,
     image=DOCKER_IMAGE,
     name="ogc-submit-pod",
-    cmds=submit_command,
+    env_vars=submit_job_env_vars,
     secrets=secret_env_vars,
+    service_account_name="airflow-worker",
     in_cluster=True,
     get_logs=True,
-    # This is crucial for enabling XCom push from the pod
-    do_xcom_push=True,
+    startup_timeout_seconds=600,
+    container_security_context={"privileged": True},
+    container_resources=k8s.V1ResourceRequirements(
+        requests={
+            "ephemeral-storage": "{{ti.xcom_pull(task_ids='Setup', key='container_storage')}}",
+        },
+    ),
+    container_logs=True,
     dag=dag,
+    node_selector={
+        "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
+        "node.kubernetes.io/instance-type": "{{ti.xcom_pull(task_ids='Setup', key='instance_type')}}",
+    },
+    labels={"pod": POD_LABEL},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    # note: 'affinity' cannot yet be templated
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        anti_affinity_label=POD_LABEL,
+    ),
+    on_finish_action="keep_pod",
+    is_delete_operator_pod=False,
 )
 
 # This shell command polls for job status. The jobID is passed in as an argument.
@@ -184,20 +178,20 @@ monitor_command = [
     """,
 ]
 
-monitor_job_task = KubernetesPodOperator(
-    task_id="monitor_job_task",
-    namespace=POD_NAMESPACE,
-    image=DOCKER_IMAGE,
-    name="ogc-monitor-pod",
-    cmds=monitor_command,
-    # The job_id is pulled from the previous task's XCom return value
-    # and passed as the first argument to the monitor_command script.
-    arguments=["{{ ti.xcom_pull(task_ids='submit_job_task') }}"],
-    secrets=secret_env_vars,
-    in_cluster=True,
-    get_logs=True,
-    dag=dag,
-)
+# monitor_job_task = KubernetesPodOperator(
+#     task_id="monitor_job_task",
+#     namespace=POD_NAMESPACE,
+#     image=DOCKER_IMAGE,
+#     name="ogc-monitor-pod",
+#     cmds=monitor_command,
+#     # The job_id is pulled from the previous task's XCom return value
+#     # and passed as the first argument to the monitor_command script.
+#     arguments=["{{ ti.xcom_pull(task_ids='submit_job_task') }}"],
+#     secrets=secret_env_vars,
+#     in_cluster=True,
+#     get_logs=True,
+#     dag=dag,
+# )
 
 def cleanup(**context):
     """A placeholder cleanup task."""
@@ -208,4 +202,5 @@ cleanup_task = PythonOperator(
 )
 
 # Define the task execution chain
-chain(setup_task, submit_job_task, monitor_job_task, cleanup_task)
+chain(setup_task, submit_job_task, cleanup_task)
+#chain(setup_task, submit_job_task, monitor_job_task, cleanup_task)
