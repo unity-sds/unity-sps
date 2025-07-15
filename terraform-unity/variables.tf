@@ -283,7 +283,7 @@ variable "karpenter_node_pools" {
         memory = "320Gi"
       }
       disruption = {
-        consolidationPolicy = "WhenEmpty"
+        consolidationPolicy = "WhenEmptyOrUnderutilized"
         consolidateAfter    = "1m"
       }
     },
@@ -366,4 +366,10 @@ variable "installprefix" {
   description = "The install prefix for the service area (unused)"
   type        = string
   default     = ""
+}
+
+variable "db_instance_class" {
+  description = "The SPS RDS database instance class"
+  type        = string
+  default     = "db.m5d.xlarge"
 }

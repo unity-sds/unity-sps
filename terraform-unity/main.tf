@@ -56,6 +56,7 @@ module "unity-sps-database" {
   venue        = var.venue
   service_area = var.service_area
   release      = var.release
+  db_instance_class = var.db_instance_class
 }
 
 module "unity-sps-efs" {
