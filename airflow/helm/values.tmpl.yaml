@@ -248,7 +248,7 @@ workers:
   keda:
     enabled: true
     pollingInterval: 1
-    minReplicaCount: 0
+    minReplicaCount: 0    # Minimum node available for celery workers; set to 1 to always have a worker node available to run tasks
     maxReplicaCount: 128
     # Specify HPA related options
     # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md
