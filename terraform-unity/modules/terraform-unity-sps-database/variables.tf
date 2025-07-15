@@ -17,3 +17,8 @@ variable "release" {
   description = "The software release version."
   type        = string
 }
+
+variable "db_instance_class" {
+  description = "The SPS RDS database instance class"
+  type        = string
+}

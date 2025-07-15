@@ -56,10 +56,10 @@ affinity:
           values: ["on-demand"]
         - key: "karpenter.k8s.aws/instance-family"
           operator: "In"
-          values: ["c6i", "c5"]
+          values: ["r5"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: "In"
-          values: ["2", "4"]
+          values: ["8"]
 
 topologySpreadConstraints:
 - maxSkew: 1
@@ -248,7 +248,9 @@ workers:
   keda:
     enabled: true
     pollingInterval: 1
-    minReplicaCount: 1
+    # Minimum node available for celery workers
+    # Set to 1 to always have a worker node available to run tasks
+    minReplicaCount: 0
     maxReplicaCount: 128
     # Specify HPA related options
     # https://github.com/kubernetes/enhancements/blob/master/keps/sig-autoscaling/853-configurable-hpa-scale-velocity/README.md
