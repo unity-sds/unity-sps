@@ -32,8 +32,7 @@ from airflow.operators.python import PythonOperator, get_current_context
 K8S_SECRET_NAME = "sps-app-credentials"
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
-# A lightweight Docker image with curl and jq for making API requests.
-DOCKER_IMAGE = "jplmdps/ogc-job-runner:latest"
+DOCKER_IMAGE_SUBMIT_JOB = "jplmdps/ogc-job-runner:latest"
 
 # Define the secret to be mounted as an environment variable.
 secret_env_vars = [
@@ -58,7 +57,17 @@ submit_job_env_vars = [
         value="https://api.dit.maap-project.org/api/ogc/processes/{process_id}/execution",
     ),
     k8s.V1EnvVar(name="PROCESS_ID", value="{{ params.process_id }}"),
-    k8s.V1EnvVar(name="JOB_INPUTS", value="{{ params.job_inputs }}")
+    k8s.V1EnvVar(name="JOB_INPUTS", value="{{ params.job_inputs }}"),
+    k8s.V1EnvVar(name="SUBMIT_JOB", value="true")
+]
+
+monitor_job_env_vars = [
+    k8s.V1EnvVar(
+        name="MONITOR_JOB_URL",
+        value="https://api.dit.maap-project.org/api/ogc/jobs/{job_id}",
+    ),
+    k8s.V1EnvVar(name="JOB_ID", value="{{ ti.xcom_pull(task_ids='submit_job_task', key='return_value')['job_id'] }}"),
+    k8s.V1EnvVar(name="SUBMIT_JOB", value="false")
 ]
 
 # --- DAG Definition ---
@@ -156,7 +165,7 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 submit_job_task = KubernetesPodOperator(
     task_id="submit_job_task",
     namespace=POD_NAMESPACE,
-    image=DOCKER_IMAGE,
+    image=DOCKER_IMAGE_SUBMIT_JOB,
     name="ogc-submit-pod",
     env_vars=submit_job_env_vars,
     secrets=secret_env_vars,
@@ -171,6 +180,7 @@ submit_job_task = KubernetesPodOperator(
         },
     ),
     container_logs=True,
+    do_xcom_push=True,
     dag=dag,
     node_selector={
         "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
@@ -231,6 +241,40 @@ monitor_command = [
     """,
 ]
 
+monitor_job_task = KubernetesPodOperator(
+    task_id="monitor_job_task",
+    namespace=POD_NAMESPACE,
+    image=DOCKER_IMAGE_SUBMIT_JOB,
+    name="ogc-monitor-pod",
+    env_vars=monitor_job_env_vars,
+    secrets=secret_env_vars,
+    service_account_name="airflow-worker",
+    in_cluster=True,
+    get_logs=True,
+    startup_timeout_seconds=600,
+    container_security_context={"privileged": True},
+    container_resources=k8s.V1ResourceRequirements(
+        requests={
+            "ephemeral-storage": "{{ti.xcom_pull(task_ids='Setup', key='container_storage')}}",
+        },
+    ),
+    container_logs=True,
+    dag=dag,
+    node_selector={
+        "karpenter.sh/nodepool": "{{ti.xcom_pull(task_ids='Setup', key='node_pool')}}",
+        "node.kubernetes.io/instance-type": "{{ti.xcom_pull(task_ids='Setup', key='instance_type')}}",
+    },
+    labels={"pod": POD_LABEL},
+    annotations={"karpenter.sh/do-not-disrupt": "true"},
+    # note: 'affinity' cannot yet be templated
+    affinity=get_affinity(
+        capacity_type=["spot"],
+        anti_affinity_label=POD_LABEL,
+    ),
+    on_finish_action="keep_pod",
+    is_delete_operator_pod=False,
+)
+
 # monitor_job_task = KubernetesPodOperator(
 #     task_id="monitor_job_task",
 #     namespace=POD_NAMESPACE,
@@ -254,6 +298,5 @@ cleanup_task = PythonOperator(
     task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
 )
 
-# Define the task execution chain
-chain(setup_task, submit_job_task, cleanup_task)
-#chain(setup_task, submit_job_task, monitor_job_task, cleanup_task)
+#chain(setup_task, submit_job_task, cleanup_task)
+chain(setup_task, submit_job_task, monitor_job_task, cleanup_task)
