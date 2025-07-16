@@ -5,6 +5,7 @@ and then monitor its status.
 import json
 import logging
 from datetime import datetime
+import os
 
 from airflow.models.dag import DAG
 from airflow.models.param import Param
@@ -24,10 +25,12 @@ from unity_sps_utils import (
     build_ec2_type_label,
     get_affinity,
 )
+from airflow.operators.python import PythonOperator, get_current_context
 
 # --- Configuration Constants ---
 
 K8S_SECRET_NAME = "sps-app-credentials"
+LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
 # A lightweight Docker image with curl and jq for making API requests.
 DOCKER_IMAGE = "jplmdps/ogc-job-runner:latest"
@@ -61,9 +64,9 @@ submit_job_env_vars = [
 # --- DAG Definition ---
 
 dag = DAG(
-    dag_id="ogc_two_task_job_runner",
-    description="Submits and monitors an OGC job in two separate tasks.",
-    dag_display_name="OGC Two-Task Job Runner",
+    dag_id="run_ogc_process",
+    description="Submits a job to an OGC process and monitors",
+    dag_display_name="Run an OGC Process",
     tags=["ogc", "job"],
     is_paused_upon_creation=False,
     catchup=False,
@@ -72,10 +75,9 @@ dag = DAG(
     default_args=dag_default_args,
     params={
         "process_id": Param(
-            "test-process",
-            type="string",
+            type="integer",
             title="Process ID",
-            description="The identifier of the OGC process to execute.",
+            description="The numerical identifier of the OGC process to execute.",
         ),
         "job_inputs": Param(
             json.dumps(
@@ -88,15 +90,66 @@ dag = DAG(
             title="Job Inputs (JSON string)",
             description="A JSON string representing the inputs payload for the job.",
         ),
+        "log_level": Param(
+            DEFAULT_LOG_LEVEL,
+            type="integer",
+            enum=list(LOG_LEVEL_TYPE.keys()),
+            values_display={key: f"{key} ({value})" for key, value in LOG_LEVEL_TYPE.items()},
+            title="Processing log levels",
+            description=("Log level for DAG processing"),
+        ),
+        "request_instance_type": Param(
+            "t3.medium",
+            type="string",
+            enum=list(EC2_TYPES.keys()),
+            values_display={key: f"{build_ec2_type_label(key)}" for key in EC2_TYPES.keys()},
+            title="EC2 instance type",
+        ),
+        "request_storage": Param(
+            "10Gi", type="string", enum=["10Gi", "50Gi", "100Gi", "150Gi", "200Gi", "250Gi"]
+        ),
+        "use_ecr": Param(False, type="boolean", title="Log into AWS Elastic Container Registry (ECR)"),
     },
 )
 
 # --- Task Definitions ---
 
-def setup(**context):
-    """A simple setup task to log parameters."""
+def setup(ti=None,**context):
+    """Task that selects the proper Karpenter Node Pool depending on the user requested resources."""
+
     logging.info("Starting OGC job submission and monitoring DAG.")
     logging.info(f"Parameters received: {context['params']}")
+    context = get_current_context()
+    logging.info(f"DAG Run parameters: {json.dumps(context['params'], sort_keys=True, indent=4)}")
+
+    # select the node pool based on what resources were requested
+    node_pool = NODE_POOL_DEFAULT
+    storage = context["params"]["request_storage"]  # 100Gi
+    container_storage = int(storage[0:-2])  # 100
+    ti.xcom_push(key="container_storage", value=container_storage)
+
+    # from "t3.large (General Purpose: 2vCPU, 8GiB)" to "t3.large"
+    instance_type = context["params"]["request_instance_type"]
+    cpu = EC2_TYPES[instance_type]["cpu"]
+    memory = EC2_TYPES[instance_type]["memory"]
+    ti.xcom_push(key="instance_type", value=instance_type)
+    logging.info(f"Requesting EC2 instance type={instance_type}")
+
+    logging.info(f"Requesting container storage={container_storage}Gi")
+    if (container_storage > 30) or (cpu > 16) or (memory > 32):
+        node_pool = NODE_POOL_HIGH_WORKLOAD
+    logging.info(f"Selecting node pool={node_pool}")
+    ti.xcom_push(key="node_pool", value=node_pool)
+
+    # select "use_ecr" argument and determine if ECR login is required
+    logging.info("Use ECR: %s", context["params"]["use_ecr"])
+    if context["params"]["use_ecr"]:
+        ecr_login = os.environ["AIRFLOW_VAR_ECR_URI"]
+        ti.xcom_push(key="ecr_login", value=ecr_login)
+        logging.info("ECR login: %s", ecr_login)
+
+    # select log level based on debug
+    logging.info(f"Selecting log level: {context['params']['log_level']}.")
 
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 

@@ -2,12 +2,10 @@
 
 set -e
 
-echo "in entrypoint for running an ogc process"
-
 # Submit job to endpoint
-SUBMIT_JOB_URL="SUBMIT_JOB_URL=$(echo "$SUBMIT_JOB_URL" | sed "s/{process_id}/$PROCESS_ID/")"
+SUBMIT_JOB_URL=$(echo "$SUBMIT_JOB_URL" | sed "s/{process_id}/$PROCESS_ID/")
 
-echo "submit url is $SUBMIT_JOB_URL"
+echo "Submitting the job to ${SUBMIT_JOB_URL}"
 
 response=$(curl --location ${SUBMIT_JOB_URL} \
 --header "proxy-ticket: ${MAAP_PGT}" \
@@ -22,7 +20,7 @@ if [ "$job_id" = "null" ] || [ -z "$job_id" ]; then
     exit 1
 fi
 
-echo "Job submitted successfully. Job ID: $job_id"
+echo "Job submitted successfully. Job ID: ${job_id}"
 
 # Write the job_id to the XCom return file for the next task
 mkdir -p /airflow/xcom/
