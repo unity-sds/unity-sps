@@ -17,12 +17,12 @@ on:
       MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT:
         description: "Base URL for the OGC Processes API endpoint in MCP Venue Test (i.e. http://abc.def.ghi:port-number)"
         type: string
-#      MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT:
-#        description: "Base URL for the Airflow API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
-#        type: string
-#      MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT:
-#        description: "Base URL for the OGC Processes API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
-#        type: string
+      MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT:
+        description: "Base URL for the Airflow API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
+        type: string
+      MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT:
+        description: "Base URL for the OGC Processes API endpoint in MCP Venue Ops (i.e. http://abc.def.ghi:port-number)"
+        type: string
 
 jobs:
   smoke-tests:
@@ -67,36 +67,41 @@ jobs:
         --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT }} \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT }}
 
-#    - name: MCP Venue Ops - Smoke tests
-#      id: mcp_venue_ops_smoke_tests
-#      env:
-#        UNITY_USER: ${{ secrets.MCP_VENUE_OPS_UNITY_USERNAME }}
-#        UNITY_PASSWORD: ${{ secrets.MCP_VENUE_OPS_UNITY_PASSWORD }}
-#        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_OPS_UNITY_CLIENTID }}
-#      continue-on-error: true
-#      run: |
-#        pytest -vv -s --gherkin-terminal-reporter \
-#        unity-test/system/smoke/ \
-#        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT }} \
-#        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT }}
-#
+    - name: MCP Venue Ops - Smoke tests
+      id: mcp_venue_ops_smoke_tests
+      env:
+        UNITY_USER: ${{ secrets.MCP_VENUE_OPS_UNITY_USERNAME }}
+        UNITY_PASSWORD: ${{ secrets.MCP_VENUE_OPS_UNITY_PASSWORD }}
+        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_OPS_UNITY_CLIENTID }}
+      continue-on-error: true
+      run: |
+        pytest -vv -s --gherkin-terminal-reporter \
+        unity-test/system/smoke/ \
+        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT }} \
+        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT }}
+
 
     # Final step to check outcomes and potentially fail the job
     - name: Check Smoke Tests Results
       if: always()
       run: |
         dev_status=${{ steps.mcp_venue_dev_smoke_tests.outcome }}
-        test_status=${{ steps.mcp_venue_test_smoke_tests.outcome }}
         echo "Dev Smoke Tests: $dev_status"
+        test_status=${{ steps.mcp_venue_test_smoke_tests.outcome }}
         echo "Test Smoke Tests: $test_status"
+        ops_status=${{ steps.mcp_venue_ops_smoke_tests.outcome }}
+        echo "Ops Smoke Tests: $ops_status"
 
-        if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ]; then
+        if [ "$dev_status" != "success" ] || [ "$test_status" != "success" ] || [ "$ops_status" != "success" ]; then
           echo "One or more smoke tests failed."
           if [ "$dev_status" != "success" ]; then
             echo "MCP Venue Dev Smoke Tests failed."
           fi
-          if [ "test_status" != "success" ]; then
+          if [ "$test_status" != "success" ]; then
             echo "MCP Venue Test Smoke Tests failed."
+          fi
+          if [ "$ops_status" != "success" ]; then
+            echo "MCP Venue Ops Smoke Tests failed."
           fi
           exit 1
         else
