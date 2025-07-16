@@ -97,10 +97,10 @@ jobs:
           if [ "$dev_status" != "success" ]; then
             echo "MCP Venue Dev Smoke Tests failed."
           fi
-          if [ "test_status" != "success" ]; then
+          if [ "$test_status" != "success" ]; then
             echo "MCP Venue Test Smoke Tests failed."
           fi
-          if [ "ops_status" != "success" ]; then
+          if [ "$ops_status" != "success" ]; then
             echo "MCP Venue Ops Smoke Tests failed."
           fi
           exit 1
