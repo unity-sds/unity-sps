@@ -29,9 +29,9 @@ if [ "$SUBMIT_JOB" = "true" ] || [ "$SUBMIT_JOB" = "True" ]; then
     printf '{"job_id": "%s"}' "$job_id" > /airflow/xcom/return.json
 elif [ "$SUBMIT_JOB" = "false" ] || [ "$SUBMIT_JOB" = "False" ]; then
     echo "Monitoring job status"
-    echo "graceal job id in the entrypiont is $JOB_ID"
+    
     MONITOR_JOB_URL=$(echo "$MONITOR_JOB_URL" | sed "s/{job_id}/$JOB_ID/")
-    echo "graceal the monitor job url is $MONITOR_JOB_URL"
+   
     TIMEOUT=3600
     POLL_INTERVAL=30
     SECONDS=0

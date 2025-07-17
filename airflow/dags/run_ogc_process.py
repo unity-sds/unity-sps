@@ -27,14 +27,11 @@ from unity_sps_utils import (
 )
 from airflow.operators.python import PythonOperator, get_current_context
 
-# --- Configuration Constants ---
-
 K8S_SECRET_NAME = "sps-app-credentials"
 LOG_LEVEL_TYPE = {10: "DEBUG", 20: "INFO"}
 
-DOCKER_IMAGE_SUBMIT_JOB = "jplmdps/ogc-job-runner:latest"
+DOCKER_IMAGE = "jplmdps/ogc-job-runner:latest"
 
-# Define the secret to be mounted as an environment variable.
 secret_env_vars = [
     AirflowK8sSecret(
         deploy_type="env",
@@ -44,7 +41,6 @@ secret_env_vars = [
     )
 ]
 
-# Default DAG configuration
 dag_default_args = {
     "owner": "unity-sps",
     "depends_on_past": False,
@@ -165,7 +161,7 @@ setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 submit_job_task = KubernetesPodOperator(
     task_id="submit_job_task",
     namespace=POD_NAMESPACE,
-    image=DOCKER_IMAGE_SUBMIT_JOB,
+    image=DOCKER_IMAGE,
     name="ogc-submit-pod",
     env_vars=submit_job_env_vars,
     secrets=secret_env_vars,
@@ -197,54 +193,10 @@ submit_job_task = KubernetesPodOperator(
     is_delete_operator_pod=False,
 )
 
-# This shell command polls for job status. The jobID is passed in as an argument.
-monitor_command = [
-    "/bin/sh",
-    "-c",
-    """
-        set -e
-        job_id="$1" # The jobID is the first argument
-        if [ -z "$job_id" ]; then
-            echo "job_id argument not provided."
-            exit 1
-        fi
-        
-        echo "Starting to monitor job ID: $job_id"
-        STATUS_URL="${API_BASE_URL}/jobs/$job_id"
-        
-        TIMEOUT=3600
-        POLL_INTERVAL=30
-        SECONDS=0
-        
-        while [ $SECONDS -lt $TIMEOUT ]; do
-            echo "Checking status..."
-            response=$(curl -s -f -H "Authorization: Bearer ${PGT_TOKEN}" "$STATUS_URL")
-            status=$(echo "$response" | jq -r .status)
-            
-            echo "Current status is: $status"
-            
-            if [ "$status" = "successful" ]; then
-                echo "Job completed successfully!"
-                exit 0
-            elif [ "$status" = "failed" ]; then
-                echo "Job failed!"
-                echo "Error details: $(echo "$response" | jq .)"
-                exit 1
-            fi
-            
-            sleep $POLL_INTERVAL
-            SECONDS=$((SECONDS + POLL_INTERVAL))
-        done
-        
-        echo "Job monitoring timed out after $TIMEOUT seconds."
-        exit 1
-    """,
-]
-
 monitor_job_task = KubernetesPodOperator(
     task_id="monitor_job_task",
     namespace=POD_NAMESPACE,
-    image=DOCKER_IMAGE_SUBMIT_JOB,
+    image=DOCKER_IMAGE,
     name="ogc-monitor-pod",
     env_vars=monitor_job_env_vars,
     secrets=secret_env_vars,
@@ -275,21 +227,6 @@ monitor_job_task = KubernetesPodOperator(
     is_delete_operator_pod=False,
 )
 
-# monitor_job_task = KubernetesPodOperator(
-#     task_id="monitor_job_task",
-#     namespace=POD_NAMESPACE,
-#     image=DOCKER_IMAGE,
-#     name="ogc-monitor-pod",
-#     cmds=monitor_command,
-#     # The job_id is pulled from the previous task's XCom return value
-#     # and passed as the first argument to the monitor_command script.
-#     arguments=["{{ ti.xcom_pull(task_ids='submit_job_task') }}"],
-#     secrets=secret_env_vars,
-#     in_cluster=True,
-#     get_logs=True,
-#     dag=dag,
-# )
-
 def cleanup(**context):
     """A placeholder cleanup task."""
     logging.info("Cleanup executed.")
@@ -298,5 +235,4 @@ cleanup_task = PythonOperator(
     task_id="Cleanup", python_callable=cleanup, dag=dag, trigger_rule=TriggerRule.ALL_DONE
 )
 
-#chain(setup_task, submit_job_task, cleanup_task)
 chain(setup_task, submit_job_task, monitor_job_task, cleanup_task)
