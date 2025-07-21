@@ -128,3 +128,14 @@ module "unity-sps-initiators" {
   airflow_webserver_password      = var.airflow_webserver_password
   ogc_processes_api_url_ssm_param = module.unity-sps-ogc-processes-api.ogc_processes_urls["rest_api"].ssm_param_id
 }
+
+module "unity-airflow-dag-git-sync" {
+  source                          = "./modules/terraform-airflow-dag-git-sync"
+  project                         = var.project
+  venue                           = var.venue
+  service_area                    = var.service_area
+  release                         = var.release
+  airflow_api_url_ssm_param       = module.unity-sps-airflow.airflow_urls["rest_api"].ssm_param_id
+  airflow_webserver_username      = var.airflow_webserver_username
+  airflow_webserver_password      = var.airflow_webserver_password
+}
