@@ -10,8 +10,6 @@ if [ "$SUBMIT_JOB" = "true" ] || [ "$SUBMIT_JOB" = "True" ]; then
         --arg queue "$QUEUE" \
         --argjson inputs "$JOB_INPUTS" \
         '{queue: $queue, inputs: $inputs}')
-    echo "graceal showing the job arguments which is "
-    echo $SUBMIT_JOB_ARGUMENTS
 
     echo "Submitting the job to ${SUBMIT_JOB_URL}"
 
