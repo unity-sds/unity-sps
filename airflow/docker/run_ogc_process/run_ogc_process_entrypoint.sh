@@ -6,13 +6,19 @@ if [ "$SUBMIT_JOB" = "true" ] || [ "$SUBMIT_JOB" = "True" ]; then
     echo "Submitting job"
 
     SUBMIT_JOB_URL=$(echo "$SUBMIT_JOB_URL" | sed "s/{process_id}/$PROCESS_ID/")
+    SUBMIT_JOB_ARGUMENTS=$(jq -n \
+        --arg queue "$QUEUE" \
+        --argjson inputs "$JOB_INPUTS" \
+        '{queue: $queue, inputs: $inputs}')
+    echo "graceal showing the job arguments which is "
+    echo $SUBMIT_JOB_ARGUMENTS
 
     echo "Submitting the job to ${SUBMIT_JOB_URL}"
 
     response=$(curl --location ${SUBMIT_JOB_URL} \
     --header "proxy-ticket: ${MAAP_PGT}" \
     --header "Content-Type: application/json" \
-    --data "${JOB_INPUTS}")
+    --data "${SUBMIT_JOB_ARGUMENTS}")
 
     echo "API Response: $response"
     job_id=$(echo "$response" | jq -r .id)
@@ -52,7 +58,7 @@ elif [ "$SUBMIT_JOB" = "false" ] || [ "$SUBMIT_JOB" = "False" ]; then
         elif [ "$status" = "failed" ]; then
             echo "Job failed!"
             echo "Error details: $(echo "$response" | jq .)"
-            exit 0 # TODO should this be 1 or 0?
+            exit 1 
         fi
         
         sleep $POLL_INTERVAL
