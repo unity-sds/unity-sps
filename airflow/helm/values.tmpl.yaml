@@ -372,5 +372,3 @@ extraEnv: |
     value: "1024"
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"
-  - name: AIRFLOW_CONN_MAAP_API_PGT
-    value: "http://secret:k8s-secret:sps-app-credentials:MAAP_PGT@https://api.dit.maap-project.org"

@@ -106,7 +106,7 @@ monitor_job_env_vars = [
         name="MONITOR_JOB_URL",
         value="https://api.dit.maap-project.org/api/ogc/jobs/{job_id}",
     ),
-    k8s.V1EnvVar(name="JOB_ID", value="{{ ti.xcom_pull(task_ids='submit_job_task', key='return_value')['job_id'] }}"),
+    k8s.V1EnvVar(name="JOB_ID", value="{{ ti.xcom_pull(task_ids='submit_job_task2', key='return_value')['job_id'] }}"),
     k8s.V1EnvVar(name="SUBMIT_JOB", value="false")
 ]
 
@@ -115,7 +115,7 @@ monitor_job_env_vars = [
 dag = DAG(
     dag_id="run_ogc_process2",
     description="Submits a job to an OGC process and monitors",
-    dag_display_name="Run an OGC Process2",
+    dag_display_name="Run an OGC Process (KubernetesPodOperators approach)",
     tags=["ogc", "job"],
     is_paused_upon_creation=False,
     catchup=False,

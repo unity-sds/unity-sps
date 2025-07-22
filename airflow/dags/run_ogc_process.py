@@ -14,7 +14,7 @@ from airflow.models.baseoperator import BaseOperator, chain
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.exceptions import AirflowException
-from airflow.hooks.base import BaseHook
+from airflow.providers.cncf.kubernetes.hooks.kubernetes import KubernetesHook
 import time
 
 K8S_SECRET_NAME = "sps-app-credentials"
@@ -37,12 +37,16 @@ class OGCSubmitJobOperator(BaseOperator):
         """Submit job to OGC API and return job ID."""
         
         try:
-            # Get MAAP token from Airflow connection
-            connection = BaseHook.get_connection('maap_api_pgt')
-            maap_pgt = connection.password
-                
-            if not maap_pgt:
-                raise AirflowException("MAAP_PGT token not found in Airflow connection")
+            # Get MAAP token from Kubernetes secret
+            k8s_hook = KubernetesHook()
+            secret = k8s_hook.get_secret(name=K8S_SECRET_NAME, namespace=k8s_hook.get_namespace())
+            maap_pgt = secret.data.get("MAAP_PGT")
+            
+            if maap_pgt:
+                import base64
+                maap_pgt = base64.b64decode(maap_pgt).decode('utf-8')
+            else:
+                raise AirflowException("MAAP_PGT token not found in Kubernetes secret")
             
             # Extract process ID if in format "id:version"
             #actual_process_id = self.process_id.split(':')[0] if ':' in str(self.process_id) else self.process_id
@@ -115,12 +119,16 @@ class OGCMonitorJobOperator(BaseOperator):
         try:
             self.log.info(f"Monitoring job with ID: {self.job_id}")
 
-            # Get MAAP token from Airflow connection
-            connection = BaseHook.get_connection('maap_api_pgt')
-            maap_pgt = connection.password
-                
-            if not maap_pgt:
-                raise AirflowException("MAAP_PGT token not found in Airflow connection")
+            # Get MAAP token from Kubernetes secret
+            k8s_hook = KubernetesHook()
+            secret = k8s_hook.get_secret(name=K8S_SECRET_NAME, namespace=k8s_hook.get_namespace())
+            maap_pgt = secret.data.get("MAAP_PGT")
+            
+            if maap_pgt:
+                import base64
+                maap_pgt = base64.b64decode(maap_pgt).decode('utf-8')
+            else:
+                raise AirflowException("MAAP_PGT token not found in Kubernetes secret")
             
             monitor_url = self.monitor_url_template.format(job_id=self.job_id)
             headers = {
@@ -179,7 +187,7 @@ dag_default_args = {
 dag = DAG(
     dag_id="run_ogc_process",
     description="Submits a job to an OGC process and monitors",
-    dag_display_name="Run an OGC Process",
+    dag_display_name="Run an OGC Process (custom operators)",
     tags=["ogc", "job"],
     is_paused_upon_creation=False,
     catchup=False,
