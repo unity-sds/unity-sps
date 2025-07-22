@@ -14,7 +14,7 @@ from airflow.models.baseoperator import BaseOperator, chain
 from airflow.operators.python import PythonOperator, get_current_context
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.exceptions import AirflowException
-from airflow.providers.cncf.kubernetes.hooks.kubernetes import KubernetesHook
+from airflow.hooks.base import BaseHook
 import time
 
 K8S_SECRET_NAME = "sps-app-credentials"
@@ -37,11 +37,12 @@ class OGCSubmitJobOperator(BaseOperator):
         """Submit job to OGC API and return job ID."""
         
         try:
-            # Get MAAP token from Kubernetes secret
-            maap_pgt = get_kubernetes_secret_value(K8S_SECRET_NAME, "MAAP_PGT")
+            # Get MAAP token from Airflow connection
+            connection = BaseHook.get_connection('maap_api_pgt')
+            maap_pgt = connection.password
                 
             if not maap_pgt:
-                raise AirflowException("MAAP_PGT token not found in Kubernetes secret")
+                raise AirflowException("MAAP_PGT token not found in Airflow connection")
             
             # Extract process ID if in format "id:version"
             #actual_process_id = self.process_id.split(':')[0] if ':' in str(self.process_id) else self.process_id
@@ -114,11 +115,12 @@ class OGCMonitorJobOperator(BaseOperator):
         try:
             self.log.info(f"Monitoring job with ID: {self.job_id}")
 
-            # Get MAAP token from Kubernetes secret
-            maap_pgt = get_kubernetes_secret_value(K8S_SECRET_NAME, "MAAP_PGT")
+            # Get MAAP token from Airflow connection
+            connection = BaseHook.get_connection('maap_api_pgt')
+            maap_pgt = connection.password
                 
             if not maap_pgt:
-                raise AirflowException("MAAP_PGT token not found in Kubernetes secret")
+                raise AirflowException("MAAP_PGT token not found in Airflow connection")
             
             monitor_url = self.monitor_url_template.format(job_id=self.job_id)
             headers = {
@@ -222,12 +224,6 @@ submit_job_task = OGCSubmitJobOperator(
     process_id="{{ params.process_id }}",
     job_inputs="{{ params.job_inputs }}",
     job_queue="{{ params.job_queue }}",
-    maap_pgt =AirflowK8sSecret(
-        deploy_type="env",
-        deploy_target="MAAP_PGT",
-        secret=K8S_SECRET_NAME,
-        key="MAAP_PGT",
-    ),
     dag=dag,
 )
 
