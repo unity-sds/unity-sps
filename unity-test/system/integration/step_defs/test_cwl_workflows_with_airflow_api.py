@@ -1,4 +1,4 @@
-# This test executes the specified CWL workflow
+# This test executes the specified DAG workflow
 # using the CWL DAG (classic or modular) submitted through the Airflow API.
 # The workflow parameters are contained in a YAML file which is venue-dependent.
 # The CWL DAGs (classic and modular) must already be deployed in Airflow,
@@ -19,7 +19,9 @@ FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_airflow_api.feature"
 # DAG parameters are venue specific
 CWL_DAG_ID = "cwl_dag"
 CWL_DAG_MODULAR_ID = "cwl_dag_modular"
+KARPENTER_DAG_ID = "karpenter_test"
 DAG_PARAMETERS = {
+    KARPENTER_DAG_ID: {"KARPENTER": {"placeholder": 1}},
     CWL_DAG_MODULAR_ID: {
         "EMIT": {
             "stac_json": {
@@ -96,7 +98,7 @@ DAG_PARAMETERS = {
 }
 
 
-@scenario(FEATURE_FILE, "Successful execution of a CWL workflow with the Airflow API")
+@scenario(FEATURE_FILE, "Successful execution of a DAG workflow with the Airflow API")
 def test_successful_execution_of_a_cwl_workflow_with_the_airflow_api():
     pass
 
@@ -118,13 +120,16 @@ def trigger_dag(airflow_api_url, fetch_token, venue, test_case, test_dag):
     try:
 
         # configuration common to all DAGs
-        job_config = {
-            "conf": {
-                "log_level": f'{DAG_PARAMETERS[test_dag][test_case]["log_level"]}',
-                "request_storage": f'{DAG_PARAMETERS[test_dag][test_case]["request_storage"]}',
-                "request_instance_type": f'{DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]}',
+        if test_dag == KARPENTER_DAG_ID:
+            job_config = {"conf": DAG_PARAMETERS[KARPENTER_DAG_ID]}
+        else:
+            job_config = {
+                "conf": {
+                    "log_level": f'{DAG_PARAMETERS[test_dag][test_case]["log_level"]}',
+                    "request_storage": f'{DAG_PARAMETERS[test_dag][test_case]["request_storage"]}',
+                    "request_instance_type": f'{DAG_PARAMETERS[test_dag][test_case]["request_instance_type"]}',
+                }
             }
-        }
 
         # configuration specific to CWL_DAG
         if test_dag == CWL_DAG_ID:
