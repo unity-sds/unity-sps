@@ -14,7 +14,7 @@ Feature: Execute DAG workflows using the OGC API
             Examples:
             | test_case      | test_dag         |
             | KARPENTER      | karpenter_test   |
-#            | EMIT           | cwl_dag          |
-#            | SBG_PREPROCESS | cwl_dag          |
-#            | EMIT           | cwl_dag_modular  |
-#            | SBG_PREPROCESS | cwl_dag_modular  |
+            | EMIT           | cwl_dag          |
+            | SBG_PREPROCESS | cwl_dag          |
+            | EMIT           | cwl_dag_modular  |
+            | SBG_PREPROCESS | cwl_dag_modular  |
