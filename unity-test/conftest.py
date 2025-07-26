@@ -28,8 +28,9 @@ def pytest_addoption(parser):
         "--venue",
         action="store",
         default=None,
-        choices=("dev", "test", "ops"),
-        help="The venue in which the cluster will be deployed (dev, test, ops).",
+        # Note: unity-py uses "prod" but sps software uses "ops"
+        choices=("dev", "test", "ops", "prod"),
+        help="The venue in which the cluster will be deployed (dev, test, ops, prod).",
     )
     parser.addoption(
         "--developer",
@@ -174,5 +175,17 @@ def cwl_dag_modular_process(ogc_processes):
 
     for p in ogc_processes:
         if p.id == "cwl_dag_modular":
+            return p
+    return None
+
+
+@pytest.fixture(scope="session")
+def karpenter_dag_process(ogc_processes):
+    """
+    Selects the Karpenter Test DAG from the list of available OGC processes
+    """
+
+    for p in ogc_processes:
+        if p.id == "karpenter_test":
             return p
     return None
