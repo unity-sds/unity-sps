@@ -1,9 +1,9 @@
-# This test executes the specified CWL workflow
-# using the CWL DAG OGC process submitted through the OGC API.
-# The workflow parameters are contained in a YAML file which is venue-dependent.
-# The CWL DAG OGC process must already be deployed in Airflow,
+# This test executes the specified DAG workflow
+# using the DAG OGC process submitted through the OGC API.
+# The workflow parameters are contained in a YAML file which may be venue-dependent.
+# The DAG OGC process must already be deployed in Airflow,
 # and it is invoked via the OGC API.
-# The CWL task is executed via a KubernetesPodOperator on a worker node
+# The DAG tasks are executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
 import json
 from pathlib import Path
@@ -21,6 +21,13 @@ FEATURE_FILE: Path = FEATURES_DIR / "cwl_workflows_with_ogc_api.feature"
 # DAG parameters are venue specific
 CWL_DAG_ID = "cwl_dag"
 CWL_DAG_MODULAR_ID = "cwl_dag_modular"
+KARPENTER_DAG_ID = "karpenter_test"
+GENERIC_DAG_DATA = {
+    "KARPENTER": {
+        "inputs": {"placeholder": 1},
+        "outputs": {"result": {"transmissionMode": "reference"}},
+    },
+}
 CWL_DAG_DATA = {
     "EMIT": {
         "inputs": {
@@ -113,8 +120,8 @@ CWL_DAG_MODULAR_DATA = {
 }
 
 
-@scenario(FEATURE_FILE, "Successful execution of a CWL workflow with the OGC API")
-def test_successful_execution_of_a_cwl_workflow_with_the_ogc_api():
+@scenario(FEATURE_FILE, "Successful execution of a DAG workflow with the OGC API")
+def test_successful_execution_of_a_dag_workflow_with_the_ogc_api():
     pass
 
 
@@ -124,7 +131,9 @@ def api_up_and_running(ogc_processes):
 
 
 @when(parsers.parse("I trigger a {test_case} OGC job for the {test_dag} OGC process"), target_fixture="job")
-def trigger_process(cwl_dag_process, cwl_dag_modular_process, venue, test_case, test_dag):
+def trigger_process(
+    cwl_dag_process, cwl_dag_modular_process, karpenter_dag_process, venue, test_case, test_dag
+):
 
     # check that this test_case and test_dag are enabled for the specified venue
     ogc_process = None
@@ -140,6 +149,9 @@ def trigger_process(cwl_dag_process, cwl_dag_modular_process, venue, test_case, 
             payload = CWL_DAG_MODULAR_DATA[test_case]
             payload["inputs"]["stac_json"] = payload["inputs"]["stac_json"][venue]
             payload["inputs"]["process_args"] = payload["inputs"]["process_args"][venue]
+        elif test_dag == KARPENTER_DAG_ID:
+            ogc_process = karpenter_dag_process
+            payload = GENERIC_DAG_DATA[test_case]
 
         print(ogc_process)
         assert ogc_process is not None

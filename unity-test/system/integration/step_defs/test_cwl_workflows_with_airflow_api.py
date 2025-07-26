@@ -1,9 +1,7 @@
-# This test executes the specified DAG workflow
-# using the CWL DAG (classic or modular) submitted through the Airflow API.
-# The workflow parameters are contained in a YAML file which is venue-dependent.
-# The CWL DAGs (classic and modular) must already be deployed in Airflow,
-# and it is invoked via the Airflow API.
-# The CWL task is executed via a KubernetesPodOperator on a worker node
+# This test executes the specified DAG workflow using the Airflow API.
+# The workflow parameters are contained in a YAML file which may be venue-dependent.
+# The DAG must already be deployed in Airflow.
+# The DAG tasks are executed via a KubernetesPodOperator on a worker node
 # that is dynamically provisioned by Karpenter.
 import json
 from pathlib import Path
@@ -99,7 +97,7 @@ DAG_PARAMETERS = {
 
 
 @scenario(FEATURE_FILE, "Successful execution of a DAG workflow with the Airflow API")
-def test_successful_execution_of_a_cwl_workflow_with_the_airflow_api():
+def test_successful_execution_of_a_dag_workflow_with_the_airflow_api():
     pass
 
 
