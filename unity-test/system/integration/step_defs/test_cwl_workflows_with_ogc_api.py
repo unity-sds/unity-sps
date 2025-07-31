@@ -185,7 +185,7 @@ def check_process_execution_and_termination(job):
     if job is not None:
         status = job.get_status().status
         while status in [JobStatus.ACCEPTED, JobStatus.RUNNING]:
-            print(f"Job: {job.id} status: {job.get_status().status}")
+            # print(f"Job: {job.id} status: {job.get_status().status}")
             status = job.get_status().status
 
         print(f"Job: {job.id} status: {job.get_status().status}")

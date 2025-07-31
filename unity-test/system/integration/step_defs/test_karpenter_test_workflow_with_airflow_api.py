@@ -1,8 +1,9 @@
-# This test executes the "Karpenter Test" workflow
+# This test uses the Airflow API
+# to execute the "Karpenter Test" workflow
 # which is a DAG composed of 3 "dummy" tasks,
 # each executing on a different node type.
 # A successful test will confirm
-# that Airflow, Keda and Karpenter are working properly,
+# that the Airflow API, Keda and Karpenter are working properly,
 # for the given SPS deployment and venue.
 from pathlib import Path
 
@@ -12,15 +13,15 @@ from pytest_bdd import given, scenario, then, when
 
 FILE_PATH = Path(__file__)
 FEATURES_DIR = FILE_PATH.parent.parent / "features"
-FEATURE_FILE: Path = FEATURES_DIR / "karpenter_test_workflow.feature"
+FEATURE_FILE: Path = FEATURES_DIR / "karpenter_test_workflow_with_airflow_api.feature"
 
 # DAG parameters are venue specific
 DAG_ID = "karpenter_test"
 DAG_PARAMETERS = {"placeholder": 1}
 
 
-@scenario(FEATURE_FILE, "Execute the Karpenter Test Workflow")
-def test_execute_karpenter_test_workflow():
+@scenario(FEATURE_FILE, "Execute the Karpenter Test Workflow with the Airflow API")
+def test_execute_karpenter_test_workflow_with_the_airflow_api():
     pass
 
 
@@ -29,7 +30,7 @@ def api_up_and_running():
     pass
 
 
-@when("I trigger a run for the Karpenter Test DAG", target_fixture="response")
+@when("I trigger a run for the Karpenter Test DAG using the Airflow API", target_fixture="response")
 def trigger_dag(airflow_api_url, fetch_token):
 
     headers = {"Authorization": f"Bearer {fetch_token}", "Content-Type": "application/json"}
