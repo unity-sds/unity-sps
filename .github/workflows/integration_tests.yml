@@ -33,6 +33,11 @@ jobs:
   Dev-Venue-Airflow-API:
     runs-on: ubuntu-latest
 
+    env:
+      UNITY_USER: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
+      UNITY_PASSWORD: ${{ secrets.MCP_VENUE_DEV_UNITY_PASSWORD }}
+      UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,13 +46,17 @@ jobs:
         uses: ./.github/actions/setup-action
         continue-on-error: false
 
-      - name: MCP Venue Dev - Integration tests with Airflow API
-        id: mcp_venue_dev_integration_tests_with_airflow_api
+      - name: MCP Venue Dev - Karpenter Integration tests with Airflow API
+        id: mcp_venue_dev_karpenter_integration_tests_with_airflow_api
         continue-on-error: true
-        env:
-          UNITY_USER: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
-          UNITY_PASSWORD: ${{ secrets.MCP_VENUE_DEV_UNITY_PASSWORD }}
-          UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
+        run: |
+          pytest -vv -s --gherkin-terminal-reporter \
+          unity-test/system/integration/step_defs/test_karpenter_test_workflow_with_airflow_api.py  \
+          --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT }}
+
+      - name: MCP Venue Dev - CWL Integration tests with Airflow API
+        id: mcp_venue_dev_cwl_integration_tests_with_airflow_api
+        continue-on-error: true
         run: |
           pytest -vv -s --gherkin-terminal-reporter \
           unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py  \
@@ -58,184 +67,16 @@ jobs:
       - name: Check Tests Results
         if: always()
         run: |
-          tests_status=${{ steps.mcp_venue_dev_integration_tests_with_airflow_api.outcome }}
-          echo "Tests Status: $tests_status"
-          if [ "$tests_status" != "success" ]; then
-            echo "Integration Tests with Airflow API on MCP Venue Dev failed."
-            exit 1
+          cwl_tests_status=${{ steps.mcp_venue_dev_cwl_integration_tests_with_airflow_api.outcome }}
+          echo "CWL Tests Status: $tests_status"
+          if [ "$cwl_tests_status" != "success" ]; then
+            echo "CWL Integration Tests with Airflow API on MCP Venue Dev failed."
           fi
-
-  Test-Venue-Airflow-API:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Setup
-      uses: ./.github/actions/setup-action
-      continue-on-error: false
-
-    - name: MCP Venue Test - Integration tests with Airflow API
-      id: mcp_venue_test_integration_tests_with_airflow_api
-      continue-on-error: true
-      env:
-        UNITY_USER: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
-        UNITY_PASSWORD: ${{ secrets.MCP_VENUE_TEST_UNITY_PASSWORD }}
-        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_TEST_UNITY_CLIENTID }}
-      run: |
-        pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py \
-        --venue="test" \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT }}
-
-    - name: Check Tests Results
-      if: always()
-      run: |
-        tests_status=${{ steps.mcp_venue_test_integration_tests_with_airflow_api.outcome }}
-        echo "Tests Status: $tests_status"
-        if [ "$tests_status" != "success" ]; then
-          echo "Integration Tests with Airflow API on MCP Venue Test failed."
-          exit 1
-        fi
-
-  Ops-Venue-Airflow-API:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup
-        uses: ./.github/actions/setup-action
-        continue-on-error: false
-
-      - name: MCP Venue Ops - Integration tests with Airflow API
-        id: mcp_venue_ops_integration_tests_with_airflow_api
-        continue-on-error: true
-        env:
-          UNITY_USER: ${{ secrets.MCP_VENUE_OPS_UNITY_USERNAME }}
-          UNITY_PASSWORD: ${{ secrets.MCP_VENUE_OPS_UNITY_PASSWORD }}
-          UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_OPS_UNITY_CLIENTID }}
-        run: |
-          pytest -vv -s --gherkin-terminal-reporter \
-          unity-test/system/integration/step_defs/test_cwl_workflows_with_airflow_api.py  \
-          --venue="prod" \
-          --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT }} \
-          --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT }}
-
-      - name: Check Tests Results
-        if: always()
-        run: |
-          tests_status=${{ steps.mcp_venue_ops_integration_tests_with_airflow_api.outcome }}
-          echo "Tests Status: $tests_status"
-          if [ "$tests_status" != "success" ]; then
-            echo "Integration Tests with Airflow API on MCP Venue Ops failed."
-            exit 1
+          karpenter_tests_status=${{ steps.mcp_venue_dev_karpenter_integration_tests_with_airflow_api.outcome }}
+          echo "Karpenter Tests Status: $karpenter_tests_status"
+          if [ "$karpenter_tests_status" != "success" ]; then
+            echo "Karpenter Integration Tests with Airflow API on MCP Venue Dev failed."
           fi
-
-  Dev-Venue-OGC-API:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Setup
-      uses: ./.github/actions/setup-action
-      continue-on-error: false
-
-    - name: MCP Venue Dev - Integration tests with OGC API
-      id: mcp_venue_dev_integration_tests_with_ogc_api
-      continue-on-error: true
-      env:
-        UNITY_USER: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
-        UNITY_PASSWORD: ${{ secrets.MCP_VENUE_DEV_UNITY_PASSWORD }}
-        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
-      run: |
-        pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py \
-        --venue="dev" \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT }}
-
-    - name: Check Tests Results
-      if: always()
-      run: |
-        tests_status=${{ steps.mcp_venue_dev_integration_tests_with_ogc_api.outcome }}
-        echo "Tests Status: $tests_status"
-        if [ "$tests_status" != "success" ]; then
-          echo "Integration Tests with OGC API on MCP Venue Dev failed."
-          exit 1
-        fi
-
-  Test-Venue-OGC-API:
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Setup
-      uses: ./.github/actions/setup-action
-      continue-on-error: false
-
-    - name: MCP Venue Test - Integration tests with OGC API
-      id: mcp_venue_test_integration_tests_with_ogc_api
-      continue-on-error: true
-      env:
-        UNITY_USER: ${{ secrets.MCP_VENUE_TEST_UNITY_USERNAME }}
-        UNITY_PASSWORD: ${{ secrets.MCP_VENUE_TEST_UNITY_PASSWORD }}
-        UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_TEST_UNITY_CLIENTID }}
-      run: |
-        pytest -vv -s --gherkin-terminal-reporter \
-        unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py \
-        --venue="test" \
-        --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_TEST_AIRFLOW_API_ENDPOINT }} \
-        --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_TEST_OGC_PROCESSES_API_ENDPOINT }}
-
-    - name: Check Tests Results
-      if: always()
-      run: |
-        tests_status=${{ steps.mcp_venue_test_integration_tests_with_ogc_api.outcome }}
-        echo "Tests Status: $tests_status"
-        if [ "$tests_status" != "success" ]; then
-          echo "Integration Tests with OGC API on MCP Venue Test failed."
-          exit 1
-        fi
-
-  Ops-Venue-OGC-API:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup
-        uses: ./.github/actions/setup-action
-        continue-on-error: false
-
-      - name: MCP Venue Ops - Integration tests with OGC API
-        id: mcp_venue_ops_integration_tests_with_ogc_api
-        continue-on-error: true
-        env:
-          UNITY_USER: ${{ secrets.MCP_VENUE_OPS_UNITY_USERNAME }}
-          UNITY_PASSWORD: ${{ secrets.MCP_VENUE_OPS_UNITY_PASSWORD }}
-          UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_OPS_UNITY_CLIENTID }}
-        run: |
-          pytest -vv -s --gherkin-terminal-reporter \
-          unity-test/system/integration/step_defs/test_cwl_workflows_with_ogc_api.py \
-          --venue="prod" \
-          --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_OPS_AIRFLOW_API_ENDPOINT }} \
-          --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_OPS_OGC_PROCESSES_API_ENDPOINT }}
-
-      - name: Check Tests Results
-        if: always()
-        run: |
-          tests_status=${{ steps.mcp_venue_ops_integration_tests_with_ogc_api.outcome }}
-          echo "Tests Status: $tests_status"
-          if [ "$tests_status" != "success" ]; then
-            echo "Integration Tests with OGC API on MCP Venue Ops failed."
+          if [ "$karpenter_tests_status" != "success" || "$cwl_tests_status" != "success" ]; then
             exit 1
           fi
