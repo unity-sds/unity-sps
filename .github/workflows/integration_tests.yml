@@ -28,6 +28,12 @@ on:
         description: "Base URL for the OGC endpoint in MCP Venue Ops (i.e. https://abcdef12345.execute-api.us-west-2.amazonaws.com/test/ogc/api)"
         type: string
 
+env:
+  DEV_UNITY_USER: ${{ secrets.MCP_VENUE_DEV_UNITY_USERNAME }}
+  DEV_UNITY_PASSWORD: ${{ secrets.MCP_VENUE_DEV_UNITY_PASSWORD }}
+  DEV_UNITY_CLIENT_ID: ${{ secrets.MCP_VENUE_DEV_UNITY_CLIENTID }}
+
+
 jobs:
 
   Dev-Venue-Airflow-API:

@@ -1,5 +1,7 @@
 name: Setup Action
 description: Setups Python and dependencies for executing tests
+inputs:
+
 runs:
   using: 'composite'
 

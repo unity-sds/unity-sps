@@ -1,0 +1,24 @@
+name: Test Action
+description: Executes a test
+inputs:
+  venue:
+    description: The Unity venue
+    required: true
+  airflow_endpoint:
+    description: The Airflow API URL
+    required: true
+
+runs:
+  using: 'composite'
+
+  steps:
+    - name: Execute test
+      id: execute-test
+      run: |
+          pytest -vv -s --gherkin-terminal-reporter \
+          unity-test/system/integration/step_defs/test_karpenter_test_workflow_with_airflow_api.py  \
+          --venue=${{ inputs.venue }} \
+          --airflow-endpoint=${{ inputs,airflow_endpoint }}
+
+    - name: Check Test Result
+      id: id
