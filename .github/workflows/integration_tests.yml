@@ -62,6 +62,7 @@ jobs:
         run: |
           pytest -vv -s --gherkin-terminal-reporter \
           unity-test/system/integration/step_defs/test_karpenter_test_workflow_with_airflow_api.py  \
+          --venue="dev" \
           --airflow-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT || vars.MCP_VENUE_DEV_AIRFLOW_API_ENDPOINT }}
 
       - name: Check Tests Results
@@ -110,6 +111,7 @@ jobs:
       continue-on-error: true
       run: |
         pytest -vv -s --gherkin-terminal-reporter \
+        --venue="dev" \
         unity-test/system/integration/step_defs/test_karpenter_test_workflow_with_ogc_api.py  \
         --ogc-processes-endpoint=${{ github.event.inputs.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT || vars.MCP_VENUE_DEV_OGC_PROCESSES_API_ENDPOINT }}
 
