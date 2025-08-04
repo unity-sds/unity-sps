@@ -17,11 +17,7 @@ from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperato
 from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
-from unity_sps_utils import (
-    POD_LABEL,
-    POD_NAMESPACE,
-    get_affinity,
-)
+from unity_sps_utils import POD_LABEL, POD_NAMESPACE, get_affinity
 
 PROCESSES_ENDPOINT = "https://api.dit.maap-project.org/api/ogc/processes"
 
