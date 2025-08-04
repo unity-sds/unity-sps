@@ -17,20 +17,17 @@ from airflow.providers.cncf.kubernetes.secret import Secret as AirflowK8sSecret
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
-    DEFAULT_LOG_LEVEL,
-    EC2_TYPES,
-    NODE_POOL_DEFAULT,
-    NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
     POD_NAMESPACE,
-    build_ec2_type_label,
     get_affinity,
 )
+
+PROCESSES_ENDPOINT = "https://api.dit.maap-project.org/api/ogc/processes"
 
 def fetch_ogc_processes():
     """Fetch available processes from the OGC API and create mapping."""
     try:
-        response = requests.get("https://api.dit.maap-project.org/api/ogc/processes", timeout=30)
+        response = requests.get(PROCESSES_ENDPOINT, timeout=30)
         response.raise_for_status()
         
         processes_data = response.json()
@@ -272,7 +269,7 @@ def setup(ti=None, **context):
 setup_task = PythonOperator(task_id="Setup", python_callable=setup, dag=dag)
 
 submit_job_task = SPSOGCOperator(
-    task_id="submit_job_task3",
+    task_id="submit_job_task",
     operation_type="submit",
     selected_process="{{ params.selected_process }}",
     job_inputs="{{ params.job_inputs }}",
@@ -281,9 +278,9 @@ submit_job_task = SPSOGCOperator(
 )
 
 monitor_job_task = SPSOGCOperator(
-    task_id="monitor_job_task3",
+    task_id="monitor_job_task",
     operation_type="monitor",
-    job_id="{{ ti.xcom_pull(task_ids='submit_job_task3', key='return_value')['job_id'] }}",
+    job_id="{{ ti.xcom_pull(task_ids='submit_job_task', key='return_value')['job_id'] }}",
     dag=dag,
 )
 
@@ -292,8 +289,8 @@ def cleanup(**context):
     logging.info("Cleanup executed.")
     
     # Log final results if available
-    submit_result = context['ti'].xcom_pull(task_ids='submit_job_task3', key='return_value')
-    monitor_result = context['ti'].xcom_pull(task_ids='monitor_job_task3', key='return_value')
+    submit_result = context['ti'].xcom_pull(task_ids='submit_job_task', key='return_value')
+    monitor_result = context['ti'].xcom_pull(task_ids='monitor_job_task', key='return_value')
     
     if submit_result:
         logging.info(f"Job submission result: {submit_result}")
