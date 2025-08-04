@@ -33,13 +33,13 @@ if [ "$SUBMIT_JOB" = "true" ] || [ "$SUBMIT_JOB" = "True" ]; then
     printf '{"job_id": "%s"}' "$job_id" > /airflow/xcom/return.json
 elif [ "$SUBMIT_JOB" = "false" ] || [ "$SUBMIT_JOB" = "False" ]; then
     echo "Monitoring job status"
-    
+
     MONITOR_JOB_URL=$(echo "$MONITOR_JOB_URL" | sed "s/{job_id}/$JOB_ID/")
-   
+
     TIMEOUT=3600
     POLL_INTERVAL=30
     SECONDS=0
-    
+
     while [ $SECONDS -lt $TIMEOUT ]; do
         echo "Checking status..."
         response=$(curl --location ${MONITOR_JOB_URL} \
@@ -47,22 +47,22 @@ elif [ "$SUBMIT_JOB" = "false" ] || [ "$SUBMIT_JOB" = "False" ]; then
         --header "Content-Type: application/json")
 
         status=$(echo "$response" | jq -r .status)
-        
+
         echo "Current status is: $status"
-        
+
         if [ "$status" = "successful" ]; then
             echo "Job completed successfully!"
             exit 0
         elif [ "$status" = "failed" ]; then
             echo "Job failed!"
             echo "Error details: $(echo "$response" | jq .)"
-            exit 1 
+            exit 1
         fi
-        
+
         sleep $POLL_INTERVAL
         SECONDS=$((SECONDS + POLL_INTERVAL))
     done
-    
+
     echo "Job monitoring timed out after $TIMEOUT seconds."
     exit 1
 else
