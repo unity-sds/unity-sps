@@ -1,0 +1,53 @@
+{
+  "executionUnit": {
+    "image": "jplmdps/ogc-job-runner:latest",
+    "type": "docker"
+  },
+  "processDescription": {
+    "description": "Submits a job to an OGC process and monitors (using custom SPSOGCOperator)",
+    "id": "run_ogc_process",
+    "inputs": {
+      "job_inputs": {
+        "description": "A JSON string representing the inputs payload for the job.",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Job Inputs"
+      },
+      "queue": {
+        "description": "The MAAP queue to submit the job to",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Queue"
+      },
+      "selected_process": {
+        "description": "Select a process to execute.",
+        "maxOccurs": 1,
+        "minOccurs": 1,
+        "schema": {
+          "type": "string"
+        },
+        "title": "Process Selection"
+      }
+    },
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputs": {
+      "result": {
+        "description": "The result of the OGC process execution",
+        "schema": {
+          "$ref": "some-ref"
+        },
+        "title": "Process Result"
+      }
+    },
+    "title": "Run an OGC Process (Custom Operator from KubernetesPodOperator)",
+    "version": "1.0.0"
+  }
+}

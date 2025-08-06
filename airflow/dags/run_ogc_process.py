@@ -219,7 +219,7 @@ dag_default_args = {
 # --- DAG Definition ---
 
 dag = DAG(
-    dag_id="run_ogc_process3",
+    dag_id="run_ogc_process",
     description="Submits a job to an OGC process and monitors (using custom SPSOGCOperator)",
     dag_display_name="Run an OGC Process (Custom Operator from KubernetesPodOperator)",
     tags=["ogc", "job", "custom-operator"],
