@@ -30,7 +30,7 @@ data "aws_ssm_parameter" "dockstore_token" {
 }
 
 data "aws_ssm_parameter" "maap_pgt" {
-  name            = "/unity/ads/ogc/development/maap_pgt_grace_test_acct"
+  name            = "/unity/ads/ogc/development/maap_pgt_mdps_dev_acct"
   with_decryption = true
 }
 
