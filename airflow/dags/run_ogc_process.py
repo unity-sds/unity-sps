@@ -159,7 +159,7 @@ class SPSOGCOperator(KubernetesPodOperator):
             ),
             k8s.V1EnvVar(name="PROCESS_ID", value=str(numerical_process_id)),
             k8s.V1EnvVar(name="JOB_INPUTS", value=self.job_inputs or "{}"),
-            k8s.V1EnvVar(name="QUEUE", value=self.job_queue or "maap-dps-sandbox"),
+            k8s.V1EnvVar(name="QUEUE", value=self.job_queue or "maap-dps-worker-cardamom"),
             k8s.V1EnvVar(name="SUBMIT_JOB", value="true"),
         ]
 
@@ -236,7 +236,7 @@ dag = DAG(
             description="Select a process to execute.",
         ),
         "queue": Param(
-            "maap-dps-sandbox",
+            "maap-dps-worker-cardamom",
             type="string",
             title="Queue",
             description="The MAAP queue to submit the job to",
