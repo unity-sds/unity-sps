@@ -31,7 +31,7 @@ token=$(echo $token_response | jq -r '.AuthenticationResult.AccessToken')
 echo "Cognito token retrieved."
 
 # list of processes to be registered
-declare -a procs=("cwl_dag.json" "karpenter_test.json" "appgen_dag.json" "cwl_dag_modular.json" "db_cleanup_dag.json")
+declare -a procs=("cwl_dag.json" "karpenter_test.json" "appgen_dag.json" "cwl_dag_modular.json" "db_cleanup_dag.json" "run_ogc_process.json")
 
 for proc in "${procs[@]}"
 do
