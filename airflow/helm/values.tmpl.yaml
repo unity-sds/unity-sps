@@ -347,7 +347,7 @@ extraEnv: |
   - name: AIRFLOW__CORE__LAZY_LOAD_PLUGINS
     value: "False"
   - name: AIRFLOW__API__AUTH_BACKENDS
-    value: "airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session"
+    value: "user_auth,airflow.api.auth.backend.session"
   - name: AIRFLOW__CORE__PARALLELISM
     value: "32768"
   - name: AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG
