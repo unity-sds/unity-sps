@@ -1,5 +1,5 @@
 from airflow.models.baseoperator import chain
-from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
+from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
 from kubernetes.client import models as k8s
 
 from airflow import DAG
@@ -9,7 +9,6 @@ DOCKER_IMAGE = "amazonlinux:2"
 
 with DAG(
     dag_id="s3_mount_kubernetes_pod_example",
-    schedule_interval=None,
     catchup=False,
     schedule=None,
     tags=["Example", "s3-mountpoints", "KubernetsPosOperator"],

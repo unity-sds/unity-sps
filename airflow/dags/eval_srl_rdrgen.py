@@ -4,9 +4,9 @@ from datetime import datetime
 
 from airflow.decorators import task
 from airflow.models.param import Param
-from airflow.operators.python import get_current_context
-from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.sdk import get_current_context
 from airflow.utils.trigger_rule import TriggerRule
 
 from airflow import DAG

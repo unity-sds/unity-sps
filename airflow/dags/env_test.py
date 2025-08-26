@@ -9,7 +9,7 @@
 from datetime import datetime
 
 from airflow.models import Variable
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 
 from airflow import DAG
 

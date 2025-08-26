@@ -4,14 +4,14 @@ from datetime import datetime, timedelta
 
 from airflow.decorators import dag
 from airflow.models.param import Param
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 
 
 @dag(
     dag_id="db_cleanup_dag",
     dag_display_name="Database Cleanup DAG",
     # Run this DAG daily at midnight
-    schedule_interval="@daily",
+    schedule="@daily",
     catchup=False,
     is_paused_upon_creation=True,
     description=__doc__,

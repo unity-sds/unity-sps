@@ -12,8 +12,8 @@ from datetime import datetime
 import boto3
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
-from airflow.operators.python import PythonOperator
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import get_affinity

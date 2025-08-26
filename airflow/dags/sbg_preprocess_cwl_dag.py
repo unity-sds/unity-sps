@@ -6,8 +6,9 @@ import shutil
 from datetime import datetime
 
 from airflow.models.param import Param
-from airflow.operators.python import PythonOperator, get_current_context
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
+from airflow.providers.standard.operators.python import PythonOperator
+from airflow.sdk import get_current_context
 from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import get_affinity

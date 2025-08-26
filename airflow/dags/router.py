@@ -3,7 +3,7 @@ from datetime import datetime
 
 from airflow.decorators import task
 from airflow.models.param import Param
-from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
 from airflow.utils.trigger_rule import TriggerRule
 
 from airflow import DAG
