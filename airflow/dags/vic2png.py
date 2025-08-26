@@ -6,11 +6,10 @@ from glob import glob
 from urllib.parse import urlparse
 
 import unity_sps_utils
-from airflow.decorators import task
 from airflow.models.param import Param
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.cncf.kubernetes.operators.pod import KubernetesPodOperator
-from airflow.sdk import get_current_context
+from airflow.sdk import get_current_context, task
 from kubernetes.client import models as k8s
 
 from airflow import DAG

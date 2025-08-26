@@ -8,8 +8,8 @@
 
 from datetime import datetime
 
-from airflow.models import Variable
 from airflow.providers.standard.operators.bash import BashOperator
+from airflow.sdk import Variable
 
 from airflow import DAG
 

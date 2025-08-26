@@ -1,9 +1,9 @@
 import re
 from datetime import datetime
 
-from airflow.decorators import task
 from airflow.models.param import Param
 from airflow.providers.standard.operators.trigger_dagrun import TriggerDagRunOperator
+from airflow.sdk import task
 from airflow.utils.trigger_rule import TriggerRule
 
 from airflow import DAG
