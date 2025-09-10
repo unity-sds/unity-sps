@@ -51,7 +51,7 @@ AUTH_TYPE = AUTH_OAUTH if IMPORTS_AVAILABLE else None
 # Uncomment to setup Full admin role name
 # AUTH_ROLE_ADMIN = 'Admin'
 # Uncomment and set to desired role to enable access without authentication
-AUTH_ROLE_PUBLIC = 'Viewer'
+# AUTH_ROLE_PUBLIC = 'Viewer'
 # Will allow user self registration
 AUTH_USER_REGISTRATION = True
 # The recaptcha it's automatically enabled for user self registration is active and the keys are necessary
@@ -75,7 +75,7 @@ AUTH_ROLES_MAPPING = {
 }
 PROVIDER_NAME = 'keycloak'
 CLIENT_ID = 'airflow'
-CLIENT_SECRET = 'add this'
+CLIENT_SECRET = 'FILL IN'
 OIDC_ISSUER = 'https://dit.kc-test-maap.xyz/realms/MAAP'
 OIDC_BASE_URL = "{oidc_issuer}/protocol/openid-connect".format(oidc_issuer=OIDC_ISSUER)
 OIDC_TOKEN_URL = "{oidc_base_url}/token".format(oidc_base_url=OIDC_BASE_URL)

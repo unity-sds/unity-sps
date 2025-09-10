@@ -7,14 +7,15 @@ echo $TOKEN_URL
 
 # Retrieve limited-lifetime token
 echo "Fetching Cognito token..."
-payload="{\"grant_type\":\"password\",\"client_id\":\"airflow\",\"client_secret\"}:\"FILL IN\",\"username\":\"grace\",\"password\":\"FILL IN\"}"
+payload="{\"AuthParameters\":{\"USERNAME\":\"$UNITY_USERNAME\",\"PASSWORD\":\"$UNITY_PASSWORD\"},\"AuthFlow\":\"USER_PASSWORD_AUTH\",\"ClientId\":\"$UNITY_CLIENTID\"}"
 
 token_response=$(curl -X POST \
-    -H "Content-Type: application/x-www-form-urlencoded" \
+    -H "X-Amz-Target: AWSCognitoIdentityProviderService.InitiateAuth" \
+    -H "Content-Type: application/x-amz-json-1.1" \
     --data $payload \
     $TOKEN_URL)
 
-token=$(echo $token_response | jq -r '.access_token')
+token=$(echo $token_response | jq -r '.AuthenticationResult.AccessToken')
 echo "Cognito token retrieved."
 
 # Poll onto OGC API is available
