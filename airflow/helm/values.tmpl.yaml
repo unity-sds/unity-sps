@@ -372,3 +372,5 @@ extraEnv: |
     value: "1024"
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"
+  - name: AIRFLOW__WEBSERVER__BASE_URL
+    value: "https://www.dev.mdps.mcp.nasa.gov:4443/grace-13/dev/sps"

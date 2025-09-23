@@ -19,16 +19,23 @@
 from __future__ import annotations
 import os
 import logging
-import jwt
-import requests
-from base64 import b64decode
-from cryptography.hazmat.primitives import serialization
-from tokenize import Exponent
-from airflow.www.fab_security.manager import AUTH_OAUTH
-#graceal1 made this change
-from airflow.providers.fab.auth_manager.security_manager.override.FabAirflowSecurityManagerOverride import AirflowSecurityManager
-from flask_appbuilder import expose
-from flask_appbuilder.security.views import AuthOAuthView
+
+# Wrap imports that might not be available during Terraform file() reads
+try:
+    import jwt
+    import requests
+    from base64 import b64decode
+    from cryptography.hazmat.primitives import serialization
+    from airflow.www.fab_security.manager import AUTH_OAUTH
+    from airflow.www.security import AirflowSecurityManager
+    from flask_appbuilder import expose
+    from flask_appbuilder.security.views import AuthOAuthView
+    IMPORTS_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"Some imports not available during config read: {e}")
+    IMPORTS_AVAILABLE = False
+    # Define minimal fallbacks
+    AUTH_OAUTH = None
 basedir = os.path.abspath(os.path.dirname(__file__))
 log = logging.getLogger(__name__)
 APP_THEME = "simplex.css"
@@ -40,7 +47,7 @@ WTF_CSRF_ENABLED = True
 # For details on how to set up each of the following authentication, see
 # http://flask-appbuilder.readthedocs.io/en/latest/security.html# authentication-methods
 # for details.
-AUTH_TYPE = AUTH_OAUTH
+AUTH_TYPE = AUTH_OAUTH if IMPORTS_AVAILABLE else None
 # Uncomment to setup Full admin role name
 # AUTH_ROLE_ADMIN = 'Admin'
 # Uncomment and set to desired role to enable access without authentication
@@ -68,7 +75,7 @@ AUTH_ROLES_MAPPING = {
 }
 PROVIDER_NAME = 'keycloak'
 CLIENT_ID = 'airflow'
-CLIENT_SECRET = 'ADD THIS'
+CLIENT_SECRET = 'NEED TO ADD'
 OIDC_ISSUER = 'https://dit.kc-test-maap.xyz/realms/MAAP'
 OIDC_BASE_URL = "{oidc_issuer}/protocol/openid-connect".format(oidc_issuer=OIDC_ISSUER)
 OIDC_TOKEN_URL = "{oidc_base_url}/token".format(oidc_base_url=OIDC_BASE_URL)
@@ -90,43 +97,69 @@ OAUTH_PROVIDERS = [{
         },
     }
 }]
-req = requests.get(OIDC_ISSUER)
-key_der_base64 = req.json()["public_key"]
-key_der = b64decode(key_der_base64.encode())
-public_key = serialization.load_der_public_key(key_der)
-class CustomAuthRemoteUserView(AuthOAuthView):
-    @expose("/logout/")
-    def logout(self):
-        """Delete access token before logging out."""
-        return super().logout()
-class CustomSecurityManager(AirflowSecurityManager):
-    authoauthview = CustomAuthRemoteUserView
-  
-    def oauth_user_info(self, provider, response):
-        print("graceal1 in oauth_user_info with")
-        print(provider)
-        print(response)
-        if provider == PROVIDER_NAME:
-            token = response["access_token"]
-            me = jwt.decode(token, public_key, algorithms=['HS256', 'RS256'], audience=CLIENT_ID)
-            # sample of resource_access
-            # {
-            #   "resource_access": { "airflow": { "roles": ["airflow_admin"] }}
-            # }
-            groups = me["resource_access"]["airflow"]["roles"] # unsafe
-            if len(groups) < 1:
-                groups = ["airflow_public"]
+
+def get_keycloak_public_key():
+    """Fetch Keycloak public key with error handling"""
+    if not IMPORTS_AVAILABLE:
+        return None
+    try:
+        req = requests.get(OIDC_ISSUER, timeout=5)
+        req.raise_for_status()
+        key_der_base64 = req.json()["public_key"]
+        key_der = b64decode(key_der_base64.encode())
+        return serialization.load_der_public_key(key_der)
+    except Exception as e:
+        log.error(f"Failed to fetch Keycloak public key: {e}")
+        return None
+
+if IMPORTS_AVAILABLE:
+    class CustomAuthRemoteUserView(AuthOAuthView):
+        @expose("/logout/")
+        def logout(self):
+            """Delete access token before logging out."""
+            return super().logout()
+            
+    class CustomSecurityManager(AirflowSecurityManager):
+        authoauthview = CustomAuthRemoteUserView
+      
+        def oauth_user_info(self, provider, response):
+            if provider == PROVIDER_NAME:
+                public_key = get_keycloak_public_key()
+                if public_key is None:
+                    log.error("Cannot authenticate: Keycloak public key unavailable")
+                    return {}
+                
+                token = response["access_token"]
+                try:
+                    me = jwt.decode(token, public_key, algorithms=['HS256', 'RS256'], audience=CLIENT_ID)
+                except jwt.InvalidTokenError as e:
+                    log.error(f"Token validation failed: {e}")
+                    return {}
+                # sample of resource_access
+                # {
+                #   "resource_access": { "airflow": { "roles": ["airflow_admin"] }}
+                # }
+                try:
+                    groups = me["resource_access"]["airflow"]["roles"]
+                except KeyError:
+                    log.warning("No airflow roles found in token, using default")
+                    groups = []
+                if len(groups) < 1:
+                    groups = ["airflow_public"]
+                else:
+                    groups = [str for str in groups if "airflow" in str]
+                userinfo = {
+                    "username": me.get("preferred_username"),
+                    "email": me.get("email"),
+                    "first_name": me.get("given_name"),
+                    "last_name": me.get("family_name"),
+                    "role_keys": groups,
+                }
+                log.info("user info: {0}".format(userinfo))
+                return userinfo
             else:
-                groups = [str for str in groups if "airflow" in str]
-            userinfo = {
-                "username": me.get("preferred_username"),
-                "email": me.get("email"),
-                "first_name": me.get("given_name"),
-                "last_name": me.get("family_name"),
-                "role_keys": groups,
-            }
-            log.info("user info: {0}".format(userinfo))
-            return userinfo
-        else:
-            return {}
-SECURITY_MANAGER_CLASS = CustomSecurityManager
+                return {}
+
+    SECURITY_MANAGER_CLASS = CustomSecurityManager
+else:
+    SECURITY_MANAGER_CLASS = None

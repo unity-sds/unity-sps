@@ -11,7 +11,7 @@ data "aws_ssm_parameter" "subnet_ids" {
 }
 
 data "aws_ssm_parameter" "al2_eks_optimized_ami" {
-  name = "/mcp/amis/aml2-eks-${replace(data.aws_eks_cluster.cluster.version, ".", "-")}"
+  name = "/mcp/amis/aml2023-eks-${replace(data.aws_eks_cluster.cluster.version, ".", "-")}"
 }
 
 data "aws_ami" "al2_eks_optimized" {
