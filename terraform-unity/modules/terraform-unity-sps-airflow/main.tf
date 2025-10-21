@@ -208,7 +208,7 @@ resource "aws_iam_role" "airflow_worker_role" {
       ]
     }
   )
-  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/mcp-tenantOperator-AMI-APIG"
+  permissions_boundary = "GRACEAL ADD LATER"
 }
 
 resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {

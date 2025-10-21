@@ -43,7 +43,7 @@
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | `"25.3"` | no |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed | `string` | `"sps"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | Tags for the deployment (unused) | `map(string)` | <pre>{<br>  "empty": ""<br>}</pre> | no |
-| <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the cluster will be deployed (dev, test, prod) | `string` | n/a | yes |
+| <a name="input_venue"></a> [venue](#input\_venue) | The SMCE venue in which the cluster will be deployed (dev, test, prod) | `string` | n/a | yes |
 
 ## Outputs
 

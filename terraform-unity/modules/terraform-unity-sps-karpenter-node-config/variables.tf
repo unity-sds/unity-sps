@@ -4,7 +4,7 @@ variable "project" {
 }
 
 variable "venue" {
-  description = "The MCP venue in which the cluster will be deployed (dev, test, prod)"
+  description = "The SMCE venue in which the cluster will be deployed (dev, test, prod)"
   type        = string
 }
 
@@ -23,8 +23,13 @@ variable "kubeconfig_filepath" {
   type        = string
 }
 
-variable "mcp_ami_owner_id" {
-  description = "The ID of the MCP AMIs"
+variable "smce_ami_owner_id" {
+  description = "The ID of the SMCE AMIs"
+  type        = string
+}
+
+variable "aws_ami_owner_id" {
+  description = "The ID of the AWS AMIs we use for EKS optimized AMIs"
   type        = string
 }
 

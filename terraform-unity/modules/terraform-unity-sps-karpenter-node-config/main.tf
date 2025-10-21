@@ -8,9 +8,9 @@ resource "kubernetes_manifest" "karpenter_node_classes" {
       name = each.key
     }
     spec = {
-      amiFamily = "AL2"
+      amiFamily = "AL2023"
       amiSelectorTerms = [{
-        id = data.aws_ami.al2_eks_optimized.image_id
+        id = data.aws_ami.al2023_eks_optimized.image_id
       }]
       userData = file("${path.module}/node-user-data.sh")
       role     = data.aws_iam_role.cluster_iam_role.name
@@ -23,7 +23,7 @@ resource "kubernetes_manifest" "karpenter_node_classes" {
           "Name"                                                       = "${data.aws_eks_cluster.cluster.name}-node"
         }
       }]
-      blockDeviceMappings = [for bd in tolist(data.aws_ami.al2_eks_optimized.block_device_mappings) : {
+      blockDeviceMappings = [for bd in tolist(data.aws_ami.al2023_eks_optimized.block_device_mappings) : {
         deviceName = bd.device_name
         ebs = {
           volumeSize          = each.value.volume_size

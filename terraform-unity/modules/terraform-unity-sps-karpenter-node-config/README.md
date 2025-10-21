@@ -27,10 +27,10 @@ No modules.
 | [kubernetes_manifest.karpenter_node_classes](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/manifest) | resource |
 | [kubernetes_manifest.karpenter_node_pools](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/resources/manifest) | resource |
 | [null_resource.remove_node_class_finalizers](https://registry.terraform.io/providers/hashicorp/null/3.2.3/docs/resources/resource) | resource |
-| [aws_ami.al2_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ami) | data source |
+| [aws_ami.al2023_eks_optimized](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ami) | data source |
 | [aws_eks_cluster.cluster](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/eks_cluster) | data source |
 | [aws_iam_role.cluster_iam_role](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/iam_role) | data source |
-| [aws_ssm_parameter.al2_eks_optimized_ami](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
+| [aws_ssm_parameter.al2023_eks_optimized_ami](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 
 ## Inputs
@@ -40,11 +40,11 @@ No modules.
 | <a name="input_karpenter_node_classes"></a> [karpenter\_node\_classes](#input\_karpenter\_node\_classes) | n/a | <pre>map(object({<br>    volume_size = string<br>  }))</pre> | n/a | yes |
 | <a name="input_karpenter_node_pools"></a> [karpenter\_node\_pools](#input\_karpenter\_node\_pools) | Configuration for Karpenter node pools | <pre>map(object({<br>    requirements : list(object({<br>      key : string<br>      operator : string<br>      values : list(string)<br>    }))<br>    nodeClassRef : string<br>    limits : object({<br>      cpu : string<br>      memory : string<br>    })<br>    disruption : object({<br>      consolidationPolicy : string<br>      consolidateAfter : string<br>    })<br>  }))</pre> | n/a | yes |
 | <a name="input_kubeconfig_filepath"></a> [kubeconfig\_filepath](#input\_kubeconfig\_filepath) | The path to the kubeconfig file for the Kubernetes cluster. | `string` | n/a | yes |
-| <a name="input_mcp_ami_owner_id"></a> [mcp\_ami\_owner\_id](#input\_mcp\_ami\_owner\_id) | The ID of the MCP AMIs | `string` | n/a | yes |
+| <a name="input_smce_ami_owner_id"></a> [smce\_ami\_owner\_id](#input\_smce\_ami\_owner\_id) | The ID of the SMCE AMIs | `string` | n/a | yes |
 | <a name="input_project"></a> [project](#input\_project) | The project or mission deploying Unity SPS | `string` | n/a | yes |
 | <a name="input_release"></a> [release](#input\_release) | The software release version. | `string` | n/a | yes |
 | <a name="input_service_area"></a> [service\_area](#input\_service\_area) | The service area owner of the resources being deployed | `string` | n/a | yes |
-| <a name="input_venue"></a> [venue](#input\_venue) | The MCP venue in which the cluster will be deployed (dev, test, prod) | `string` | n/a | yes |
+| <a name="input_venue"></a> [venue](#input\_venue) | The SMCE venue in which the cluster will be deployed (dev, test, prod) | `string` | n/a | yes |
 
 ## Outputs
 

@@ -10,14 +10,14 @@ data "aws_ssm_parameter" "subnet_ids" {
   name = "/unity/account/network/subnet_list"
 }
 
-data "aws_ssm_parameter" "al2_eks_optimized_ami" {
-  name = "/mcp/amis/aml2-eks-${replace(data.aws_eks_cluster.cluster.version, ".", "-")}"
+data "aws_ssm_parameter" "al2023_eks_optimized_ami" {
+  name = "/smce/amis/aml2023-eks-${replace(data.aws_eks_cluster.cluster.version, ".", "-")}"
 }
 
-data "aws_ami" "al2_eks_optimized" {
+data "aws_ami" "al2023_eks_optimized" {
   filter {
     name   = "image-id"
-    values = [data.aws_ssm_parameter.al2_eks_optimized_ami.value]
+    values = [data.aws_ssm_parameter.al2023_eks_optimized_ami.value]
   }
-  owners = [var.mcp_ami_owner_id]
+  owners = [var.aws_ami_owner_id]
 }

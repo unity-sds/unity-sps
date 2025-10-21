@@ -15,7 +15,7 @@ module "unity-eks" {
   venue           = var.venue
   nodegroups      = var.nodegroups
   aws_auth_roles = [{
-    rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/mcp-tenantOperator"
+    rolearn  = "GRACEAL ADD LATER"
     username = "admin"
     groups   = ["system:masters"]
   }]

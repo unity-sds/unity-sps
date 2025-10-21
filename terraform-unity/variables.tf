@@ -5,7 +5,7 @@ variable "project" {
 }
 
 variable "venue" {
-  description = "The MCP venue in which the resources will be deployed."
+  description = "The SMCE venue in which the resources will be deployed."
   type        = string
   validation {
     condition     = can(regex("^(dev|test|prod|ops|sbg-dev|int)$", var.venue))
@@ -116,10 +116,17 @@ variable "ogc_processes_docker_images" {
   }
 }
 
-variable "mcp_ami_owner_id" {
-  description = "The owner ID of the MCP AMIs"
+# graceal TODO Dont commit this value to our repo, need better way to track unlike how we did it before
+variable "smce_ami_owner_id" {
+  description = "The owner ID of the SMCE AMIs"
   type        = string
-  default     = "794625662971"
+  default     = ""
+}
+
+variable "aws_ami_owner_id" {
+  description = "The owner ID of the AWS EKS optimized AMIs (this is a AWS official owner ID)"
+  type        = string
+  default     = "602401143452"
 }
 
 variable "karpenter_node_classes" {

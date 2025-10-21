@@ -30,8 +30,8 @@ mkdir -p $MOUNT_LOCATION
 #
 # Install NVMe CLI, Software RAID Utility
 #
-yum update -y
-yum install nvme-cli mdadm -y
+dnf update -y
+dnf install nvme-cli mdadm -y
 
 #
 # Get a list of instance-store NVMe drives. If none found, do not fail.
