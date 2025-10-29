@@ -208,7 +208,7 @@ resource "aws_iam_role" "airflow_worker_role" {
       ]
     }
   )
-  permissions_boundary = "GRACEAL ADD LATER"
+  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/maap-spsdeploy"
 }
 
 resource "aws_iam_role_policy_attachment" "airflow_worker_policy_attachment" {

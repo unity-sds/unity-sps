@@ -15,7 +15,7 @@ module "unity-eks" {
   venue           = var.venue
   nodegroups      = var.nodegroups
   aws_auth_roles = [{
-    rolearn  = "GRACEAL ADD LATER"
+    rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/maap-spsdeploy"
     username = "admin"
     groups   = ["system:masters"]
   }]

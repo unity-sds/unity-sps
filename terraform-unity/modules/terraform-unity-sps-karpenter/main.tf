@@ -18,7 +18,7 @@ module "karpenter" {
   iam_role_use_name_prefix          = false
   create_node_iam_role              = false
   node_iam_role_arn                 = data.aws_iam_role.cluster_iam_role.arn
-  iam_role_permissions_boundary_arn = "GRACEAL ADD LATER"
+  iam_role_permissions_boundary_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/maap-spsdeploy"
   enable_irsa                       = true
   irsa_oidc_provider_arn            = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
   # Since the nodegroup role will already have an access entry
