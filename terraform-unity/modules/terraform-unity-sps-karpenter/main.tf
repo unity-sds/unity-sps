@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket               = "unity-unity-dev-bucket"
+    bucket               = "smce-mdps-dev-bucket"
     workspace_key_prefix = "sps/tfstates"
     key                  = "terraform.tfstate"
     region               = "us-west-2"
