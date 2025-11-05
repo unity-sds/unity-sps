@@ -18,7 +18,7 @@ variable "service_area" {
 variable "cluster_version" {
   description = "The EKS cluster version (must be supported by the cs-infra module)."
   type        = string
-  default     = "1.31"
+  default     = "1.32"
 }
 
 variable "release" {
