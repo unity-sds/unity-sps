@@ -577,86 +577,87 @@ resource "time_sleep" "wait_for_airflow_lb" {
   create_duration = "180s"
 }
 
-resource "aws_api_gateway_vpc_link" "rest_api_sps_vpc_link" {
-  name        = "ogc-nlb-vpc-link-${var.project}-${var.venue}"
-  description = "ogc-nlb-vpc-link-${var.project}-${var.venue}"
-  target_arns = [data.aws_lb.airflow_k8s_lb.arn]
-  depends_on  = [time_sleep.wait_for_airflow_lb]
-}
+# API Gateway resources commented out - using LoadBalancer instead
+# resource "aws_api_gateway_vpc_link" "rest_api_sps_vpc_link" {
+#   name        = "ogc-nlb-vpc-link-${var.project}-${var.venue}"
+#   description = "ogc-nlb-vpc-link-${var.project}-${var.venue}"
+#   target_arns = [data.aws_lb.airflow_k8s_lb.arn]
+#   depends_on  = [time_sleep.wait_for_airflow_lb]
+# }
 
-resource "aws_api_gateway_resource" "rest_api_resource_sps_path" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
-  path_part   = "sps"
-}
+# resource "aws_api_gateway_resource" "rest_api_resource_sps_path" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
+#   path_part   = "sps"
+# }
 
-resource "aws_api_gateway_resource" "rest_api_resource_airflow_api_path" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = aws_api_gateway_resource.rest_api_resource_sps_path.id
-  path_part   = "api"
-}
+# resource "aws_api_gateway_resource" "rest_api_resource_airflow_api_path" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   parent_id   = aws_api_gateway_resource.rest_api_resource_sps_path.id
+#   path_part   = "api"
+# }
 
-resource "aws_api_gateway_resource" "rest_api_resource_airflow_proxy_path" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
-  path_part   = "{proxy+}"
-}
+# resource "aws_api_gateway_resource" "rest_api_resource_airflow_proxy_path" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   parent_id   = aws_api_gateway_resource.rest_api_resource_airflow_api_path.id
+#   path_part   = "{proxy+}"
+# }
 
-resource "aws_api_gateway_method" "rest_api_method_for_airflow_proxy_method" {
-  rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id        = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
-  http_method        = "ANY"
-  authorization      = "CUSTOM"
-  authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
-  request_parameters = { "method.request.path.proxy" = true }
-}
+# resource "aws_api_gateway_method" "rest_api_method_for_airflow_proxy_method" {
+#   rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
+#   resource_id        = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+#   http_method        = "ANY"
+#   authorization      = "CUSTOM"
+#   authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+#   request_parameters = { "method.request.path.proxy" = true }
+# }
 
-resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
-  rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
-  http_method             = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
-  type                    = "HTTP_PROXY"
-  uri                     = format("%s://%s:%s%s", "http", data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, local.load_balancer_port, "/api/{proxy}")
-  integration_http_method = "ANY"
-  passthrough_behavior    = "WHEN_NO_MATCH"
-  connection_type         = "VPC_LINK"
-  connection_id           = aws_api_gateway_vpc_link.rest_api_sps_vpc_link.id
+# resource "aws_api_gateway_integration" "rest_api_integration_for_airflow_api" {
+#   rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
+#   resource_id             = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+#   http_method             = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
+#   type                    = "HTTP_PROXY"
+#   uri                     = format("%s://%s:%s%s", "http", data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, local.load_balancer_port, "/api/{proxy}")
+#   integration_http_method = "ANY"
+#   passthrough_behavior    = "WHEN_NO_MATCH"
+#   connection_type         = "VPC_LINK"
+#   connection_id           = aws_api_gateway_vpc_link.rest_api_sps_vpc_link.id
 
-  # this integration includes a sneaky injected airflow auth header
-  # when cognito groups are integrated with airflow this will need to be amended
-  request_parameters = {
-    "integration.request.path.proxy"           = "method.request.path.proxy"
-    "integration.request.header.Authorization" = "'Basic ${base64encode("${var.airflow_webserver_username}:${var.airflow_webserver_password}")}'"
-  }
-  tls_config { # the k8s ingress backends aren't set up with TLS
-    insecure_skip_verification = true
-  }
+#   # this integration includes a sneaky injected airflow auth header
+#   # when cognito groups are integrated with airflow this will need to be amended
+#   request_parameters = {
+#     "integration.request.path.proxy"           = "method.request.path.proxy"
+#     "integration.request.header.Authorization" = "'Basic ${base64encode("${var.airflow_webserver_username}:${var.airflow_webserver_password}")}'"
+#   }
+#   tls_config { # the k8s ingress backends aren't set up with TLS
+#     insecure_skip_verification = true
+#   }
 
-  depends_on = [aws_api_gateway_vpc_link.rest_api_sps_vpc_link, aws_api_gateway_method.rest_api_method_for_airflow_proxy_method]
-}
+#   depends_on = [aws_api_gateway_vpc_link.rest_api_sps_vpc_link, aws_api_gateway_method.rest_api_method_for_airflow_proxy_method]
+# }
 
-resource "aws_api_gateway_method_response" "response_200" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
-  http_method = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
-  status_code = "200"
+# resource "aws_api_gateway_method_response" "response_200" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   resource_id = aws_api_gateway_resource.rest_api_resource_airflow_proxy_path.id
+#   http_method = aws_api_gateway_method.rest_api_method_for_airflow_proxy_method.http_method
+#   status_code = "200"
 
-  depends_on = [aws_api_gateway_method.rest_api_method_for_airflow_proxy_method]
-}
+#   depends_on = [aws_api_gateway_method.rest_api_method_for_airflow_proxy_method]
+# }
 
-resource "time_sleep" "wait_for_gateway_integration" {
-  # need to make sure both the proxy method and integration have time to settle before deploying
-  depends_on      = [aws_api_gateway_integration.rest_api_integration_for_airflow_api]
-  create_duration = "60s"
-}
+# resource "time_sleep" "wait_for_gateway_integration" {
+#   # need to make sure both the proxy method and integration have time to settle before deploying
+#   depends_on      = [aws_api_gateway_integration.rest_api_integration_for_airflow_api]
+#   create_duration = "60s"
+# }
 
-# API Gateway deployment
-resource "aws_api_gateway_deployment" "airflow-api-gateway-deployment" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  stage_name  = var.venue
-  # stage_name  = "default"
-  depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
-}
+# # API Gateway deployment
+# resource "aws_api_gateway_deployment" "airflow-api-gateway-deployment" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   stage_name  = var.venue
+#   # stage_name  = "default"
+#   depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
+# }
 
 resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
@@ -699,7 +700,8 @@ resource "aws_ssm_parameter" "airflow_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "api_url"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
-  value       = "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1"
+  # Updated to use LoadBalancer instead of API Gateway
+  value       = "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/api/v1"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_api")
     Component = "SSM"
@@ -712,14 +714,15 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
   name        = format("/%s", join("/", compact(["", "unity", var.project, var.venue, "component", "airflow-api"])))
   description = "The URL of the Airflow REST API."
   type        = "String"
+  # Updated to use LoadBalancer instead of API Gateway
   value = jsonencode({
     "componentCategory" : "processing"
     "componentName" : "Airflow API"
     "componentType" : "api"
     "description" : "The direct API for the job management system underlying the SPS (Airflow). Typically the OGC Processes API should be used instead, because it will abstract out a particular job engine."
-    "healthCheckUrl" : "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1/health"
+    "healthCheckUrl" : "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/api/v1/health"
     "isPortalIntegrated" : false
-    "landingPageUrl" : "${aws_api_gateway_deployment.airflow-api-gateway-deployment.invoke_url}/sps/api/v1"
+    "landingPageUrl" : "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/api/v1"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_api")

@@ -375,83 +375,84 @@ resource "time_sleep" "wait_for_ogc_lb" {
   create_duration = "180s"
 }
 
-resource "aws_api_gateway_vpc_link" "rest_api_ogc_vpc_link" {
-  name        = "sps-nlb-vpc-link-${var.project}-${var.venue}"
-  description = "sps-nlb-vpc-link-${var.project}-${var.venue}"
-  target_arns = [data.aws_lb.ogc_k8s_lb.arn]
-  depends_on  = [time_sleep.wait_for_ogc_lb]
-}
+# API Gateway resources commented out - using LoadBalancer instead
+# resource "aws_api_gateway_vpc_link" "rest_api_ogc_vpc_link" {
+#   name        = "sps-nlb-vpc-link-${var.project}-${var.venue}"
+#   description = "sps-nlb-vpc-link-${var.project}-${var.venue}"
+#   target_arns = [data.aws_lb.ogc_k8s_lb.arn]
+#   depends_on  = [time_sleep.wait_for_ogc_lb]
+# }
 
-resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
-  path_part   = "ogc"
-}
+# resource "aws_api_gateway_resource" "rest_api_resource_management_path" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   parent_id   = data.aws_api_gateway_rest_api.rest_api.root_resource_id
+#   path_part   = "ogc"
+# }
 
-resource "aws_api_gateway_resource" "rest_api_resource_ogc_api_path" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = aws_api_gateway_resource.rest_api_resource_management_path.id
-  path_part   = "api"
-}
+# resource "aws_api_gateway_resource" "rest_api_resource_ogc_api_path" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   parent_id   = aws_api_gateway_resource.rest_api_resource_management_path.id
+#   path_part   = "api"
+# }
 
-resource "aws_api_gateway_resource" "rest_api_resource_ogc_proxy_path" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  parent_id   = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
-  path_part   = "{proxy+}"
-}
+# resource "aws_api_gateway_resource" "rest_api_resource_ogc_proxy_path" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   parent_id   = aws_api_gateway_resource.rest_api_resource_ogc_api_path.id
+#   path_part   = "{proxy+}"
+# }
 
-resource "aws_api_gateway_method" "rest_api_method_for_ogc_proxy_method" {
-  rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id        = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
-  http_method        = "ANY"
-  authorization      = "CUSTOM"
-  authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
-  request_parameters = { "method.request.path.proxy" = true }
-}
+# resource "aws_api_gateway_method" "rest_api_method_for_ogc_proxy_method" {
+#   rest_api_id        = data.aws_api_gateway_rest_api.rest_api.id
+#   resource_id        = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
+#   http_method        = "ANY"
+#   authorization      = "CUSTOM"
+#   authorizer_id      = data.aws_api_gateway_authorizer.unity_cs_common_authorizer.id
+#   request_parameters = { "method.request.path.proxy" = true }
+# }
 
-resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
-  rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id             = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
-  http_method             = aws_api_gateway_method.rest_api_method_for_ogc_proxy_method.http_method
-  type                    = "HTTP_PROXY"
-  uri                     = format("%s://%s:%s%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, local.load_balancer_port, "/{proxy}")
-  integration_http_method = "ANY"
-  passthrough_behavior    = "WHEN_NO_MATCH"
-  connection_type         = "VPC_LINK"
-  connection_id           = aws_api_gateway_vpc_link.rest_api_ogc_vpc_link.id
+# resource "aws_api_gateway_integration" "rest_api_integration_for_ogc_api" {
+#   rest_api_id             = data.aws_api_gateway_rest_api.rest_api.id
+#   resource_id             = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
+#   http_method             = aws_api_gateway_method.rest_api_method_for_ogc_proxy_method.http_method
+#   type                    = "HTTP_PROXY"
+#   uri                     = format("%s://%s:%s%s", "http", data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname, local.load_balancer_port, "/{proxy}")
+#   integration_http_method = "ANY"
+#   passthrough_behavior    = "WHEN_NO_MATCH"
+#   connection_type         = "VPC_LINK"
+#   connection_id           = aws_api_gateway_vpc_link.rest_api_ogc_vpc_link.id
 
-  request_parameters = {
-    "integration.request.path.proxy" = "method.request.path.proxy"
-  }
-  tls_config { # the k8s ingress backends aren't set up with TLS
-    insecure_skip_verification = true
-  }
+#   request_parameters = {
+#     "integration.request.path.proxy" = "method.request.path.proxy"
+#   }
+#   tls_config { # the k8s ingress backends aren't set up with TLS
+#     insecure_skip_verification = true
+#   }
 
-  depends_on = [aws_api_gateway_vpc_link.rest_api_ogc_vpc_link, aws_api_gateway_method.rest_api_method_for_ogc_proxy_method]
-}
+#   depends_on = [aws_api_gateway_vpc_link.rest_api_ogc_vpc_link, aws_api_gateway_method.rest_api_method_for_ogc_proxy_method]
+# }
 
-resource "aws_api_gateway_method_response" "response_200" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  resource_id = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
-  http_method = aws_api_gateway_method.rest_api_method_for_ogc_proxy_method.http_method
-  status_code = "200"
+# resource "aws_api_gateway_method_response" "response_200" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   resource_id = aws_api_gateway_resource.rest_api_resource_ogc_proxy_path.id
+#   http_method = aws_api_gateway_method.rest_api_method_for_ogc_proxy_method.http_method
+#   status_code = "200"
 
-  depends_on = [aws_api_gateway_method.rest_api_method_for_ogc_proxy_method]
-}
+#   depends_on = [aws_api_gateway_method.rest_api_method_for_ogc_proxy_method]
+# }
 
-resource "time_sleep" "wait_for_gateway_integration" {
-  # need to make sure both the proxy method and integration have time to settle before deploying
-  depends_on      = [aws_api_gateway_integration.rest_api_integration_for_ogc_api, aws_api_gateway_method.rest_api_method_for_ogc_proxy_method]
-  create_duration = "180s"
-}
+# resource "time_sleep" "wait_for_gateway_integration" {
+#   # need to make sure both the proxy method and integration have time to settle before deploying
+#   depends_on      = [aws_api_gateway_integration.rest_api_integration_for_ogc_api, aws_api_gateway_method.rest_api_method_for_ogc_proxy_method]
+#   create_duration = "180s"
+# }
 
-# API Gateway deployment
-resource "aws_api_gateway_deployment" "ogc-api-gateway-deployment" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-  stage_name  = var.venue
-  # stage_name  = "default"
-  depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
-}
+# # API Gateway deployment
+# resource "aws_api_gateway_deployment" "ogc-api-gateway-deployment" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+#   stage_name  = var.venue
+#   # stage_name  = "default"
+#   depends_on = [time_sleep.wait_for_gateway_integration, aws_api_gateway_method_response.response_200]
+# }
 
 resource "aws_ssm_parameter" "ogc_processes_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "ui_url"])))
@@ -470,7 +471,8 @@ resource "aws_ssm_parameter" "ogc_processes_api_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "ogc_processes", "api_url"])))
   description = "The URL of the OGC Processes REST API."
   type        = "String"
-  value       = "${aws_api_gateway_deployment.ogc-api-gateway-deployment.invoke_url}/ogc/api/"
+  # Updated to use LoadBalancer instead of API Gateway
+  value       = "http://${data.kubernetes_service.ogc_processes_api_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-ogc_processes_api")
     Component = "SSM"
@@ -551,7 +553,8 @@ resource "null_resource" "check_ogc_api_status" {
       UNITY_USERNAME    = nonsensitive(data.aws_ssm_parameter.unity_username.value)
     }
   }
-  depends_on = [aws_api_gateway_deployment.ogc-api-gateway-deployment, aws_ssm_parameter.ogc_processes_api_url]
+  # Removed API Gateway deployment dependency
+  depends_on = [aws_ssm_parameter.ogc_processes_api_url]
 }
 
 resource "null_resource" "register_ogc_processes" {

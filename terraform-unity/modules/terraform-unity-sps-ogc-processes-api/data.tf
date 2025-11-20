@@ -66,18 +66,19 @@ data "aws_ssm_parameter" "venue_proxy_baseurl" {
   name = "/unity/${var.project}/${var.venue}/management/httpd/loadbalancer-url"
 }
 
-data "aws_api_gateway_rest_api" "rest_api" {
-  name = "unity-${var.project}-${var.venue}-rest-api-gateway"
-}
+# API Gateway data sources commented out - using LoadBalancer instead
+# data "aws_api_gateway_rest_api" "rest_api" {
+#   name = "unity-${var.project}-${var.venue}-rest-api-gateway"
+# }
 
-data "aws_api_gateway_authorizers" "unity_cs_common_authorizers_list" {
-  rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
-}
+# data "aws_api_gateway_authorizers" "unity_cs_common_authorizers_list" {
+#   rest_api_id = data.aws_api_gateway_rest_api.rest_api.id
+# }
 
-data "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
-  rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
-  authorizer_id = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
-}
+# data "aws_api_gateway_authorizer" "unity_cs_common_authorizer" {
+#   rest_api_id   = data.aws_api_gateway_rest_api.rest_api.id
+#   authorizer_id = data.aws_api_gateway_authorizers.unity_cs_common_authorizers_list.ids[0]
+# }
 
 data "aws_lb" "ogc_k8s_lb" {
   tags = {
