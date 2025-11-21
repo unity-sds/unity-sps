@@ -1,9 +1,9 @@
 # Create an S3 bucket to use as Kubernetes Persistent Volume
 resource "aws_s3_bucket" "s3_pv_bucket" {
-  bucket        = format(local.resource_name_prefix, "s3-pv")
+  bucket        = format(local.s3_bucket_name_prefix, "s3-pv")
   force_destroy = true
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "s3-pv")
+    Name      = format(local.s3_bucket_name_prefix, "s3-pv")
     Component = "airflow"
     Stack     = "airflow"
   })
@@ -21,8 +21,8 @@ resource "aws_s3_bucket_policy" "s3_pv_bucket_policy" {
           "Action" : "s3:*",
           "Effect" : "Deny",
           "Resource" : [
-            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, "s3-pv")),
-            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, "s3-pv"), "*")
+            format("%s%s", "arn:aws:s3:::", format(local.s3_bucket_name_prefix, "s3-pv")),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.s3_bucket_name_prefix, "s3-pv"), "*")
           ],
           "Condition" : {
             "Bool" : {

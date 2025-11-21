@@ -115,10 +115,10 @@ resource "kubernetes_role_binding" "airflow_pod_creator_binding" {
 }
 
 resource "aws_s3_bucket" "airflow_logs" {
-  bucket        = format(local.resource_name_prefix, "airflowlogs")
+  bucket        = format(local.s3_bucket_name_prefix, "airflowlogs")
   force_destroy = true
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "airflowlogs")
+    Name      = format(local.s3_bucket_name_prefix, "airflowlogs")
     Component = "airflow"
     Stack     = "airflow"
   })
@@ -136,8 +136,8 @@ resource "aws_s3_bucket_policy" "airflow_logs_s3_policy" {
           "Action" : "s3:*",
           "Effect" : "Deny",
           "Resource" : [
-            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs")),
-            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, "airflowlogs"), "*")
+            format("%s%s", "arn:aws:s3:::", format(local.s3_bucket_name_prefix, "airflowlogs")),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.s3_bucket_name_prefix, "airflowlogs"), "*")
           ],
           "Condition" : {
             "Bool" : {

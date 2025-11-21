@@ -1,28 +1,28 @@
 resource "aws_s3_bucket" "inbound_staging_location" {
-  bucket        = format(local.resource_name_prefix, "isl")
+  bucket        = format(local.s3_bucket_name_prefix, "isl")
   force_destroy = true
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "S3-ISL")
+    Name      = format(local.s3_bucket_name_prefix, "S3-ISL")
     Component = "S3"
     Stack     = "S3"
   })
 }
 
 resource "aws_s3_bucket" "code" {
-  bucket        = format(local.resource_name_prefix, "code")
+  bucket        = format(local.s3_bucket_name_prefix, "code")
   force_destroy = true
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "S3-code")
+    Name      = format(local.s3_bucket_name_prefix, "S3-code")
     Component = "S3"
     Stack     = "S3"
   })
 }
 
 resource "aws_s3_bucket" "config" {
-  bucket        = format(local.resource_name_prefix, "config")
+  bucket        = format(local.s3_bucket_name_prefix, "config")
   force_destroy = true
   tags = merge(local.common_tags, {
-    Name      = format(local.resource_name_prefix, "S3-config")
+    Name      = format(local.s3_bucket_name_prefix, "S3-config")
     Component = "S3"
     Stack     = "S3"
   })
@@ -34,7 +34,7 @@ resource "aws_s3_bucket_policy" "ssl_s3_policy" {
     "code",
     "config"
   ])
-  bucket = format(local.resource_name_prefix, each.key)
+  bucket = format(local.s3_bucket_name_prefix, each.key)
   policy = jsonencode(
     {
       "Id" : "ExamplePolicy",
@@ -45,8 +45,8 @@ resource "aws_s3_bucket_policy" "ssl_s3_policy" {
           "Action" : "s3:*",
           "Effect" : "Deny",
           "Resource" : [
-            format("%s%s", "arn:aws:s3:::", format(local.resource_name_prefix, each.key)),
-            format("%s%s/%s", "arn:aws:s3:::", format(local.resource_name_prefix, each.key), "*")
+            format("%s%s", "arn:aws:s3:::", format(local.s3_bucket_name_prefix, each.key)),
+            format("%s%s/%s", "arn:aws:s3:::", format(local.s3_bucket_name_prefix, each.key), "*")
           ],
           "Condition" : {
             "Bool" : {
