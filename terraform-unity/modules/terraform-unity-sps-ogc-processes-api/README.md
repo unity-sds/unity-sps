@@ -60,7 +60,6 @@ No modules.
 | [aws_ssm_parameter.shared_services_domain](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.shared_services_region](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_ssm_parameter.subnet_ids](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
-| [aws_ssm_parameter.venue_proxy_baseurl](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/ssm_parameter) | data source |
 | [aws_vpc.cluster_vpc](https://registry.terraform.io/providers/hashicorp/aws/5.67.0/docs/data-sources/vpc) | data source |
 | [kubernetes_namespace.service_area](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/namespace) | data source |
 | [kubernetes_persistent_volume_claim.airflow_deployed_dags](https://registry.terraform.io/providers/hashicorp/kubernetes/2.32.0/docs/data-sources/persistent_volume_claim) | data source |

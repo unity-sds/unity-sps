@@ -663,7 +663,8 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
-  value       = "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
+  # Updated to use LoadBalancer instead of shared services domain
+  value       = "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_ui")
     Component = "SSM"
@@ -676,14 +677,15 @@ resource "aws_ssm_parameter" "airflow_ui_health_check_endpoint" {
   name        = format("/%s", join("/", compact(["", "unity", var.project, var.venue, "component", "airflow-ui"])))
   description = "The URL of the Airflow UI."
   type        = "String"
+  # Updated to use LoadBalancer instead of shared services domain
   value = jsonencode({
     "componentCategory" : "processing"
     "componentName" : "Airflow UI"
     "componentType" : "ui"
     "description" : "The primary GUI for the Science Processing System (SPS) to run and monitor jobs at scale."
-    "healthCheckUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/health"
+    "healthCheckUrl" : "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/health"
     "isPortalIntegrated" : false
-    "landingPageUrl" : "https://www.${data.aws_ssm_parameter.shared_services_domain.value}:4443/${var.project}/${var.venue}/sps/"
+    "landingPageUrl" : "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/"
   })
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "health-check-endpoints-airflow_ui")

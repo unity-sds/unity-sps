@@ -13,13 +13,13 @@ output "ogc_processes_urls" {
 }
 
 output "ogc_processes_venue_urls" {
-  description = "URLs for the various OGC Processes endpoints at venue-proxy level."
+  description = "URLs for the various OGC Processes endpoints (LoadBalancer direct access)."
   value = {
     "ui" = {
-      "url" = nonsensitive(replace(data.aws_ssm_parameter.venue_proxy_baseurl.value, "management/ui", "ogc/redoc"))
+      "url" = nonsensitive(aws_ssm_parameter.ogc_processes_ui_url.value)
     }
     "rest_api" = {
-      "url" = nonsensitive(replace(data.aws_ssm_parameter.venue_proxy_baseurl.value, "management/ui", "ogc/"))
+      "url" = nonsensitive(aws_ssm_parameter.ogc_processes_api_url.value)
     }
   }
 }
