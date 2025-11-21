@@ -19,7 +19,7 @@ if [ "$SUBMIT_JOB" = "true" ] || [ "$SUBMIT_JOB" = "True" ]; then
     --data "${SUBMIT_JOB_ARGUMENTS}")
 
     echo "API Response: $response"
-    job_id=$(echo "$response" | jq -r .id)
+    job_id=$(echo "$response" | jq -r .jobID)
 
     if [ "$job_id" = "null" ] || [ -z "$job_id" ]; then
         echo "Failed to get jobID from response."
