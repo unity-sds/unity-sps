@@ -520,14 +520,13 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
 }
 
 #tfsec:ignore:AVD-AWS-0107
-resource "aws_vpc_security_group_ingress_rule" "airflow_jpl_ingress_rule" {
-  for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
+resource "aws_vpc_security_group_ingress_rule" "airflow_api_ingress_sg_proxy_rule" {
   security_group_id = aws_security_group.airflow_ingress_sg_internal.id
-  description       = "SecurityGroup ingress rule for JPL-local addresses"
+  description       = "SecurityGroup ingress rule for api-gateway (temporary)"
   ip_protocol       = "tcp"
   from_port         = local.load_balancer_port
   to_port           = local.load_balancer_port
-  cidr_ipv4         = each.key
+  cidr_ipv4         = "0.0.0.0/0"
 }
 
 resource "kubernetes_service" "airflow_ingress_internal" {
@@ -535,10 +534,10 @@ resource "kubernetes_service" "airflow_ingress_internal" {
     name      = "airflow-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-scheme"                              = "internet-facing"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"                              = "internal"
       "service.beta.kubernetes.io/aws-load-balancer-type"                                = "external"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                     = "ip"
-      "service.beta.kubernetes.io/aws-load-balancer-subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
       "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path"                    = "/health"
       "service.beta.kubernetes.io/aws-load-balancer-attributes"                          = "load_balancing.cross_zone.enabled=true"
       "service.beta.kubernetes.io/aws-load-balancer-security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
@@ -740,9 +739,16 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
 
 resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
   name        = format("/%s", join("/", compact(["unity", var.project, var.venue, "cs", "management", "proxy", "configurations", "015-sps-airflow-ui"])))
-  description = "The unity-proxy configuration for the Airflow UI."
+  description = "The unity-proxy configuration for the Airflow UI with optional OIDC."
   type        = "String"
-  value       = <<-EOT
+  value       = var.enable_oidc_auth ? templatefile("${path.module}/templates/proxy_oidc.conf.tpl", {
+    project              = var.project
+    venue                = var.venue
+    airflow_nlb_hostname = data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname
+    keycloak_provider_url = var.keycloak_provider_url
+    keycloak_client_id    = var.keycloak_client_id
+    proxy_domain         = var.proxy_domain
+  }) : <<-EOT
 
     <Location "/${var.project}/${var.venue}/sps/">
       ProxyPassReverse "/"

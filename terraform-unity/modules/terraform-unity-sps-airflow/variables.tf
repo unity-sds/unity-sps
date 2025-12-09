@@ -81,3 +81,45 @@ variable "karpenter_node_pools" {
   description = "Names of the Karpenter node pools"
   type        = list(string)
 }
+
+variable "keycloak_provider_url" {
+  description = "Keycloak OIDC provider URL including realm (e.g., https://keycloak.example.com/realms/MAAP)"
+  type        = string
+  default     = ""
+}
+
+variable "keycloak_client_id" {
+  description = "Keycloak OIDC client ID for Airflow authentication"
+  type        = string
+  default     = ""
+}
+
+variable "keycloak_client_secret_ssm_param" {
+  description = "SSM parameter path containing Keycloak OIDC client secret"
+  type        = string
+  default     = ""
+}
+
+variable "enable_oidc_auth" {
+  description = "Enable Keycloak OIDC authentication for Airflow"
+  type        = bool
+  default     = false
+}
+
+variable "keycloak_role_mapping" {
+  description = "Mapping of Keycloak groups to Airflow roles"
+  type        = map(list(string))
+  default = {
+    "airflow_admin"  = ["Admin"]
+    "airflow_op"     = ["Op"]
+    "airflow_user"   = ["User"]
+    "airflow_viewer" = ["Viewer"]
+    "airflow_public" = ["Public"]
+  }
+}
+
+variable "proxy_domain" {
+  description = "Domain name of the Apache proxy server for OIDC redirect URI"
+  type        = string
+  default     = ""
+}

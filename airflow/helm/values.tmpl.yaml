@@ -372,3 +372,7 @@ extraEnv: |
     value: "1024"
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"
+  - name: AIRFLOW__WEBSERVER__AUTH_TYPE
+    value: "AUTH_REMOTE_USER"
+  - name: AIRFLOW__WEBSERVER__RBAC
+    value: "True"
