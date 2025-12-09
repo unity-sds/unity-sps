@@ -413,8 +413,10 @@ resource "helm_release" "airflow" {
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
-      # Issue 404: DISABLE AIRRLOW AUTHENTICATION (https://github.com/unity-sds/unity-sps/issues/404)
-      webserver_config = indent(4, file("${path.module}/../../../airflow/config/webserver_config.py"))
+      # Keycloak OIDC authentication configuration
+      webserver_config = indent(4, templatefile("${path.module}/../../../airflow/config/webserver_config.py.tpl", {
+        keycloak_role_mapping = var.keycloak_role_mapping
+      }))
     })
   ]
   set_sensitive {
@@ -520,13 +522,14 @@ resource "aws_vpc_security_group_ingress_rule" "airflow_ingress_sg_proxy_rule" {
 }
 
 #tfsec:ignore:AVD-AWS-0107
-resource "aws_vpc_security_group_ingress_rule" "airflow_api_ingress_sg_proxy_rule" {
+resource "aws_vpc_security_group_ingress_rule" "airflow_jpl_ingress_rule" {
+  for_each          = toset(["128.149.0.0/16", "137.78.0.0/16", "137.79.0.0/16"])
   security_group_id = aws_security_group.airflow_ingress_sg_internal.id
-  description       = "SecurityGroup ingress rule for api-gateway (temporary)"
+  description       = "SecurityGroup ingress rule for JPL-local addresses"
   ip_protocol       = "tcp"
   from_port         = local.load_balancer_port
   to_port           = local.load_balancer_port
-  cidr_ipv4         = "0.0.0.0/0"
+  cidr_ipv4         = each.key
 }
 
 resource "kubernetes_service" "airflow_ingress_internal" {
@@ -534,10 +537,10 @@ resource "kubernetes_service" "airflow_ingress_internal" {
     name      = "airflow-ingress-internal"
     namespace = data.kubernetes_namespace.service_area.metadata[0].name
     annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-scheme"                              = "internal"
+      "service.beta.kubernetes.io/aws-load-balancer-scheme"                              = "internet-facing"
       "service.beta.kubernetes.io/aws-load-balancer-type"                                = "external"
       "service.beta.kubernetes.io/aws-load-balancer-nlb-target-type"                     = "ip"
-      "service.beta.kubernetes.io/aws-load-balancer-subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["private"])
+      "service.beta.kubernetes.io/aws-load-balancer-subnets"                             = join(",", jsondecode(data.aws_ssm_parameter.subnet_ids.value)["public"])
       "service.beta.kubernetes.io/aws-load-balancer-healthcheck-path"                    = "/health"
       "service.beta.kubernetes.io/aws-load-balancer-attributes"                          = "load_balancing.cross_zone.enabled=true"
       "service.beta.kubernetes.io/aws-load-balancer-security-groups"                     = aws_security_group.airflow_ingress_sg_internal.id
@@ -742,12 +745,13 @@ resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
   description = "The unity-proxy configuration for the Airflow UI with optional OIDC."
   type        = "String"
   value       = var.enable_oidc_auth ? templatefile("${path.module}/templates/proxy_oidc.conf.tpl", {
-    project              = var.project
-    venue                = var.venue
-    airflow_nlb_hostname = data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname
-    keycloak_provider_url = var.keycloak_provider_url
-    keycloak_client_id    = var.keycloak_client_id
-    proxy_domain         = var.proxy_domain
+    project                          = var.project
+    venue                            = var.venue
+    airflow_nlb_hostname             = data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname
+    keycloak_provider_url            = var.keycloak_provider_url
+    keycloak_client_id               = var.keycloak_client_id
+    keycloak_client_secret_ssm_param = var.keycloak_client_secret_ssm_param
+    proxy_domain                     = var.proxy_domain
   }) : <<-EOT
 
     <Location "/${var.project}/${var.venue}/sps/">

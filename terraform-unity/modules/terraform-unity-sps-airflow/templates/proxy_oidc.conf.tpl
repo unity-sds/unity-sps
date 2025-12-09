@@ -6,7 +6,7 @@ OIDCProviderMetadataURL ${keycloak_provider_url}/.well-known/openid-configuratio
 OIDCClientID ${keycloak_client_id}
 
 # Client secret - retrieved from AWS Parameter Store at runtime by proxy server
-# The proxy server must retrieve the secret from: /sps/keycloak/client_secret
+# The proxy server must retrieve the secret from: ${keycloak_client_secret_ssm_param}
 # and replace this placeholder before Apache loads the config
 OIDCClientSecret "REPLACE_WITH_SECRET_FROM_PARAMETER_STORE"
 
@@ -40,10 +40,10 @@ OIDCCookieSameSite On
 
   # Forward OIDC user claims to Airflow as HTTP headers
   # Airflow will use these headers for authentication and authorization
-  RequestHeader set X-Remote-User "%{REMOTE_USER}e"
-  RequestHeader set X-Remote-User-Email "%{OIDC_CLAIM_email}e"
-  RequestHeader set X-Remote-User-Groups "%{OIDC_CLAIM_groups}e"
-  RequestHeader set X-Remote-User-Name "%{OIDC_CLAIM_name}e"
+  RequestHeader set X-Remote-User "%%{REMOTE_USER}e"
+  RequestHeader set X-Remote-User-Email "%%{OIDC_CLAIM_email}e"
+  RequestHeader set X-Remote-User-Groups "%%{OIDC_CLAIM_groups}e"
+  RequestHeader set X-Remote-User-Name "%%{OIDC_CLAIM_name}e"
 
   ProxyPassReverse "/"
 </Location>
@@ -59,10 +59,10 @@ OIDCCookieSameSite On
   Require valid-user
 
   # Forward OIDC claims to Airflow backend
-  RequestHeader set X-Remote-User "%{REMOTE_USER}e"
-  RequestHeader set X-Remote-User-Email "%{OIDC_CLAIM_email}e"
-  RequestHeader set X-Remote-User-Groups "%{OIDC_CLAIM_groups}e"
-  RequestHeader set X-Remote-User-Name "%{OIDC_CLAIM_name}e"
+  RequestHeader set X-Remote-User "%%{REMOTE_USER}e"
+  RequestHeader set X-Remote-User-Email "%%{OIDC_CLAIM_email}e"
+  RequestHeader set X-Remote-User-Groups "%%{OIDC_CLAIM_groups}e"
+  RequestHeader set X-Remote-User-Name "%%{OIDC_CLAIM_name}e"
 
   # Proxy to internal Airflow NLB
   ProxyPassMatch "http://${airflow_nlb_hostname}:5000/$1" retry=5 disablereuse=On
