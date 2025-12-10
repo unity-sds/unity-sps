@@ -169,14 +169,6 @@ webserver:
   webserverConfig: |-
     ${webserver_config}
 
-  # Environment variables for OIDC authentication
-  extraEnv: |-
-    - name: OIDC_CLIENT_SECRET
-      valueFrom:
-        secretKeyRef:
-          name: airflow-oidc-secret
-          key: client-secret
-
   startupProbe:
     timeoutSeconds: 20
     failureThreshold: 60 # Number of tries before giving up (10 minutes with periodSeconds of 10)
@@ -382,3 +374,8 @@ extraEnv: |
     value: "True"
   - name: AIRFLOW__WEBSERVER__BASE_URL
     value: "TODO FILL IN"
+  - name: OIDC_CLIENT_SECRET
+    valueFrom:
+      secretKeyRef:
+        name: airflow-oidc-secret
+        key: client-secret
