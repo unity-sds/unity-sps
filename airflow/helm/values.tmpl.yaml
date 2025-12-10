@@ -165,9 +165,17 @@ webserverSecretKeySecretName: ${webserver_secret_name}
 webserver:
   replicas: 3
 
-  # Issue 404: DISABLE AIRRLOW AUTHENTICATION (https://github.com/unity-sds/unity-sps/issues/404)
+  # Keycloak OIDC Authentication Configuration
   webserverConfig: |-
     ${webserver_config}
+
+  # Environment variables for OIDC authentication
+  extraEnv: |-
+    - name: OIDC_CLIENT_SECRET
+      valueFrom:
+        secretKeyRef:
+          name: airflow-oidc-secret
+          key: client-secret
 
   startupProbe:
     timeoutSeconds: 20
@@ -372,7 +380,5 @@ extraEnv: |
     value: "1024"
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"
-  - name: AIRFLOW__WEBSERVER__AUTH_TYPE
-    value: "AUTH_REMOTE_USER"
-  - name: AIRFLOW__WEBSERVER__RBAC
-    value: "True"
+  - name: AIRFLOW__WEBSERVER__BASE_URL
+    value: "TODO FILL IN"

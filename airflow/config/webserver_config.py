@@ -1,163 +1,165 @@
-# Keycloak OIDC Remote User Authentication for Airflow
-# Authentication happens at Apache proxy layer via mod_auth_openidc
-# Airflow trusts the remote user headers from the internal proxy
-
+#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+"""Default configuration for the Airflow webserver"""
+from __future__ import annotations
 import os
 import logging
-from flask_appbuilder.security.manager import AUTH_REMOTE_USER
 
+# Wrap imports that might not be available during Terraform file() reads
+try:
+    import jwt
+    import requests
+    from base64 import b64decode
+    from cryptography.hazmat.primitives import serialization
+    from airflow.www.fab_security.manager import AUTH_OAUTH
+    from airflow.www.security import AirflowSecurityManager
+    from flask_appbuilder import expose
+    from flask_appbuilder.security.views import AuthOAuthView
+    IMPORTS_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"Some imports not available during config read: {e}")
+    IMPORTS_AVAILABLE = False
+    # Define minimal fallbacks
+    AUTH_OAUTH = None
+basedir = os.path.abspath(os.path.dirname(__file__))
 log = logging.getLogger(__name__)
-
-# Enable remote user authentication
-# Airflow will trust REMOTE_USER header set by the Apache proxy
-AUTH_TYPE = AUTH_REMOTE_USER
-
-# Auto-register users on first login
-AUTH_USER_REGISTRATION = True
-AUTH_USER_REGISTRATION_ROLE = "Viewer"  # Default role for new users
-
-# Custom security manager for mapping Keycloak groups to Airflow roles
-from airflow.www.security import AirflowSecurityManager
-
-class CustomSecurityManager(AirflowSecurityManager):
-    """
-    Custom security manager to map Keycloak groups to Airflow roles.
-
-    This class intercepts remote user authentication and maps the user's
-    Keycloak groups (from X-Remote-User-Groups header) to Airflow roles.
-    """
-
-    def auth_user_remote_user(self, username):
-        """
-        Authenticate user from REMOTE_USER header and map groups to roles.
-
-        Args:
-            username: Username from REMOTE_USER header (set by mod_auth_openidc)
-
-        Returns:
-            User object if authentication succeeds, None otherwise
-        """
-        from flask import request
-
-        # Get user info from OIDC headers set by Apache proxy
-        email = request.headers.get('X-Remote-User-Email', f'{username}@example.com')
-        full_name = request.headers.get('X-Remote-User-Name', username)
-        groups_header = request.headers.get('X-Remote-User-Groups', '')
-
-        # Parse full name
-        first_name, last_name = username, ''
-        if ' ' in full_name:
-            first_name, last_name = full_name.split(' ', 1)
-
-        # Parse Keycloak groups from comma-separated header
-        keycloak_groups = [g.strip() for g in groups_header.split(',') if g.strip()]
-
-        log.info(f"Remote user auth: username={username}, email={email}, groups={keycloak_groups}")
-
-        # Find or create user
-        user = self.find_user(username=username)
-
-        if not user:
-            log.info(f"Creating new user: {username}")
-            user = self.add_user(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                role=self.find_role(self.auth_user_registration_role)
-            )
-        else:
-            # Update existing user info
-            log.info(f"Updating existing user: {username}")
-            user.email = email
-            user.first_name = first_name
-            user.last_name = last_name
-            self.update_user(user)
-
-        # Map Keycloak groups to Airflow roles
-        airflow_roles = self._map_groups_to_roles(keycloak_groups)
-
-        if airflow_roles:
-            log.info(f"Assigning roles to {username}: {[r.name for r in airflow_roles]}")
-            user.roles = airflow_roles
-            self.update_user(user)
-        else:
-            # No matching groups - assign default Viewer role
-            log.warning(f"No matching Keycloak groups for {username}, assigning default Viewer role")
-            default_role = self.find_role('Viewer')
-            if default_role:
-                user.roles = [default_role]
-                self.update_user(user)
-
-        return user
-
-    def _map_groups_to_roles(self, keycloak_groups):
-        """
-        Map Keycloak groups to Airflow roles.
-
-        Role mapping (from Keycloak):
-        - airflow_admin  → Admin (full access)
-        - airflow_op     → Op (operational access)
-        - airflow_user   → User (standard access)
-        - airflow_viewer → Viewer (read-only)
-        - airflow_public → Public (minimal access)
-
-        Users with multiple groups get the highest priority role.
-        Priority: Admin > Op > User > Viewer > Public
-
-        Args:
-            keycloak_groups: List of Keycloak group names from OIDC token
-
-        Returns:
-            List containing single Airflow role object (highest priority)
-        """
-        # Keycloak group to Airflow role mapping
-        group_role_mapping = {
-            'airflow_admin': 'Admin',
-            'airflow_op': 'Op',
-            'airflow_user': 'User',
-            'airflow_viewer': 'Viewer',
-            'airflow_public': 'Public',
-        }
-
-        # Role priority (higher index = higher priority)
-        role_priority = ['Public', 'Viewer', 'User', 'Op', 'Admin']
-
-        # Find highest priority role from user's groups
-        highest_role_name = None
-        highest_priority = -1
-
-        for group in keycloak_groups:
-            if group in group_role_mapping:
-                role_name = group_role_mapping[group]
-                if role_name in role_priority:
-                    priority = role_priority.index(role_name)
-                    if priority > highest_priority:
-                        highest_priority = priority
-                        highest_role_name = role_name
-                        log.debug(f"Group '{group}' maps to role '{role_name}' (priority {priority})")
-
-        # Return the highest priority role
-        if highest_role_name:
-            role = self.find_role(highest_role_name)
-            if role:
-                return [role]
-            else:
-                log.error(f"Role '{highest_role_name}' not found in Airflow database")
-
-        return []
-
-# Set the custom security manager
-SECURITY_MANAGER_CLASS = CustomSecurityManager
-
-# Security settings
+APP_THEME = "simplex.css"
+# Flask-WTF flag for CSRF
 WTF_CSRF_ENABLED = True
-WTF_CSRF_TIME_LIMIT = None  # No time limit for CSRF tokens
+# ----------------------------------------------------
+# AUTHENTICATION CONFIG
+# ----------------------------------------------------
+# For details on how to set up each of the following authentication, see
+# http://flask-appbuilder.readthedocs.io/en/latest/security.html# authentication-methods
+# for details.
+AUTH_TYPE = AUTH_OAUTH if IMPORTS_AVAILABLE else None
+# Uncomment to setup Full admin role name
+# AUTH_ROLE_ADMIN = 'Admin'
+# Uncomment and set to desired role to enable access without authentication
+# AUTH_ROLE_PUBLIC = 'Viewer'
+# Will allow user self registration
+AUTH_USER_REGISTRATION = True
+# The recaptcha it's automatically enabled for user self registration is active and the keys are necessary
+# RECAPTCHA_PRIVATE_KEY = PRIVATE_KEY
+# RECAPTCHA_PUBLIC_KEY = PUBLIC_KEY
+# Config for Flask-Mail necessary for user self registration
+# MAIL_SERVER = 'smtp.gmail.com'
+# MAIL_USE_TLS = True
+# MAIL_USERNAME = 'yourappemail@gmail.com'
+# MAIL_PASSWORD = 'passwordformail'
+# MAIL_DEFAULT_SENDER = 'sender@gmail.com'
+# The default user self registration role
+AUTH_USER_REGISTRATION_ROLE = "Public"
+AUTH_ROLES_SYNC_AT_LOGIN = True
+AUTH_ROLES_MAPPING = {
+  "airflow_admin": ["Admin"],
+  "airflow_op": ["Op"],
+  "airflow_user": ["User"],
+  "airflow_viewer": ["Viewer"],
+  "airflow_public": ["Public"],
+}
+PROVIDER_NAME = 'keycloak'
+CLIENT_ID = 'airflow'
+CLIENT_SECRET = 'TODO FILL IN'
+OIDC_ISSUER = 'https://dit.kc-test-maap.xyz/realms/MAAP'
+OIDC_BASE_URL = "{oidc_issuer}/protocol/openid-connect".format(oidc_issuer=OIDC_ISSUER)
+OIDC_TOKEN_URL = "{oidc_base_url}/token".format(oidc_base_url=OIDC_BASE_URL)
+OIDC_AUTH_URL = "{oidc_base_url}/auth".format(oidc_base_url=OIDC_BASE_URL)
+# When using OAuth Auth, uncomment to setup provider(s) info
+OAUTH_PROVIDERS = [{
+    'name':PROVIDER_NAME,
+    'token_key':'access_token',
+    'icon':'fa-circle-o',
+    'remote_app': {
+        'api_base_url':OIDC_BASE_URL,
+        'access_token_url':OIDC_TOKEN_URL,
+        'authorize_url':OIDC_AUTH_URL,
+        'request_token_url': None,
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+        'client_kwargs':{
+            'scope': 'email profile'
+        },
+    }
+}]
 
-# Session configuration (matches OIDC session duration)
-PERMANENT_SESSION_LIFETIME = 28800  # 8 hours
+def get_keycloak_public_key():
+    """Fetch Keycloak public key with error handling"""
+    if not IMPORTS_AVAILABLE:
+        return None
+    try:
+        req = requests.get(OIDC_ISSUER, timeout=5)
+        req.raise_for_status()
+        key_der_base64 = req.json()["public_key"]
+        key_der = b64decode(key_der_base64.encode())
+        return serialization.load_der_public_key(key_der)
+    except Exception as e:
+        log.error(f"Failed to fetch Keycloak public key: {e}")
+        return None
 
-# Disable public access (all users must authenticate)
-AUTH_ROLE_PUBLIC = None
+if IMPORTS_AVAILABLE:
+    class CustomAuthRemoteUserView(AuthOAuthView):
+        @expose("/logout/")
+        def logout(self):
+            """Delete access token before logging out."""
+            return super().logout()
 
-log.info("Airflow webserver configured for Keycloak OIDC remote user authentication")
+    class CustomSecurityManager(AirflowSecurityManager):
+        authoauthview = CustomAuthRemoteUserView
+
+        def oauth_user_info(self, provider, response):
+            if provider == PROVIDER_NAME:
+                public_key = get_keycloak_public_key()
+                if public_key is None:
+                    log.error("Cannot authenticate: Keycloak public key unavailable")
+                    return {}
+
+                token = response["access_token"]
+                try:
+                    me = jwt.decode(token, public_key, algorithms=['HS256', 'RS256'], audience=CLIENT_ID)
+                except jwt.InvalidTokenError as e:
+                    log.error(f"Token validation failed: {e}")
+                    return {}
+                # sample of resource_access
+                # {
+                #   "resource_access": { "airflow": { "roles": ["airflow_admin"] }}
+                # }
+                try:
+                    groups = me["resource_access"]["airflow"]["roles"]
+                except KeyError:
+                    log.warning("No airflow roles found in token, using default")
+                    groups = []
+                if len(groups) < 1:
+                    groups = ["airflow_public"]
+                else:
+                    groups = [str for str in groups if "airflow" in str]
+                userinfo = {
+                    "username": me.get("preferred_username"),
+                    "email": me.get("email"),
+                    "first_name": me.get("given_name"),
+                    "last_name": me.get("family_name"),
+                    "role_keys": groups,
+                }
+                log.info("user info: {0}".format(userinfo))
+                return userinfo
+            else:
+                return {}
+
+    SECURITY_MANAGER_CLASS = CustomSecurityManager
+else:
+    SECURITY_MANAGER_CLASS = None

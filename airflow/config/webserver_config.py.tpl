@@ -1,95 +1,107 @@
-# Keycloak OIDC Remote User Authentication for Airflow
-# Authentication happens at Apache proxy layer via mod_auth_openidc
-# Airflow trusts the remote user headers from the internal proxy
+# Keycloak Direct OIDC Authentication for Airflow
+# Airflow authenticates directly with Keycloak (no proxy layer)
 
 import os
 import logging
-from flask_appbuilder.security.manager import AUTH_REMOTE_USER
+from airflow.www.security import AirflowSecurityManager
+from flask_appbuilder.security.manager import AUTH_OAUTH
 
 log = logging.getLogger(__name__)
 
-# Enable remote user authentication
-# Airflow will trust REMOTE_USER header set by the Apache proxy
-AUTH_TYPE = AUTH_REMOTE_USER
+# Enable OAuth authentication
+AUTH_TYPE = AUTH_OAUTH
+
+# Keycloak OIDC Configuration
+OIDC_ISSUER = "${keycloak_provider_url}"
+OIDC_CLIENT_ID = "${keycloak_client_id}"
+
+# Client secret must be provided via environment variable
+# Set AIRFLOW__WEBSERVER__SECRET_KEY in your deployment
+OIDC_CLIENT_SECRET = os.getenv("OIDC_CLIENT_SECRET", "CHANGE_ME")
+
+# OAuth provider configuration
+OAUTH_PROVIDERS = [
+    {
+        "name": "keycloak",
+        "icon": "fa-key",
+        "token_key": "access_token",
+        "remote_app": {
+            "client_id": OIDC_CLIENT_ID,
+            "client_secret": OIDC_CLIENT_SECRET,
+            "api_base_url": OIDC_ISSUER,
+            "client_kwargs": {
+                "scope": "openid email profile groups"
+            },
+            "access_token_url": f"{OIDC_ISSUER}/protocol/openid-connect/token",
+            "authorize_url": f"{OIDC_ISSUER}/protocol/openid-connect/auth",
+            "request_token_url": None,
+            "server_metadata_url": f"{OIDC_ISSUER}/.well-known/openid-configuration",
+        },
+    }
+]
 
 # Auto-register users on first login
 AUTH_USER_REGISTRATION = True
 AUTH_USER_REGISTRATION_ROLE = "Viewer"  # Default role for new users
 
-# Custom security manager for mapping Keycloak groups to Airflow roles
-from airflow.www.security import AirflowSecurityManager
-
+# Role mapping configuration
 class CustomSecurityManager(AirflowSecurityManager):
     """
     Custom security manager to map Keycloak groups to Airflow roles.
-
-    This class intercepts remote user authentication and maps the user's
-    Keycloak groups (from X-Remote-User-Groups header) to Airflow roles.
     """
 
-    def auth_user_remote_user(self, username):
+    def oauth_user_info(self, provider, response):
         """
-        Authenticate user from REMOTE_USER header and map groups to roles.
+        Get user info from OAuth provider and map groups to roles.
 
         Args:
-            username: Username from REMOTE_USER header (set by mod_auth_openidc)
+            provider: OAuth provider name
+            response: OAuth response containing tokens
 
         Returns:
-            User object if authentication succeeds, None otherwise
+            Dictionary with user information
         """
-        from flask import request
+        if provider == "keycloak":
+            # Get user info from Keycloak
+            import requests
 
-        # Get user info from OIDC headers set by Apache proxy
-        email = request.headers.get('X-Remote-User-Email', f'{username}@example.com')
-        full_name = request.headers.get('X-Remote-User-Name', username)
-        groups_header = request.headers.get('X-Remote-User-Groups', '')
+            access_token = response.get("access_token")
+            if not access_token:
+                log.error("No access token in OAuth response")
+                return {}
 
-        # Parse full name
-        first_name, last_name = username, ''
-        if ' ' in full_name:
-            first_name, last_name = full_name.split(' ', 1)
+            # Decode the JWT to get user info and groups
+            import json
+            import base64
 
-        # Parse Keycloak groups from comma-separated header
-        keycloak_groups = [g.strip() for g in groups_header.split(',') if g.strip()]
+            try:
+                # JWT structure: header.payload.signature
+                payload = access_token.split('.')[1]
+                # Add padding if needed
+                payload += '=' * (4 - len(payload) % 4)
+                decoded = json.loads(base64.urlsafe_b64decode(payload))
 
-        log.info(f"Remote user auth: username={username}, email={email}, groups={keycloak_groups}")
+                # Extract user information
+                user_info = {
+                    "username": decoded.get("preferred_username", ""),
+                    "email": decoded.get("email", ""),
+                    "first_name": decoded.get("given_name", ""),
+                    "last_name": decoded.get("family_name", ""),
+                    "groups": decoded.get("groups", []),
+                }
 
-        # Find or create user
-        user = self.find_user(username=username)
+                log.info(f"Keycloak user login: {user_info['username']}, groups: {user_info['groups']}")
 
-        if not user:
-            log.info(f"Creating new user: {username}")
-            user = self.add_user(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                role=self.find_role(self.auth_user_registration_role)
-            )
-        else:
-            # Update existing user info
-            log.info(f"Updating existing user: {username}")
-            user.email = email
-            user.first_name = first_name
-            user.last_name = last_name
-            self.update_user(user)
+                # Map groups to roles
+                user_info["role_keys"] = self._map_groups_to_roles(user_info["groups"])
 
-        # Map Keycloak groups to Airflow roles
-        airflow_roles = self._map_groups_to_roles(keycloak_groups)
+                return user_info
 
-        if airflow_roles:
-            log.info(f"Assigning roles to {username}: {[r.name for r in airflow_roles]}")
-            user.roles = airflow_roles
-            self.update_user(user)
-        else:
-            # No matching groups - assign default Viewer role
-            log.warning(f"No matching Keycloak groups for {username}, assigning default Viewer role")
-            default_role = self.find_role('Viewer')
-            if default_role:
-                user.roles = [default_role]
-                self.update_user(user)
+            except Exception as e:
+                log.error(f"Error decoding access token: {e}")
+                return {}
 
-        return user
+        return {}
 
     def _map_groups_to_roles(self, keycloak_groups):
         """
@@ -107,7 +119,7 @@ class CustomSecurityManager(AirflowSecurityManager):
             keycloak_groups: List of Keycloak group names from OIDC token
 
         Returns:
-            List containing single Airflow role object (highest priority)
+            List of Airflow role names
         """
         # Keycloak group to Airflow role mapping (from Terraform configuration)
         group_role_mapping = {
@@ -135,25 +147,19 @@ class CustomSecurityManager(AirflowSecurityManager):
 
         # Return the highest priority role
         if highest_role_name:
-            role = self.find_role(highest_role_name)
-            if role:
-                return [role]
-            else:
-                log.error(f"Role '{highest_role_name}' not found in Airflow database")
-
-        return []
+            return [highest_role_name]
+        else:
+            log.warning(f"No matching Keycloak groups, assigning default role")
+            return ["Viewer"]
 
 # Set the custom security manager
 SECURITY_MANAGER_CLASS = CustomSecurityManager
 
 # Security settings
 WTF_CSRF_ENABLED = True
-WTF_CSRF_TIME_LIMIT = None  # No time limit for CSRF tokens
+WTF_CSRF_TIME_LIMIT = None
 
-# Session configuration (matches OIDC session duration)
+# Session configuration
 PERMANENT_SESSION_LIFETIME = 28800  # 8 hours
 
-# Disable public access (all users must authenticate)
-AUTH_ROLE_PUBLIC = None
-
-log.info("Airflow webserver configured for Keycloak OIDC remote user authentication")
+log.info("Airflow webserver configured for direct Keycloak OIDC authentication")
