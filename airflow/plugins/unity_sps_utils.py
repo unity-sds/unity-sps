@@ -20,8 +20,8 @@ NODE_POOL_HIGH_WORKLOAD = "airflow-kubernetes-pod-operator-high-workload"
 
 CS_SHARED_SERVICES_ACCOUNT_ID = "/unity/shared-services/aws/account"
 CS_SHARED_SERVICES_ACCOUNT_REGION = "/unity/shared-services/aws/account/region"
-DS_COGNITO_CLIENT_ID = "/unity/shared-services/dapa/client-id"
-DS_S3_BUCKET_PARAM = f"/unity/unity/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
+MDPS_CLIENT_ID = "/sps/processing/workflows/unity_client_id"
+DS_S3_BUCKET_PARAM = f"/smce/mdps/{os.environ['AIRFLOW_VAR_UNITY_VENUE']}/ds/datastore-bucket"
 
 DEFAULT_LOG_LEVEL = "INFO"
 LOG_LEVEL_TYPE = {"DEBUG": 10, "INFO": 20, "WARNING": 30, "ERROR": 40, "CRITICAL": 50}
