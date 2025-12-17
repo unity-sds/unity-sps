@@ -116,7 +116,7 @@ variable "ogc_processes_docker_images" {
   }
 }
 
-# If we eventually have AMIs from our SMCE account, we need to get our account ID from an SSM parameter 
+# If we eventually have AMIs from our SMCE account, we need to get our account ID from an SSM parameter
 variable "smce_ami_owner_id" {
   description = "The owner ID of the SMCE AMIs"
   type        = string

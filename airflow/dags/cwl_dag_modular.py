@@ -26,10 +26,10 @@ from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import (
     DEFAULT_LOG_LEVEL,
-    MDPS_CLIENT_ID,
     DS_S3_BUCKET_PARAM,
     EC2_TYPES,
     LOG_LEVEL_TYPE,
+    MDPS_CLIENT_ID,
     NODE_POOL_DEFAULT,
     NODE_POOL_HIGH_WORKLOAD,
     POD_LABEL,
@@ -173,9 +173,9 @@ def select_stage_in(ti, stac_json, unity_stac_auth_type):
     """Retrieve stage in arguments based on authentication type parameter."""
     stage_in_args = {"stac_json": stac_json, "stac_auth_type": "NONE"}
     if unity_stac_auth_type:
-        unity_client_id = SSM_CLIENT.get_parameter(
-            Name=MDPS_CLIENT_ID, WithDecryption=True
-        )["Parameter"]["Value"]
+        unity_client_id = SSM_CLIENT.get_parameter(Name=MDPS_CLIENT_ID, WithDecryption=True)["Parameter"][
+            "Value"
+        ]
         stage_in_args["unity_client_id"] = unity_client_id
         stage_in_args["stac_auth_type"] = "UNITY"
 

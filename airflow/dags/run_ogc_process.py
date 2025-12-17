@@ -25,7 +25,7 @@ API_HOST = "https://api.dit.maap-project.org/api/"
 def fetch_ogc_processes():
     """Fetch available processes from the OGC API and create mapping."""
     try:
-        response = requests.get(API_HOST+"ogc/processes", timeout=30)
+        response = requests.get(API_HOST + "ogc/processes", timeout=30)
         response.raise_for_status()
 
         processes_data = response.json()
@@ -156,7 +156,7 @@ class SPSOGCOperator(KubernetesPodOperator):
         return [
             k8s.V1EnvVar(
                 name="SUBMIT_JOB_URL",
-                value=API_HOST+"ogc/processes/{process_id}/execution",
+                value=API_HOST + "ogc/processes/{process_id}/execution",
             ),
             k8s.V1EnvVar(name="PROCESS_ID", value=str(numerical_process_id)),
             k8s.V1EnvVar(name="JOB_INPUTS", value=self.job_inputs or "{}"),
@@ -169,7 +169,7 @@ class SPSOGCOperator(KubernetesPodOperator):
         return [
             k8s.V1EnvVar(
                 name="MONITOR_JOB_URL",
-                value=API_HOST+"ogc/jobs/{job_id}",
+                value=API_HOST + "ogc/jobs/{job_id}",
             ),
             k8s.V1EnvVar(name="JOB_ID", value=self.job_id),
             k8s.V1EnvVar(name="SUBMIT_JOB", value="false"),
