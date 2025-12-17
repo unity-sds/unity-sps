@@ -373,7 +373,7 @@ extraEnv: |
   - name: AIRFLOW__WEBSERVER__EXPOSE_CONFIG
     value: "True"
   - name: AIRFLOW__WEBSERVER__BASE_URL
-    value: "TODO FILL IN"
+    value: "${airflow_base_url}"
   - name: OIDC_CLIENT_SECRET
     valueFrom:
       secretKeyRef:

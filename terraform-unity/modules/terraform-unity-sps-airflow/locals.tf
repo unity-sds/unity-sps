@@ -26,4 +26,6 @@ locals {
     "dev"     = "#58cc35"
     "sbg-dev" = "#58cc35"
   }[var.venue]
+  # BASE_URL uses placeholder initially, updated by null_resource after LB is created
+  airflow_base_url = "http://placeholder:${local.load_balancer_port}"
 }
