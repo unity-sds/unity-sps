@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket               = "unity-unity-dev-bucket"
+    bucket               = "smce-mdps-dev-bucket"
     workspace_key_prefix = "sps/tfstates"
     key                  = "terraform.tfstate"
     region               = "us-west-2"
@@ -9,13 +9,13 @@ terraform {
 }
 
 module "unity-eks" {
-  source          = "git::https://github.com/unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=unity-sps-2.5.0"
+  source          = "git::https://github.com/unity-sds/unity-cs-infra.git//terraform-unity-eks_module?ref=main"
   deployment_name = local.cluster_name
   project         = var.project
   venue           = var.venue
   nodegroups      = var.nodegroups
   aws_auth_roles = [{
-    rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/mcp-tenantOperator"
+    rolearn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/smce_deployment"
     username = "admin"
     groups   = ["system:masters"]
   }]

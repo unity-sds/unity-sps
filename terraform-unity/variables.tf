@@ -5,7 +5,7 @@ variable "project" {
 }
 
 variable "venue" {
-  description = "The MCP venue in which the resources will be deployed."
+  description = "The SMCE venue in which the resources will be deployed."
   type        = string
   validation {
     condition     = can(regex("^(dev|test|prod|ops|sbg-dev|int)$", var.venue))
@@ -52,12 +52,12 @@ variable "helm_charts" {
     airflow = {
       repository = "https://airflow.apache.org"
       chart      = "airflow"
-      version    = "1.18.0"
+      version    = "1.15.0"
     },
     keda = {
       repository = "https://kedacore.github.io/charts"
       chart      = "keda"
-      version    = "v2.17.2"
+      version    = "v2.15.1"
     }
   }
 }
@@ -79,7 +79,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "3.1.0"
+      tag  = "3.1.1"
     }
   }
 }
@@ -116,10 +116,17 @@ variable "ogc_processes_docker_images" {
   }
 }
 
-variable "mcp_ami_owner_id" {
-  description = "The owner ID of the MCP AMIs"
+# If we eventually have AMIs from our SMCE account, we need to get our account ID from an SSM parameter
+variable "smce_ami_owner_id" {
+  description = "The owner ID of the SMCE AMIs"
   type        = string
-  default     = "794625662971"
+  default     = ""
+}
+
+variable "aws_ami_owner_id" {
+  description = "The owner ID of the AWS EKS optimized AMIs (this is a AWS official owner ID)"
+  type        = string
+  default     = "602401143452"
 }
 
 variable "karpenter_node_classes" {

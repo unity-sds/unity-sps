@@ -13,13 +13,13 @@ output "airflow_urls" {
 }
 
 output "airflow_venue_urls" {
-  description = "URLs for the various Airflow endpoints at venue-proxy level."
+  description = "URLs for the various Airflow endpoints (LoadBalancer direct access)."
   value = {
     "ui" = {
-      "url" = nonsensitive(replace(data.aws_ssm_parameter.venue_proxy_baseurl.value, "management/ui", "sps/"))
+      "url" = nonsensitive(aws_ssm_parameter.airflow_ui_url.value)
     }
     "rest_api" = {
-      "url" = nonsensitive(replace(data.aws_ssm_parameter.venue_proxy_baseurl.value, "management/ui", "sps/api/v1"))
+      "url" = nonsensitive(aws_ssm_parameter.airflow_api_url.value)
     }
   }
 }

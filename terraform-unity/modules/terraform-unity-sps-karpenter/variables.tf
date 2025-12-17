@@ -5,7 +5,7 @@ variable "project" {
 }
 
 variable "venue" {
-  description = "The MCP venue in which the cluster will be deployed (dev, test, prod)"
+  description = "The SMCE venue in which the cluster will be deployed (dev, test, prod)"
   type        = string
 }
 

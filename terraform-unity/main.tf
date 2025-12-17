@@ -1,6 +1,6 @@
 terraform {
   backend "s3" {
-    bucket               = "unity-unity-dev-bucket"
+    bucket               = "smce-mdps-dev-bucket"
     workspace_key_prefix = "sps/tfstates"
     key                  = "terraform.tfstate"
     region               = "us-west-2"
@@ -82,7 +82,8 @@ module "unity-sps-karpenter-node-config" {
   service_area           = var.service_area
   release                = var.release
   kubeconfig_filepath    = var.kubeconfig_filepath
-  mcp_ami_owner_id       = var.mcp_ami_owner_id
+  smce_ami_owner_id      = var.smce_ami_owner_id
+  aws_ami_owner_id       = var.aws_ami_owner_id
   karpenter_node_classes = var.karpenter_node_classes
   karpenter_node_pools   = var.karpenter_node_pools
 }

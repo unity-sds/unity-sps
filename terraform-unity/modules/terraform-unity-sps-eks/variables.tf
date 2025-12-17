@@ -5,7 +5,7 @@ variable "project" {
 }
 
 variable "venue" {
-  description = "The MCP venue in which the cluster will be deployed (dev, test, prod)"
+  description = "The SMCE venue in which the cluster will be deployed (dev, test, prod)"
   type        = string
 }
 
@@ -18,7 +18,7 @@ variable "service_area" {
 variable "cluster_version" {
   description = "The EKS cluster version (must be supported by the cs-infra module)."
   type        = string
-  default     = "1.31"
+  default     = "1.33"
 }
 
 variable "release" {
@@ -59,7 +59,6 @@ variable "nodegroups" {
     desired_size               = optional(number)
     instance_types             = optional(list(string))
     capacity_type              = optional(string)
-    enable_bootstrap_user_data = optional(bool)
     metadata_options           = optional(map(any))
     block_device_mappings = optional(map(object({
       device_name = string
