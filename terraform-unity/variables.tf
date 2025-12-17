@@ -79,7 +79,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "3.1.0"
+      tag  = "3.1.1"
     }
   }
 }
