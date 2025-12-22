@@ -430,6 +430,7 @@ resource "helm_release" "airflow" {
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
+<<<<<<< HEAD
       airflow_base_url         = local.airflow_base_url
       # Keycloak Direct OIDC authentication configuration
       webserver_config = indent(4, templatefile("${path.module}/../../../airflow/config/webserver_config.py.tpl", {
@@ -437,6 +438,8 @@ resource "helm_release" "airflow" {
         keycloak_provider_url = var.keycloak_provider_url
         keycloak_client_id    = var.keycloak_client_id
       }))
+=======
+>>>>>>> develop
     })
   ]
   set_sensitive {

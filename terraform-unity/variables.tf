@@ -79,7 +79,7 @@ variable "airflow_docker_images" {
   default = {
     airflow = {
       name = "ghcr.io/unity-sds/unity-sps/sps-airflow"
-      tag  = "3.1.0"
+      tag  = "3.1.1"
     }
   }
 }
@@ -116,7 +116,7 @@ variable "ogc_processes_docker_images" {
   }
 }
 
-# graceal TODO Dont commit this value to our repo, need better way to track unlike how we did it before
+# If we eventually have AMIs from our SMCE account, we need to get our account ID from an SSM parameter
 variable "smce_ami_owner_id" {
   description = "The owner ID of the SMCE AMIs"
   type        = string

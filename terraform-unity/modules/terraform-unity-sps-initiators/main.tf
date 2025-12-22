@@ -78,7 +78,7 @@ resource "aws_s3_object" "router_config" {
 }
 
 module "unity_initiator" {
-  source        = "git::https://github.com/grallewellyn/unity-initiator.git//terraform-unity/initiator?ref=453-smce-deployment"
+  source        = "git::https://github.com/unity-sds/unity-initiator.git//terraform-unity/initiator?ref=smce"
   code_bucket   = aws_s3_bucket.code.id
   project       = var.project
   router_config = "s3://${aws_s3_bucket.config.id}/${aws_s3_object.router_config.key}"
@@ -91,7 +91,7 @@ resource "aws_s3_object" "isl_stacam_rawdp_folder" {
 }
 
 module "s3_bucket_notification" {
-  source              = "git::https://github.com/grallewellyn/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification?ref=453-smce-deployment"
+  source              = "git::https://github.com/unity-sds/unity-initiator.git//terraform-unity/triggers/s3-bucket-notification?ref=smce"
   initiator_topic_arn = module.unity_initiator.initiator_topic_arn
   isl_bucket          = aws_s3_bucket.inbound_staging_location.id
   isl_bucket_prefix   = "STACAM/RawDP/"
