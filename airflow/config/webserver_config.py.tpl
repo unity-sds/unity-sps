@@ -39,14 +39,18 @@ OAUTH_PROVIDERS = [
     }
 ]
 
-# Auto-register users on first login
+# Auto-register users on first login (only if they have approved Keycloak groups)
+# Users without approved groups will be rejected during authentication
 AUTH_USER_REGISTRATION = True
-AUTH_USER_REGISTRATION_ROLE = "Viewer"  # Default role for new users
+AUTH_USER_REGISTRATION_ROLE = "Viewer"  # Not used - role determined by Keycloak group mapping
 
 # Role mapping configuration
 class CustomSecurityManager(AirflowSecurityManager):
     """
     Custom security manager to map Keycloak groups to Airflow roles.
+
+    IMPORTANT: Users must have at least one approved Keycloak group to access Airflow.
+    Users without approved groups will be denied access during authentication.
     """
 
     def oauth_user_info(self, provider, response):
@@ -146,11 +150,16 @@ class CustomSecurityManager(AirflowSecurityManager):
         Users with multiple groups get the highest priority role.
         Priority: Admin > Op > User > Viewer > Public
 
+        IMPORTANT: Users without any approved Keycloak groups will be rejected.
+
         Args:
             keycloak_groups: List of Keycloak group names from OIDC token
 
         Returns:
             List of Airflow role names
+
+        Raises:
+            Exception: If user has no approved Keycloak groups (access denied)
         """
         # Keycloak group to Airflow role mapping (from Terraform configuration)
         group_role_mapping = {
@@ -186,8 +195,14 @@ class CustomSecurityManager(AirflowSecurityManager):
         if highest_role_name:
             return [highest_role_name]
         else:
-            log.warning(f"No matching Keycloak groups found in {keycloak_groups}, assigning default role Viewer")
-            return ["Viewer"]
+            # Reject users who don't have any approved Keycloak groups
+            log.error(f"Access denied: User has no approved Keycloak groups. User groups: {keycloak_groups}")
+            log.error("User must be assigned to one of these Keycloak groups to access Airflow:")
+            log.error(f"  Approved groups: {list(group_role_mapping.keys())}")
+            raise Exception(
+                "Access denied: You are not assigned to any approved Keycloak groups. "
+                "Please contact your administrator to request access."
+            )
 
 # Set the custom security manager
 SECURITY_MANAGER_CLASS = CustomSecurityManager

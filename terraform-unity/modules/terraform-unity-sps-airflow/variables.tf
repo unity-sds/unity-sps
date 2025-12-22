@@ -117,9 +117,3 @@ variable "keycloak_role_mapping" {
     "airflow_public" = ["Public"]
   }
 }
-
-variable "proxy_domain" {
-  description = "Domain name of the Apache proxy server for OIDC redirect URI"
-  type        = string
-  default     = ""
-}
