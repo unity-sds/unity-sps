@@ -49,6 +49,23 @@ resource "kubernetes_secret" "airflow_webserver" {
   }
 }
 
+# Keycloak OIDC client secret for direct authentication
+resource "kubernetes_secret" "airflow_oidc" {
+  count = var.enable_oidc_auth ? 1 : 0
+  metadata {
+    name      = "airflow-oidc-secret"
+    namespace = data.kubernetes_namespace.service_area.metadata[0].name
+  }
+  data = {
+    "client-secret" = data.aws_ssm_parameter.keycloak_client_secret[0].value
+  }
+}
+
+data "aws_ssm_parameter" "keycloak_client_secret" {
+  count = var.enable_oidc_auth ? 1 : 0
+  name  = var.keycloak_client_secret_ssm_param
+}
+
 # TODO evaluate if this role is still necessary
 resource "kubernetes_role" "airflow_pod_creator" {
   metadata {
@@ -413,6 +430,13 @@ resource "helm_release" "airflow" {
       unity_cluster_name       = data.aws_eks_cluster.cluster.name
       karpenter_node_pools     = join(",", var.karpenter_node_pools)
       cwl_dag_ecr_uri          = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com"
+      airflow_base_url         = local.airflow_base_url
+      # Keycloak Direct OIDC authentication configuration
+      webserver_config = indent(4, templatefile("${path.module}/../../../airflow/config/webserver_config.py.tpl", {
+        keycloak_role_mapping = var.keycloak_role_mapping
+        keycloak_provider_url = var.keycloak_provider_url
+        keycloak_client_id    = var.keycloak_client_id
+      }))
     })
   ]
   set_sensitive {
@@ -428,6 +452,30 @@ resource "helm_release" "airflow" {
     helm_release.keda,
     kubernetes_secret.airflow_metadata,
     kubernetes_secret.airflow_webserver,
+  ]
+}
+
+# Update Airflow BASE_URL after LoadBalancer is created
+resource "null_resource" "update_airflow_base_url" {
+  triggers = {
+    lb_hostname = data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      kubectl set env deployment/airflow-webserver \
+        -n ${data.kubernetes_namespace.service_area.metadata[0].name} \
+        AIRFLOW__WEBSERVER__BASE_URL=http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}
+      kubectl set env deployment/airflow-scheduler \
+        -n ${data.kubernetes_namespace.service_area.metadata[0].name} \
+        AIRFLOW__WEBSERVER__BASE_URL=http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}
+    EOT
+  }
+
+  depends_on = [
+    helm_release.airflow,
+    kubernetes_service.airflow_ingress_internal,
+    time_sleep.wait_for_airflow_lb
   ]
 }
 
@@ -563,9 +611,10 @@ resource "kubernetes_service" "airflow_ingress_internal" {
     }
   }
   wait_for_load_balancer = true
-  lifecycle { # this is necessary or terraform will try to recreate this every run
-    ignore_changes = all
-  }
+  # Temporarily disabled to allow updating load balancer scheme to internet-facing
+  # lifecycle { # this is necessary or terraform will try to recreate this every run
+  #   ignore_changes = all
+  # }
   depends_on = [helm_release.airflow]
 }
 
@@ -662,8 +711,8 @@ resource "aws_ssm_parameter" "airflow_ui_url" {
   name        = format("/%s", join("/", compact(["", var.project, var.venue, var.service_area, "processing", "airflow", "ui_url"])))
   description = "The URL of the Airflow UI."
   type        = "String"
-  # Updated to use LoadBalancer instead of shared services domain
-  value       = "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}/"
+  # Updated to use LoadBalancer instead of shared services domain (no trailing slash)
+  value       = "http://${data.kubernetes_service.airflow_ingress_internal.status[0].load_balancer[0].ingress[0].hostname}:${local.load_balancer_port}"
   tags = merge(local.common_tags, {
     Name      = format(local.resource_name_prefix, "endpoints-airflow_ui")
     Component = "SSM"
@@ -738,7 +787,7 @@ resource "aws_ssm_parameter" "airflow_api_health_check_endpoint" {
 
 resource "aws_ssm_parameter" "unity_proxy_airflow_ui" {
   name        = format("/%s", join("/", compact(["unity", var.project, var.venue, "cs", "management", "proxy", "configurations", "015-sps-airflow-ui"])))
-  description = "The unity-proxy configuration for the Airflow UI."
+  description = "The unity-proxy configuration for the Airflow UI"
   type        = "String"
   value       = <<-EOT
 
