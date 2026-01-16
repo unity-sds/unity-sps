@@ -169,7 +169,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "m5ad", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -213,7 +213,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "m5ad", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -257,7 +257,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5", "m5ad"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -300,7 +300,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-family"
           operator = "In"
-          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c6id", "c5", "r7i", "r6i", "r5", "m5ad"]
+          values   = ["m7i", "m6i", "m5", "t3", "c7i", "c6i", "c5"]
         },
         {
           key      = "karpenter.k8s.aws/instance-cpu"
@@ -310,7 +310,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-cpu"
           operator = "Lt"
-          values   = ["17"] // To 16 inclusive
+          values   = ["5"] // To 4 inclusive (m5.xlarge max)
         },
         {
           key      = "karpenter.k8s.aws/instance-memory"
@@ -320,7 +320,7 @@ variable "karpenter_node_pools" {
         {
           key      = "karpenter.k8s.aws/instance-memory"
           operator = "Lt"
-          values   = ["65537"] // To 64 GB inclusive
+          values   = ["16385"] // To 16 GB inclusive (m5.xlarge max)
         },
         {
           key      = "karpenter.k8s.aws/instance-hypervisor",
@@ -378,5 +378,5 @@ variable "installprefix" {
 variable "db_instance_class" {
   description = "The SPS RDS database instance class"
   type        = string
-  default     = "db.m5d.xlarge"
+  default     = "db.t3.medium"
 }
