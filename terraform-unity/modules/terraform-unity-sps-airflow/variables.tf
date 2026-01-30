@@ -94,12 +94,6 @@ variable "keycloak_client_id" {
   default     = "airflow"
 }
 
-variable "keycloak_client_secret_ssm_param" {
-  description = "SSM parameter path containing Keycloak OIDC client secret"
-  type        = string
-  default     = "/sps/keycloak/client_secret"
-}
-
 variable "enable_oidc_auth" {
   description = "Enable Keycloak OIDC authentication for Airflow"
   type        = bool

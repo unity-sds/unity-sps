@@ -19,7 +19,7 @@ from airflow.utils.trigger_rule import TriggerRule
 from kubernetes.client import models as k8s
 from unity_sps_utils import POD_LABEL, POD_NAMESPACE, get_affinity
 
-API_HOST = "https://api.dit.maap-project.org/api/"
+API_HOST = "https://api.uat.maap-project.org/api/"
 
 
 def fetch_ogc_processes():
@@ -237,7 +237,7 @@ dag = DAG(
             description="Select a process to execute.",
         ),
         "queue": Param(
-            "maap-dps-worker-cardamom",
+            "maap-dps-worker-8gb",
             type="string",
             title="Queue",
             description="The MAAP queue to submit the job to",
