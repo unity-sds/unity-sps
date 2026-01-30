@@ -63,7 +63,7 @@ resource "kubernetes_secret" "airflow_oidc" {
 
 data "aws_ssm_parameter" "keycloak_client_secret" {
   count = var.enable_oidc_auth ? 1 : 0
-  name  = var.keycloak_client_secret_ssm_param
+  name  = local.keycloak_client_secret_ssm_param
 }
 
 # TODO evaluate if this role is still necessary
@@ -435,7 +435,7 @@ resource "helm_release" "airflow" {
       webserver_config = indent(4, templatefile("${path.module}/../../../airflow/config/webserver_config.py.tpl", {
         keycloak_role_mapping = var.keycloak_role_mapping
         keycloak_provider_url = var.keycloak_provider_url
-        keycloak_client_id    = var.keycloak_client_id
+        keycloak_client_id    = local.keycloak_client_id
       }))
     })
   ]

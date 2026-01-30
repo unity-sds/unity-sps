@@ -28,4 +28,12 @@ locals {
   }[var.venue]
   # BASE_URL uses placeholder initially, updated by null_resource after LB is created
   airflow_base_url = "http://placeholder:${local.load_balancer_port}"
+  keycloak_client_secret_ssm_param = {
+    "ops" = "/sps/ops/keycloak/client_secret"
+    "dev" = "/sps/dev/keycloak/client_secret"
+  }[lower(var.venue)]
+  keycloak_client_id = {
+    "ops" = "airflow-ops"
+    "dev" = "airflow-dev"
+  }[lower(var.venue)]
 }

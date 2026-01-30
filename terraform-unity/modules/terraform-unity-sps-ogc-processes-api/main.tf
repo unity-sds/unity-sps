@@ -34,12 +34,12 @@ resource "kubernetes_deployment" "redis" {
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-family"
                   operator = "In"
-                  values   = ["r5"]
+                  values   = ["m5", "m6i", "t3"]
                 }
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-cpu"
                   operator = "In"
-                  values   = ["8"]
+                  values   = ["4"]
                 }
               }
             }
@@ -111,12 +111,12 @@ resource "kubernetes_deployment" "ogc_processes_api" {
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-family"
                   operator = "In"
-                  values   = ["r5"]
+                  values   = ["m5", "m6i", "t3"]
                 }
                 match_expressions {
                   key      = "karpenter.k8s.aws/instance-cpu"
                   operator = "In"
-                  values   = ["8"]
+                  values   = ["4"]
                 }
               }
             }

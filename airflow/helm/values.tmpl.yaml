@@ -56,10 +56,10 @@ affinity:
           values: ["on-demand"]
         - key: "karpenter.k8s.aws/instance-family"
           operator: "In"
-          values: ["r5"]
+          values: ["m5", "m6i", "t3"]
         - key: "karpenter.k8s.aws/instance-cpu"
           operator: "In"
-          values: ["8"]
+          values: ["4"]
 
 topologySpreadConstraints:
 - maxSkew: 1
@@ -93,11 +93,10 @@ scheduler:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            # values: ["c6i", "c5"] # Choosing compute-optimized instances
-            values: ["r5"] # Choosing memory-optimized instance
+            values: ["m5", "m6i", "t3"]
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["8"]
+            values: ["4"]
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -130,11 +129,10 @@ triggerer:
                 values: [ "on-demand" ]
               - key: "karpenter.k8s.aws/instance-family"
                 operator: "In"
-                # values: ["c6i", "c5"] # Choosing compute-optimized instances
-                values: [ "r5" ] # Choosing memory-optimized instance
+                values: ["m5", "m6i", "t3"]
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
-                values: [ "8" ] # Scheduler might benefit from higher CPU
+                values: ["4"]
 
 postgresql:
   enabled: false
@@ -154,11 +152,10 @@ pgbouncer:
                 values: [ "on-demand" ]
               - key: "karpenter.k8s.aws/instance-family"
                 operator: "In"
-                # values: ["c6i", "c5"] # Choosing compute-optimized instances
-                values: [ "r5" ] # Choosing memory-optimized instance
+                values: ["m5", "m6i", "t3"]
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
-                values: [ "8" ] # Scheduler might benefit from higher CPU
+                values: ["4"]
 
 webserverSecretKeySecretName: ${webserver_secret_name}
 
@@ -186,11 +183,10 @@ webserver:
             values: ["on-demand"]
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            # values: ["c6i", "c5"] # Choosing compute-optimized instances
-            values: ["r5"] # Choosing memory-optimized instance
+            values: ["m5", "m6i", "t3"]
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["8"] # Balancing between CPU and memory
+            values: ["4"] # Balancing between CPU and memory
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -224,11 +220,10 @@ workers:
         - matchExpressions:
           - key: "karpenter.k8s.aws/instance-family"
             operator: "In"
-            # values: ["c6i", "c5"] # Choosing compute-optimized instances
-            values: ["r5"] # Choosing memory-optimized instance
+            values: ["m5", "m6i", "t3"]
           - key: "karpenter.k8s.aws/instance-cpu"
             operator: "In"
-            values: ["8"]
+            values: ["4"]
   topologySpreadConstraints:
   - maxSkew: 1
     topologyKey: "topology.kubernetes.io/zone"
@@ -318,11 +313,10 @@ dagProcessor:
                 values: [ "on-demand" ]
               - key: "karpenter.k8s.aws/instance-family"
                 operator: "In"
-                # values: ["c6i", "c5"] # Choosing compute-optimized instances
-                values: [ "r5" ] # Choosing memory-optimized instance
+                values: ["m5", "m6i", "t3"]
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
-                values: [ "8" ] # Scheduler might benefit from higher CPU
+                values: ["4"]
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
