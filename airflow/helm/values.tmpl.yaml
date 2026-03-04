@@ -292,6 +292,12 @@ config:
     enable_proxy_fix: 'True'
 
 dags:
+  # Disable built-in git-sync (doesn't work with existingClaim)
+  # We'll add it manually as extraContainers below
+  gitSync:
+    enabled: false
+
+  # Keep persistence enabled for OGC API dynamic DAG deployment
   persistence:
     # Enable persistent volume for storing dags
     enabled: true
@@ -317,6 +323,20 @@ dagProcessor:
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
                 values: ["4"]
+  extraContainers:
+    - name: git-sync
+      image: registry.k8s.io/git-sync/git-sync:v4.2.4
+      args:
+        - --repo=https://github.com/MAAP-Project/airflow-dags.git
+        - --branch=main
+        - --root=/git
+        - --dest=repo
+        - --period=60s
+        - --max-failures=0
+        - --link=current
+      volumeMounts:
+        - name: dags
+          mountPath: /git
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
@@ -335,7 +355,7 @@ env:
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
   - name: AIRFLOW__CORE__DAGS_FOLDER
-    value: "/opt/airflow/dags"
+    value: "/opt/airflow/dags/repo"
   - name: AIRFLOW__CORE__PLUGINS_FOLDER
     value: "/opt/airflow/plugins"
   - name: AIRFLOW__CORE__LAZY_LOAD_PLUGINS

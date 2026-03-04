@@ -291,6 +291,19 @@ config:
     enable_proxy_fix: 'True'
 
 dags:
+    # Git-sync configuration for automatic DAG synchronization from GitHub
+  gitSync:
+    enabled: true
+    repo: https://github.com/MAAP-Project/airflow-dags.git
+    branch: main
+    ref: main
+    rev: HEAD
+    depth: 1
+    maxFailures: 0
+    subPath: "/opt/airflow/dags"  # All DAGs are at repository root level
+    period: 60s  # Sync every 60 seconds
+
+  # Keep persistence enabled for OGC API dynamic DAG deployment
   persistence:
     # Enable persistent volume for storing dags
     enabled: true
