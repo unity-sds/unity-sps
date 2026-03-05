@@ -292,12 +292,6 @@ config:
     enable_proxy_fix: 'True'
 
 dags:
-  # Disable built-in git-sync (doesn't work with existingClaim)
-  # We'll add it manually as extraContainers below
-  gitSync:
-    enabled: false
-
-  # Keep persistence enabled for OGC API dynamic DAG deployment
   persistence:
     # Enable persistent volume for storing dags
     enabled: true
@@ -325,15 +319,14 @@ dagProcessor:
                 values: ["4"]
   extraContainers:
     - name: git-sync
-      image: registry.k8s.io/git-sync/git-sync:v4.2.4
+      image: registry.k8s.io/git-sync/git-sync:v4.6.0
       args:
         - --repo=https://github.com/MAAP-Project/airflow-dags.git
-        - --branch=main
+        - --ref=main
         - --root=/git
-        - --dest=repo
+        - --link=repo
         - --period=60s
         - --max-failures=0
-        - --link=current
       volumeMounts:
         - name: dags
           mountPath: /git

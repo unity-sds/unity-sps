@@ -291,19 +291,6 @@ config:
     enable_proxy_fix: 'True'
 
 dags:
-    # Git-sync configuration for automatic DAG synchronization from GitHub
-  gitSync:
-    enabled: true
-    repo: https://github.com/MAAP-Project/airflow-dags.git
-    branch: main
-    ref: main
-    rev: HEAD
-    depth: 1
-    maxFailures: 0
-    subPath: "/opt/airflow/dags"  # All DAGs are at repository root level
-    period: 60s  # Sync every 60 seconds
-
-  # Keep persistence enabled for OGC API dynamic DAG deployment
   persistence:
     # Enable persistent volume for storing dags
     enabled: true
@@ -330,6 +317,19 @@ dagProcessor:
               - key: "karpenter.k8s.aws/instance-cpu"
                 operator: "In"
                 values: [ "16", "32", "64" ] # Scheduler might benefit from higher CPU
+  extraContainers:
+    - name: git-sync
+      image: registry.k8s.io/git-sync/git-sync:v4.6.0
+      args:
+        - --repo=https://github.com/MAAP-Project/airflow-dags.git
+        - --ref=main
+        - --root=/git
+        - --link=repo
+        - --period=60s
+        - --max-failures=0
+      volumeMounts:
+        - name: dags
+          mountPath: /git
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
@@ -348,7 +348,7 @@ env:
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
   - name: AIRFLOW__CORE__DAGS_FOLDER
-    value: "/opt/airflow/dags"
+    value: "/opt/airflow/dags/repo"
   - name: AIRFLOW__CORE__PLUGINS_FOLDER
     value: "/opt/airflow/plugins"
   - name: AIRFLOW__CORE__LAZY_LOAD_PLUGINS
