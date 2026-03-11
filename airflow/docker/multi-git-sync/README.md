@@ -93,7 +93,7 @@ spec:
   serviceAccountName: ogc-processes-api  # Must have IRSA annotation
   containers:
   - name: multi-git-sync
-    image: ghcr.io/unity-sds/unity-sps/multi-git-sync:1.0.0
+    image: jplmdps:v1.0.0
     env:
     - name: S3_BUCKET
       value: "unity-dev-sps-config-smce"
@@ -116,8 +116,8 @@ spec:
 ## Building the Image
 
 ```bash
-docker build -t ghcr.io/unity-sds/unity-sps/multi-git-sync:1.0.0 .
-docker push ghcr.io/unity-sds/unity-sps/multi-git-sync:1.0.0
+docker build -t jplmdps/multi-git-sync:v1.0.0 .
+docker push jplmdps/multi-git-sync:v1.0.0
 ```
 
 ## Adding a New Repository

@@ -106,8 +106,8 @@ variable "ogc_processes_docker_images" {
       tag  = "2.1.0"
     }
     multi_git_sync = {
-      name = "ghcr.io/unity-sds/unity-sps/multi-git-sync"
-      tag  = "1.0.0"
+      name = "jplmdps/multi-git-sync"
+      tag  = "v1.0.0"
     },
     redis = {
       name = "redis"

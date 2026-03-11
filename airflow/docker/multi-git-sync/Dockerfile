@@ -17,7 +17,8 @@ RUN useradd -m -u 1000 -s /bin/bash gitsync && \
 
 # Copy sync script
 COPY sync-repos.py /usr/local/bin/sync-repos.py
-RUN chmod +x /usr/local/bin/sync-repos.py
+RUN chmod 755 /usr/local/bin/sync-repos.py && \
+    chown gitsync:gitsync /usr/local/bin/sync-repos.py
 
 # Switch to non-root user
 USER gitsync
