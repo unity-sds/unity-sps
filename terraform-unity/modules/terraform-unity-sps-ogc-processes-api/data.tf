@@ -72,6 +72,8 @@ data "aws_security_groups" "venue_proxy_sg" {
 
 data "aws_region" "current" {}
 
+data "aws_caller_identity" "current" {}
+
 data "aws_ssm_parameter" "unity_client_id" {
   name = "/sps/processing/workflows/unity_client_id"
 }

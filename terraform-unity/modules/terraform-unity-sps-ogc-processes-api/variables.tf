@@ -55,7 +55,7 @@ variable "docker_images" {
       name = string
       tag  = string
     })
-    git_sync = object({
+    multi_git_sync = object({
       name = string
       tag  = string
     })

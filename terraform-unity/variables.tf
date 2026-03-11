@@ -91,7 +91,7 @@ variable "ogc_processes_docker_images" {
       name = string
       tag  = string
     })
-    git_sync = object({
+    multi_git_sync = object({
       name = string
       tag  = string
     })
@@ -105,9 +105,9 @@ variable "ogc_processes_docker_images" {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
       tag  = "2.1.0"
     }
-    git_sync = {
-      name = "registry.k8s.io/git-sync/git-sync"
-      tag  = "v4.2.4"
+    multi_git_sync = {
+      name = "ghcr.io/unity-sds/unity-sps/multi-git-sync"
+      tag  = "1.0.0"
     },
     redis = {
       name = "redis"

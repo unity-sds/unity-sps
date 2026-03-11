@@ -1,3 +1,7 @@
+provider "aws" {
+  region = "us-west-2"
+}
+
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
   token                  = data.aws_eks_cluster_auth.cluster.token

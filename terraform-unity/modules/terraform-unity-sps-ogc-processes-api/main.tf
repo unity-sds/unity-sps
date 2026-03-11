@@ -1,3 +1,107 @@
+# IAM Policy for S3 access
+resource "aws_iam_policy" "ogc_processes_api_s3_policy" {
+  name        = "${var.project}-${var.venue}-ogc-api-s3-policy"
+  description = "Allows OGC Processes API to read DAG catalog repository configuration from S3"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = "arn:aws:s3:::${local.dag_catalog_config_bucket}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket"
+        ]
+        Resource = "arn:aws:s3:::${local.dag_catalog_config_bucket}"
+      }
+    ]
+  })
+
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "s3-policy")
+    Component = "OGC"
+    Stack     = "OGC"
+  })
+}
+
+# IAM Role for IRSA (IAM Roles for Service Accounts)
+resource "aws_iam_role" "ogc_processes_api_role" {
+  name        = "${var.project}-${var.venue}-ogc-api-role"
+  description = "IAM role for OGC Processes API pod to access AWS resources via IRSA"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${local.oidc_provider_url}"
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${local.oidc_provider_url}:sub" = "system:serviceaccount:${var.kubernetes_namespace}:ogc-processes-api"
+            "${local.oidc_provider_url}:aud" = "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  managed_policy_arns  = [aws_iam_policy.ogc_processes_api_s3_policy.arn]
+  permissions_boundary = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:policy/zsmce-tenantOperator-AMI-APIG"
+
+  tags = merge(local.common_tags, {
+    Name      = format(local.resource_name_prefix, "iam-role")
+    Component = "OGC"
+    Stack     = "OGC"
+  })
+}
+
+# Kubernetes Service Account with IRSA annotation
+resource "kubernetes_service_account" "ogc_processes_api" {
+  metadata {
+    name      = "ogc-processes-api"
+    namespace = data.kubernetes_namespace.service_area.metadata[0].name
+    annotations = {
+      "eks.amazonaws.com/role-arn" = aws_iam_role.ogc_processes_api_role.arn
+    }
+  }
+}
+
+# S3 Object for repository list (bucket is managed externally)
+# NOTE: This resource is commented out because the file is managed manually
+# The application will still read from this S3 location via the multi-git-sync container
+# resource "aws_s3_object" "dag_catalog_repos" {
+#   bucket  = local.dag_catalog_config_bucket
+#   key     = "dag_repos_airflow.json"
+#   content = jsonencode([
+#     {
+#       url  = var.dag_catalog_repo.url
+#       ref  = var.dag_catalog_repo.ref
+#       path = var.dag_catalog_repo.dags_directory_path
+#       name = "unity-sps"
+#     }
+#   ])
+#   content_type = "application/json"
+#
+#   tags = merge(local.common_tags, {
+#     Name      = format(local.resource_name_prefix, "dag-repos-config")
+#     Component = "OGC"
+#     Stack     = "OGC"
+#   })
+#
+#   lifecycle {
+#     ignore_changes = [content]
+#   }
+# }
+
 resource "kubernetes_deployment" "redis" {
   metadata {
     name      = "ogc-processes-api-redis-lock"
@@ -94,6 +198,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
         }
       }
       spec {
+        service_account_name = kubernetes_service_account.ogc_processes_api.metadata[0].name
         affinity {
           node_affinity {
             required_during_scheduling_ignored_during_execution {
@@ -155,7 +260,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
           env {
             name  = "DAG_CATALOG_DIRECTORY"
-            value = "/dag-catalog/current/${var.dag_catalog_repo.dags_directory_path}"
+            value = "/dag-catalog/current/"
           }
           env {
             name  = "DEPLOYED_DAGS_DIRECTORY"
@@ -171,31 +276,27 @@ resource "kubernetes_deployment" "ogc_processes_api" {
           }
         }
         container {
-          name  = "git-sync"
-          image = "${var.docker_images.git_sync.name}:${var.docker_images.git_sync.tag}"
+          name  = "multi-git-sync"
+          image = "${var.docker_images.multi_git_sync.name}:${var.docker_images.multi_git_sync.tag}"
           env {
-            name  = "GITSYNC_REPO"
-            value = var.dag_catalog_repo.url
+            name  = "S3_BUCKET"
+            value = local.dag_catalog_config_bucket
           }
           env {
-            name  = "GITSYNC_REF"
-            value = var.dag_catalog_repo.ref
+            name  = "S3_KEY"
+            value = "dag_repos_airflow.json"
           }
           env {
-            name  = "GITSYNC_ROOT"
+            name  = "AWS_REGION"
+            value = data.aws_region.current.name
+          }
+          env {
+            name  = "SYNC_ROOT"
             value = "/dag-catalog"
           }
           env {
-            name  = "GITSYNC_LINK"
-            value = "current"
-          }
-          env {
-            name  = "GITSYNC_PERIOD"
-            value = "3s"
-          }
-          env {
-            name  = "GITSYNC_ONE_TIME"
-            value = "false"
+            name  = "POLL_INTERVAL"
+            value = "60"
           }
           volume_mount {
             name       = "dag-catalog"
