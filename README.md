@@ -70,7 +70,15 @@ This guide provides a quick way to get started with our project. Please see our 
 
 ### Build Instructions (if applicable)
 
-N/A
+When building in a new AWS account or for a new venue, need to create the s3 bucket `mdps-airflow-{venue}-dag-sources` that contains the JSON dag_repos_airflow.json to specify where DAGs should be read from. Schema example is:
+```
+{
+    "url": "https://github.com/MAAP-Project/airflow-dags.git",
+    "ref": "main", (branch)
+    "path": ".", (don't need to include repo name)
+    "name": "MAAP_DAGs" (needs to be unique across other entries)
+  },
+```
 
 ### Test Instructions (if applicable)
 

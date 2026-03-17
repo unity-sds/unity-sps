@@ -326,7 +326,7 @@ dagProcessor:
         - name: S3_KEY
           value: dag_repos_airflow.json
         - name: AWS_REGION
-          value: us-west-2
+          value: ${aws_region}
         - name: SYNC_ROOT
           value: /dag-catalog
         - name: POLL_INTERVAL

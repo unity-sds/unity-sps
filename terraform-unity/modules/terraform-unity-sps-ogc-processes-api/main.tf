@@ -75,33 +75,6 @@ resource "kubernetes_service_account" "ogc_processes_api" {
   }
 }
 
-# S3 Object for repository list (bucket is managed externally)
-# NOTE: This resource is commented out because the file is managed manually
-# The application will still read from this S3 location via the multi-git-sync container
-# resource "aws_s3_object" "dag_catalog_repos" {
-#   bucket  = local.dag_catalog_config_bucket
-#   key     = "dag_repos_airflow.json"
-#   content = jsonencode([
-#     {
-#       url  = var.dag_catalog_repo.url
-#       ref  = var.dag_catalog_repo.ref
-#       path = var.dag_catalog_repo.dags_directory_path
-#       name = "unity-sps"
-#     }
-#   ])
-#   content_type = "application/json"
-#
-#   tags = merge(local.common_tags, {
-#     Name      = format(local.resource_name_prefix, "dag-repos-config")
-#     Component = "OGC"
-#     Stack     = "OGC"
-#   })
-#
-#   lifecycle {
-#     ignore_changes = [content]
-#   }
-# }
-
 resource "kubernetes_deployment" "redis" {
   metadata {
     name      = "ogc-processes-api-redis-lock"

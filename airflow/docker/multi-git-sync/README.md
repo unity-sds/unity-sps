@@ -7,7 +7,7 @@ A custom container that syncs multiple git repositories based on configuration s
 - **Dynamic repository configuration**: Read repository list from S3
 - **Automatic polling**: Checks for configuration changes every 60 seconds (configurable)
 - **Multi-repo support**: Syncs multiple repositories to separate subdirectories
-- **No restart required**: Automatically picks up new repositories without pod restart
+- **No restart required**: Automatically picks up new repositories without pod restart, just edit the s3 file 
 - **IRSA support**: Uses IAM Roles for Service Accounts (IRSA) for AWS authentication
 
 ## Environment Variables
@@ -28,8 +28,8 @@ The S3 object dag_repos_airflow.json should contain a JSON array of repository c
 [
   {
     "url": "https://github.com/unity-sds/unity-sps.git",
-    "ref": "main",
-    "path": "airflow/dags",
+    "ref": "main", (branch)
+    "path": "airflow/dags", (dont need to include repo name and "." for root)
     "name": "unity-sps"
   },
   {
@@ -60,79 +60,11 @@ The S3 object dag_repos_airflow.json should contain a JSON array of repository c
     └── another-repo -> ../repos/another-repo/dags
 ```
 
-## IAM Permissions Required
-
-The container requires the following IAM permissions:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": ["s3:GetObject"],
-      "Resource": "arn:aws:s3:::unity-*-sps-config-smce/*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": ["s3:ListBucket"],
-      "Resource": "arn:aws:s3:::unity-*-sps-config-smce"
-    }
-  ]
-}
-```
-
-## Usage in Kubernetes
-
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: ogc-processes-api
-spec:
-  serviceAccountName: ogc-processes-api  # Must have IRSA annotation
-  containers:
-  - name: multi-git-sync
-    image: jplmdps:v1.0.0
-    env:
-    - name: S3_BUCKET
-      value: "unity-dev-sps-config-smce"
-    - name: S3_KEY
-      value: "dag_repos_airflow.json"
-    - name: AWS_REGION
-      value: "us-west-2"
-    - name: SYNC_ROOT
-      value: "/dag-catalog"
-    - name: POLL_INTERVAL
-      value: "60"
-    volumeMounts:
-    - name: dag-catalog
-      mountPath: /dag-catalog
-  volumes:
-  - name: dag-catalog
-    emptyDir: {}
-```
-
 ## Building the Image
 
 ```bash
 docker build -t jplmdps/multi-git-sync:v1.0.0 .
 docker push jplmdps/multi-git-sync:v1.0.0
-```
-
-## Adding a New Repository
-
-To add a new repository without restarting the pod:
-
-```bash
-# Update the S3 configuration file
-aws s3 cp s3://unity-dev-sps-config-smce/dag_repos_airflow.json - | \
-  jq '. + [{"url": "https://github.com/org/new-repo.git", "ref": "main", "path": "dags", "name": "new-repo"}]' | \
-  aws s3 cp - s3://unity-dev-sps-config-smce/dag_repos_airflow.json
-
-# Wait 60-120 seconds for the next poll cycle
-# Check logs to verify sync
-kubectl logs <pod-name> -c multi-git-sync --tail=50
 ```
 
 ## Troubleshooting

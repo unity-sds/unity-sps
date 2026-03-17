@@ -76,7 +76,7 @@ variable "multi_git_sync_docker_image" {
   })
   default = {
     name = "jplmdps/multi-git-sync"
-    tag  = "develop3"
+    tag  = "v1.0.0"
   }
 }
 
