@@ -277,7 +277,7 @@ resource "kubernetes_deployment" "ogc_processes_api" {
         }
         container {
           name  = "multi-git-sync"
-          image = "${var.docker_images.multi_git_sync.name}:${var.docker_images.multi_git_sync.tag}"
+          image = "${var.multi_git_sync_docker_image.name}:${var.multi_git_sync_docker_image.tag}"
           env {
             name  = "S3_BUCKET"
             value = local.dag_catalog_config_bucket

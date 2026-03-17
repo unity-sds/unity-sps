@@ -3,12 +3,12 @@
     "url": "https://github.com/MAAP-Project/airflow-dags.git",
     "ref": "main",
     "path": ".",
-    "name": "MAAP DAGs"
+    "name": "MAAP_DAGs"
   },
   {
     "url": "https://github.com/grallewellyn/unity-dags-2.git",
     "ref": "main",
     "path": ".",
-    "name": "Project 2"
+    "name": "Project_2"
   }
 ]

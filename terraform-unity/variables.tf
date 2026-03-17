@@ -68,6 +68,18 @@ variable "helm_values_template" {
   default     = "values.tmpl.yaml"
 }
 
+variable "multi_git_sync_docker_image" {
+  description = "Docker image for multi-git-sync container (shared by Airflow and OGC Processes API)."
+  type = object({
+    name = string
+    tag  = string
+  })
+  default = {
+    name = "jplmdps/multi-git-sync"
+    tag  = "develop3"
+  }
+}
+
 variable "airflow_docker_images" {
   description = "Docker images for the associated Airflow services."
   type = object({
@@ -91,10 +103,6 @@ variable "ogc_processes_docker_images" {
       name = string
       tag  = string
     })
-    multi_git_sync = object({
-      name = string
-      tag  = string
-    })
     redis = object({
       name = string
       tag  = string
@@ -105,10 +113,6 @@ variable "ogc_processes_docker_images" {
       name = "ghcr.io/unity-sds/unity-sps-ogc-processes-api/unity-sps-ogc-processes-api"
       tag  = "2.1.0"
     }
-    multi_git_sync = {
-      name = "jplmdps/multi-git-sync"
-      tag  = "v1.0.0"
-    },
     redis = {
       name = "redis"
       tag  = "7.4.0"

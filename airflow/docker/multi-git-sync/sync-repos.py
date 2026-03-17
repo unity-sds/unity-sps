@@ -20,7 +20,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import boto3
-from botocore.exceptions import BotoErr, ClientError
+from botocore.exceptions import ClientError
 
 # Configure logging
 logging.basicConfig(
@@ -214,13 +214,17 @@ class GitSyncManager:
             logger.error(f"Source path does not exist: {source}")
             return False
 
-        # Create symlink
+        # Create relative symlink so it works regardless of mount point
+        # From /dag-catalog/current/{name} to /dag-catalog/repos/{name}/{path}
+        # Relative path: ../repos/{name}/{path}
+        relative_source = Path('..') / 'repos' / config.name / config.path
+
         try:
-            target.symlink_to(source)
-            logger.info(f"Created symlink: {target} -> {source}")
+            target.symlink_to(relative_source)
+            logger.info(f"Created relative symlink: {target} -> {relative_source} (absolute: {source})")
             return True
         except Exception as e:
-            logger.error(f"Failed to create symlink {target} -> {source}: {e}")
+            logger.error(f"Failed to create symlink {target} -> {relative_source}: {e}")
             return False
 
     def sync_repo(self, config: RepoConfig) -> bool:

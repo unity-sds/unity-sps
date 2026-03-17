@@ -318,18 +318,22 @@ dagProcessor:
                 operator: "In"
                 values: ["4"]
   extraContainers:
-    - name: git-sync
-      image: registry.k8s.io/git-sync/git-sync:v4.6.0
-      args:
-        - --repo=https://github.com/MAAP-Project/airflow-dags.git
-        - --ref=main
-        - --root=/git
-        - --link=repo
-        - --period=60s
-        - --max-failures=0
+    - name: multi-git-sync
+      image: ${multi_git_sync_image_repo}:${multi_git_sync_image_tag}
+      env:
+        - name: S3_BUCKET
+          value: ${dag_catalog_config_bucket}
+        - name: S3_KEY
+          value: dag_repos_airflow.json
+        - name: AWS_REGION
+          value: us-west-2
+        - name: SYNC_ROOT
+          value: /dag-catalog
+        - name: POLL_INTERVAL
+          value: "60"
       volumeMounts:
         - name: dags
-          mountPath: /git
+          mountPath: /dag-catalog
 
 env:
   - name: "AIRFLOW_VAR_KUBERNETES_PIPELINE_NAMESPACE"
@@ -348,7 +352,7 @@ env:
 # https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/security/api.html
 extraEnv: |
   - name: AIRFLOW__CORE__DAGS_FOLDER
-    value: "/opt/airflow/dags/repo"
+    value: "/opt/airflow/dags/current"
   - name: AIRFLOW__CORE__PLUGINS_FOLDER
     value: "/opt/airflow/plugins"
   - name: AIRFLOW__CORE__LAZY_LOAD_PLUGINS
