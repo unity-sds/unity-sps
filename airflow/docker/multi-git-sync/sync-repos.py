@@ -91,6 +91,28 @@ class GitSyncManager:
         logger.info(f"  Sync Root: {SYNC_ROOT}")
         logger.info(f"  Poll Interval: {POLL_INTERVAL}s")
 
+    def get_symlink_name(self, config: RepoConfig) -> str:
+        """
+        Generate symlink name including path component.
+        This ensures that changing the path creates a new symlink,
+        preventing stale DAGs from remaining visible in Airflow.
+
+        Examples:
+          - name="Project_2", path="." -> "Project_2"
+          - name="Project_2", path="folder1/folder2" -> "Project_2__folder1_folder2"
+        """
+        if config.path == ".":
+            # Root path - just use the name
+            return config.name
+
+        # Sanitize path for use in filename
+        # Replace slashes with double underscores, keep only alphanumeric and underscores
+        sanitized_path = config.path.replace("/", "_").replace("\\", "_")
+        sanitized_path = "".join(c for c in sanitized_path if c.isalnum() or c == "_")
+        sanitized_path = sanitized_path.strip("_")
+
+        return f"{config.name}__{sanitized_path}"
+
     def get_repo_configs(self) -> Optional[List[RepoConfig]]:
         """Fetch repository configurations from S3."""
         try:
@@ -201,9 +223,10 @@ class GitSyncManager:
         return True
 
     def create_symlink(self, config: RepoConfig) -> bool:
-        """Create symlink from current/{name} to repos/{name}/{path}."""
+        """Create symlink from current/{name}__{path} to repos/{name}/{path}."""
         source = REPOS_DIR / config.name / config.path
-        target = CURRENT_DIR / config.name
+        symlink_name = self.get_symlink_name(config)
+        target = CURRENT_DIR / symlink_name
 
         # Remove existing symlink if it exists
         if target.exists() or target.is_symlink():
@@ -215,7 +238,7 @@ class GitSyncManager:
             return False
 
         # Create relative symlink so it works regardless of mount point
-        # From /dag-catalog/current/{name} to /dag-catalog/repos/{name}/{path}
+        # From /dag-catalog/current/{name}__{path} to /dag-catalog/repos/{name}/{path}
         # Relative path: ../repos/{name}/{path}
         relative_source = Path('..') / 'repos' / config.name / config.path
 
@@ -248,12 +271,16 @@ class GitSyncManager:
             return False
 
     def remove_stale_repos(self, configs: List[RepoConfig]):
-        """Remove symlinks for repos no longer in configuration."""
-        current_names = {config.name for config in configs}
+        """
+        Remove symlinks for repos no longer in configuration or with changed paths.
+        This ensures that changing a repo's path will remove the old symlink.
+        """
+        # Build set of expected symlink names
+        expected_symlink_names = {self.get_symlink_name(config) for config in configs}
 
         # Check each symlink in current/
         for symlink in CURRENT_DIR.iterdir():
-            if symlink.name not in current_names:
+            if symlink.name not in expected_symlink_names:
                 logger.info(f"Removing stale repository symlink: {symlink.name}")
                 try:
                     symlink.unlink()

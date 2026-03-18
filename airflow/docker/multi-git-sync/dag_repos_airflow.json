@@ -8,7 +8,7 @@
   {
     "url": "https://github.com/grallewellyn/unity-dags-2.git",
     "ref": "main",
-    "path": ".",
+    "path": "folder1/folder2",
     "name": "Project_2"
   }
 ]
