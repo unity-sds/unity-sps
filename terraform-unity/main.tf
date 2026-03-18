@@ -89,39 +89,41 @@ module "unity-sps-karpenter-node-config" {
 }
 
 module "unity-sps-airflow" {
-  source                     = "./modules/terraform-unity-sps-airflow"
-  project                    = var.project
-  venue                      = var.venue
-  service_area               = var.service_area
-  release                    = var.release
-  kubeconfig_filepath        = var.kubeconfig_filepath
-  kubernetes_namespace       = kubernetes_namespace.service_area.metadata[0].name
-  db_instance_identifier     = module.unity-sps-database.db_instance_identifier
-  db_secret_arn              = module.unity-sps-database.db_secret_arn
-  efs_file_system_id         = module.unity-sps-efs.file_system_id
-  airflow_webserver_username = var.airflow_webserver_username
-  airflow_webserver_password = var.airflow_webserver_password
-  docker_images              = var.airflow_docker_images
-  helm_charts                = var.helm_charts
-  helm_values_template       = var.helm_values_template
-  karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
+  source                      = "./modules/terraform-unity-sps-airflow"
+  project                     = var.project
+  venue                       = var.venue
+  service_area                = var.service_area
+  release                     = var.release
+  kubeconfig_filepath         = var.kubeconfig_filepath
+  kubernetes_namespace        = kubernetes_namespace.service_area.metadata[0].name
+  db_instance_identifier      = module.unity-sps-database.db_instance_identifier
+  db_secret_arn               = module.unity-sps-database.db_secret_arn
+  efs_file_system_id          = module.unity-sps-efs.file_system_id
+  airflow_webserver_username  = var.airflow_webserver_username
+  airflow_webserver_password  = var.airflow_webserver_password
+  docker_images               = var.airflow_docker_images
+  multi_git_sync_docker_image = var.multi_git_sync_docker_image
+  helm_charts                 = var.helm_charts
+  helm_values_template        = var.helm_values_template
+  karpenter_node_pools        = module.unity-sps-karpenter-node-config.karpenter_node_pools
 }
 
 module "unity-sps-ogc-processes-api" {
-  source                     = "./modules/terraform-unity-sps-ogc-processes-api"
-  project                    = var.project
-  venue                      = var.venue
-  service_area               = var.service_area
-  release                    = var.release
-  kubernetes_namespace       = kubernetes_namespace.service_area.metadata[0].name
-  db_instance_identifier     = module.unity-sps-database.db_instance_identifier
-  db_secret_arn              = module.unity-sps-database.db_secret_arn
-  airflow_deployed_dags_pvc  = module.unity-sps-airflow.airflow_deployed_dags_pvc
-  airflow_webserver_username = var.airflow_webserver_username
-  airflow_webserver_password = var.airflow_webserver_password
-  docker_images              = var.ogc_processes_docker_images
-  dag_catalog_repo           = var.dag_catalog_repo
-  karpenter_node_pools       = module.unity-sps-karpenter-node-config.karpenter_node_pools
+  source                      = "./modules/terraform-unity-sps-ogc-processes-api"
+  project                     = var.project
+  venue                       = var.venue
+  service_area                = var.service_area
+  release                     = var.release
+  kubernetes_namespace        = kubernetes_namespace.service_area.metadata[0].name
+  db_instance_identifier      = module.unity-sps-database.db_instance_identifier
+  db_secret_arn               = module.unity-sps-database.db_secret_arn
+  airflow_deployed_dags_pvc   = module.unity-sps-airflow.airflow_deployed_dags_pvc
+  airflow_webserver_username  = var.airflow_webserver_username
+  airflow_webserver_password  = var.airflow_webserver_password
+  docker_images               = var.ogc_processes_docker_images
+  multi_git_sync_docker_image = var.multi_git_sync_docker_image
+  dag_catalog_repo            = var.dag_catalog_repo
+  karpenter_node_pools        = module.unity-sps-karpenter-node-config.karpenter_node_pools
 }
 
 module "unity-sps-initiators" {

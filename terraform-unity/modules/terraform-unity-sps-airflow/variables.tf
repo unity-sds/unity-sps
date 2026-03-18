@@ -77,6 +77,14 @@ variable "docker_images" {
   })
 }
 
+variable "multi_git_sync_docker_image" {
+  description = "Docker image for multi-git-sync container."
+  type = object({
+    name = string
+    tag  = string
+  })
+}
+
 variable "karpenter_node_pools" {
   description = "Names of the Karpenter node pools"
   type        = list(string)

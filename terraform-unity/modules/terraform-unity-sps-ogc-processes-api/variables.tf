@@ -55,14 +55,18 @@ variable "docker_images" {
       name = string
       tag  = string
     })
-    git_sync = object({
-      name = string
-      tag  = string
-    })
     redis = object({
       name = string
       tag  = string
     })
+  })
+}
+
+variable "multi_git_sync_docker_image" {
+  description = "Docker image for multi-git-sync container."
+  type = object({
+    name = string
+    tag  = string
   })
 }
 
