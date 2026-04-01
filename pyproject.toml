@@ -37,7 +37,7 @@ develop = []
 test = [
     "python-dotenv==1.0.1",
     "pytest==8.3.3",
-    "pytest-bdd==7.2.0",
+    "pytest-bdd==8.1.0",
     "pytest-mock==3.14.0",
     "requests==2.32.3",
     "apache-airflow==2.10.3",
